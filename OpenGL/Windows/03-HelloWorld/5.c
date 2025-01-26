@@ -1,5 +1,6 @@
 // Win32 Headers
 #include <Windows.h>
+#include "window.h"
 
 // Global function declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -19,11 +20,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     wndClass.lpfnWndProc = WndProc;
     wndClass.hInstance = hInstance;
     wndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-    wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    wndClass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(MIDORIA_ICON));
     wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
     wndClass.lpszClassName = szAppName;
     wndClass.lpszMenuName = NULL;
-    wndClass.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+    wndClass.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(MIDORIA_ICON));
 
     // Registration Of WindowClass
     RegisterClassEx(&wndClass);
@@ -50,50 +51,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
     TCHAR szBuffer[10];
     switch(uMsg){
-        case WM_CREATE:
-            OutputDebugString(TEXT("This is the first message\n"));
-        break;
-        case WM_SIZE:
-            OutputDebugString(TEXT("Window size is changed\n"));
-        break;
-        case WM_MOVE:
-            OutputDebugString(TEXT("Window is moved\n"));
-        break;
-        case WM_CHAR:
-            switch(wParam){
-                case 'F':
-                    OutputDebugString(TEXT("F Key Is Pressed (WM_CHAR)\n"));
-                break;
-            }
-        break;
-        case WM_KEYDOWN:
-            switch(wParam){
-                case VK_ESCAPE:
-                    OutputDebugString(TEXT("Escape Key Is Pressed (WM_KEYDOWN)\n"));
-                break;
-                case 0x46:
-                    OutputDebugString(TEXT("F VK Key Is Pressed (WM_KEYDOWN)\n"));
-                break;
-                default:
-                break;
-            }
-        break;
-        case WM_KEYUP:
-            switch(wParam){
-                case 0x46:
-                    OutputDebugString(TEXT("F VK Key Is Up (WM_KEYUP)\n"));
-                break;
-                default:
-                break;
-            }
-        break;
-        case WM_LBUTTONDOWN:
-            OutputDebugString(TEXT("Mouse Left Button Is Pressed\n"));
-        break;
-        case WM_CLOSE:
-            OutputDebugString(TEXT("Window is closed (WM_CLOSE)\n"));
-            DestroyWindow(hWnd);
-        break;
         case WM_DESTROY:
             PostQuitMessage(0);
         break;

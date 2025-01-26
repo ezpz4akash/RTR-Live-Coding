@@ -51,28 +51,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
     TCHAR szBuffer[10];
     switch(uMsg){
         case WM_CREATE:
-            OutputDebugString(TEXT("This is the first message\n"));
+            MessageBox(hWnd, TEXT("This is the first message"), TEXT("WM_CREATE"), MB_OK);
         break;
         case WM_SIZE:
-            OutputDebugString(TEXT("Window size is changed\n"));
+            MessageBox(hWnd, TEXT("Window size is changed"), TEXT("WM_SIZE"), MB_OK);
         break;
         case WM_MOVE:
-            OutputDebugString(TEXT("Window is moved\n"));
+            MessageBox(hWnd, TEXT("Window is moved"), TEXT("WM_MOVE"), MB_OK);
         break;
         case WM_CHAR:
             switch(wParam){
                 case 'F':
-                    OutputDebugString(TEXT("F Key Is Pressed (WM_CHAR)\n"));
+                    MessageBox(hWnd, TEXT("F Key Is Pressed"), TEXT("WM_CHAR"), MB_OK);
                 break;
             }
         break;
         case WM_KEYDOWN:
             switch(wParam){
                 case VK_ESCAPE:
-                    OutputDebugString(TEXT("Escape Key Is Pressed (WM_KEYDOWN)\n"));
+                    MessageBox(hWnd, TEXT("Escape Key Is Pressed"), TEXT("WM_KEYDOWN"), MB_OK);
                 break;
                 case 0x46:
-                    OutputDebugString(TEXT("F VK Key Is Pressed (WM_KEYDOWN)\n"));
+                    MessageBox(hWnd, TEXT("F VK Key Is Pressed"), TEXT("WM_KEYDOWN"), MB_OK);
                 break;
                 default:
                 break;
@@ -81,17 +81,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
         case WM_KEYUP:
             switch(wParam){
                 case 0x46:
-                    OutputDebugString(TEXT("F VK Key Is Up (WM_KEYUP)\n"));
+                    MessageBox(hWnd, TEXT("F VK Key Is Up"), TEXT("WM_KEYUP"), MB_OK);
                 break;
                 default:
                 break;
             }
         break;
         case WM_LBUTTONDOWN:
-            OutputDebugString(TEXT("Mouse Left Button Is Pressed\n"));
+            MessageBox(hWnd, TEXT("Mouse Left Button Is Pressed"), TEXT("WM_LBUTTONDOWN"), MB_OK);
         break;
         case WM_CLOSE:
-            OutputDebugString(TEXT("Window is closed (WM_CLOSE)\n"));
+            MessageBox(hWnd, TEXT("Window is closed"), TEXT("WM_CLOSE"), MB_OK);
             DestroyWindow(hWnd);
         break;
         case WM_DESTROY:

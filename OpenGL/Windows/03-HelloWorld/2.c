@@ -18,7 +18,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     wndClass.cbClsExtra = 0;
     wndClass.lpfnWndProc = WndProc;
     wndClass.hInstance = hInstance;
-    wndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+    wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
     wndClass.lpszClassName = szAppName;
@@ -48,51 +48,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
-    TCHAR szBuffer[10];
+    HDC hdc;
+    RECT rc;
+    TCHAR str[] = TEXT("Hello World!!!");
+    PAINTSTRUCT ps;
     switch(uMsg){
-        case WM_CREATE:
-            OutputDebugString(TEXT("This is the first message\n"));
-        break;
-        case WM_SIZE:
-            OutputDebugString(TEXT("Window size is changed\n"));
-        break;
-        case WM_MOVE:
-            OutputDebugString(TEXT("Window is moved\n"));
-        break;
-        case WM_CHAR:
-            switch(wParam){
-                case 'F':
-                    OutputDebugString(TEXT("F Key Is Pressed (WM_CHAR)\n"));
-                break;
-            }
-        break;
-        case WM_KEYDOWN:
-            switch(wParam){
-                case VK_ESCAPE:
-                    OutputDebugString(TEXT("Escape Key Is Pressed (WM_KEYDOWN)\n"));
-                break;
-                case 0x46:
-                    OutputDebugString(TEXT("F VK Key Is Pressed (WM_KEYDOWN)\n"));
-                break;
-                default:
-                break;
-            }
-        break;
-        case WM_KEYUP:
-            switch(wParam){
-                case 0x46:
-                    OutputDebugString(TEXT("F VK Key Is Up (WM_KEYUP)\n"));
-                break;
-                default:
-                break;
-            }
-        break;
         case WM_LBUTTONDOWN:
-            OutputDebugString(TEXT("Mouse Left Button Is Pressed\n"));
+            GetClientRect(hWnd, &rc);
+            hdc = GetDC(hWnd);
+            SetBkColor(hdc, RGB(0, 0, 0));
+            SetTextColor(hdc, RGB(0, 255, 0));
+            DrawText(hdc, str, -1, &rc, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+            ReleaseDC(hWnd, hdc);
         break;
-        case WM_CLOSE:
-            OutputDebugString(TEXT("Window is closed (WM_CLOSE)\n"));
-            DestroyWindow(hWnd);
+        case WM_PAINT:
+            OutputDebugString(TEXT("WM_PAINT"));
+            GetClientRect(hWnd, &rc);
+            hdc = BeginPaint(hWnd, &ps);
+            SetBkColor(hdc, RGB(0, 0, 0));
+            SetTextColor(hdc, RGB(0, 255, 0));
+            DrawText(hdc, str, -1, &rc, DT_SINGLELINE | DT_VCENTER | DT_CENTER);
+            EndPaint(hWnd, &ps);
         break;
         case WM_DESTROY:
             PostQuitMessage(0);
