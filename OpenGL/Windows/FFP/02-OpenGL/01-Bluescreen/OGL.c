@@ -257,7 +257,7 @@ int initialize(void){
     // GetDC
     ghdc = GetDC(ghWnd);
     if(ghdc == NULL){
-        fprintf(gpFile, "GetDC failed\n");
+        fprintf(gpFile, "GetDC failed\n"); 
         return -1;
     }
 
