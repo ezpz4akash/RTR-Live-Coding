@@ -2,6 +2,8 @@
     "files.associations": {
         "windows.h": "c",
         "winuser.h": "c",
-        "window.h": "c"
+        "window.h": "c",
+        "ogl.h": "c",
+        "glu.h": "c"
     }
 }

@@ -4,13 +4,15 @@
 #include <stdlib.h>
 
 // OpenGL related header file
-#include <gl/GL.h>
+#include <gl/GL.h>      // CoreGL
+#include <gl/GLU.h>     // GL Utility
 
 // Custom Header File
 #include "OGL.h"
 
 //OpenGL related libraries
-#pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "opengl32.lib")    // CoreGL
+#pragma comment(lib, "glu32.lib")       // GL Utility
 
 // Macros
 #define WIN_WIDTH 800
@@ -86,7 +88,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     // Create Window
     //hWnd = CreateWindow(szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
+    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - Perspective"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
     ghWnd = hWnd;
 
     // Show Windows
@@ -96,6 +98,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     UpdateWindow(hWnd);
 
     int result = initialize();
+    
     if(result != 0){
         fprintf(gpFile, "Initialize() Failed!\n");
         DestroyWindow(hWnd);
@@ -301,7 +304,9 @@ int initialize(void){
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // Warm up resize
-    resize(WIN_WIDTH, WIN_HEIGHT);
+    RECT rect;
+    GetClientRect(ghWnd, &rect);
+    resize(rect.right - rect.left, rect.bottom - rect.top);
 
     return 0;
 }
@@ -319,7 +324,6 @@ void printGLInfo(void){
 }
 
 void resize(int width, int height){
-    
     //code
     
     //If height becomes zero, make height 1
@@ -335,14 +339,9 @@ void resize(int width, int height){
 
     // Set to identity matrix
     glLoadIdentity();
-
-    // To orthographic projection
-    if(width <= height){
-        glOrtho(-100.0f, 100.0f,(-100.0f * ((GLfloat)height / (GLfloat)width)), (100.0f * ((GLfloat)height / (GLfloat)width)), -100.0f, 100.0f);
-    }
-    else{
-        glOrtho((-100.0f * ((GLfloat)width / (GLfloat)height)), (100.0f * ((GLfloat)width / (GLfloat)height)), -100.0f, 100.0f, -100.0f, 100.0f);
-    }
+    
+    // To Perspective projection
+    gluPerspective(45.0, ((GLfloat)width / (GLfloat)height), 0.1, 100.0);
 
     // Set matrix to model view mode
     glMatrixMode(GL_MODELVIEW);
@@ -355,10 +354,21 @@ void display(void){
     //code
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glBegin(GL_TRIANGLES);
-        glVertex3f(0.0f, 50.0f, 0.0f);
-        glVertex3f(-50.0f, -50.0f, 0.0f);
-        glVertex3f(50.0f, -50.0f, 0.0f);
+    // Set matrix to model view mode
+    glMatrixMode(GL_MODELVIEW);
+
+    // Set to identity matrix
+    glLoadIdentity();
+
+    // Translate triangle backwards by z
+    glTranslatef(0.0f, 0.0f, -3.0f);
+
+    glBegin(GL_QUADS);
+        glColor3f(0.0f, 0.0f, 1.0f);
+        glVertex3f(1.0f, 1.0f, 0.0f);
+        glVertex3f(-1.0f, 1.0f, 0.0f);
+        glVertex3f(-1.0f, -1.0f, 0.0f);
+        glVertex3f(1.0f, -1.0f, 0.0f);
     glEnd();
 
     // Swap the buffers
