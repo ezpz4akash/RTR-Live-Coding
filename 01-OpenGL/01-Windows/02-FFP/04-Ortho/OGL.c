@@ -301,7 +301,9 @@ int initialize(void){
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // Warm up resize
-    resize(WIN_WIDTH, WIN_HEIGHT);
+    RECT rect;
+    GetClientRect(ghWnd, &rect);
+    resize(rect.right - rect.left, rect.bottom - rect.top);
 
     return 0;
 }
