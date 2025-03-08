@@ -1,3 +1,0 @@
-Program Started Successfully!
-Initialize() Completed Successfully!
-Program Terminated Successfully!

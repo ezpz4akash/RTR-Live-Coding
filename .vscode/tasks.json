@@ -30,7 +30,7 @@
             "command": "cmd",
             "args": [
                 "/c",
-                "del /q /f /s *.exe *.obj *.pdb *.ilk"
+                "del /q /f /s *.exe *.obj *.pdb *.ilk Log.txt"
             ],
             "group": {
                 "kind": "build",
