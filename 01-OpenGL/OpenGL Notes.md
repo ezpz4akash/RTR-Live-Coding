@@ -7,56 +7,56 @@
     [ M[3]   M[7]   M[11]   M[15] ]
 
 
-1) Identity Matrix
+# 1) Identity Matrix
     [ 1   0   0   0 ]
     [ 0   1   0   0 ]
     [ 0   0   1   0 ]
     [ 0   0   0   1 ]
 
-2) Translation
+# 2) Translation
     [ 1   0   0   tx ]
     [ 0   1   0   ty ]
     [ 0   0   1   tz ]
     [ 0   0   0   1 ]
 
-3) Rotation X (t=theta)
+# 3) Rotation X (t=theta)
     [ 1         0       0       0 ]
     [ 0     cos(t)   -sin(t)    0 ]
     [ 0     sin(t)   cos(t)     0 ]
     [ 0         0       0       1 ]
 
-4) Rotation Y (t=theta)
+# 4) Rotation Y (t=theta)
     [ cos(t)    0   sin(t)  0 ]
     [ 0         1       0   0 ]
     [ -sin(t)   0   cos(t)  0 ]
     [ 0         0       0   1 ]
 
-5) Rotation Z (t=theta)
+# 5) Rotation Z (t=theta)
     [ cos(t)    -sin(t)  0   0 ]
     [ sin(t)    cos(t)   0   0 ]
     [ 0             0    1   0 ]
     [ 0             0    0   1 ]
 
-6)  Scaling Matrix
+# 6)  Scaling Matrix
     [ sx    0    0    0 ]
     [ 0     sy   0    0 ]
     [ 0     0    sz   0 ]
     [ 0     0    0    1 ]
 
-7) Orthographic Projection Matrix (l=left, r=right, b=bottom, t=top, n=near, f=far)
+# 7) Orthographic Projection Matrix (l=left, r=right, b=bottom, t=top, n=near, f=far)
     [ 2/(r-l)   0               0                   -((r + l) / (r - l)) ]
     [ 0         2/(t-b)         0                   -((t + b)/ (t - b))  ]
     [ 0         0               -(2 / (f - n))      -((f + n) / (f - n)) ]
     [ 0         0               0                   1                    ]
 
-8) Perspective Projection Matrix (l=left, r=right, b=bottom, t=top, n=near, f=far)
+# 8) Perspective Projection Matrix (l=left, r=right, b=bottom, t=top, n=near, f=far)
     [ 2n / (r - l)      0           (r + l) / (r - l)         0                  ]
     [ 0                 2n/(t-b)    (t + b) / (t - b)         0                  ]
     [ 0                 0           -((f + n) / (f - n))      -(2*f*n / (f - n)) ]
     [ 0                 0           -1                        0                  ]
 
 ------------------------------------------------------------------------------------------------
-Transformations : 
+# Transformations : 
     Object -> (ModeView) -> Eye -> (Projection) -> Clipping -> (Perspective Division) -> NDC -> (Viewport) -> Window
 
 ------------------------------------------------------------------------------------------------
