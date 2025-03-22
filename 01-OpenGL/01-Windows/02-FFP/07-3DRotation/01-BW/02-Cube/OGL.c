@@ -42,7 +42,7 @@ HDC ghdc = NULL;
 HGLRC ghrc = NULL;
 
 /* Rotation angle variables */
-GLfloat angleTriangle = 0.0f;
+GLfloat angleCube = 0.0f;
 
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
@@ -91,7 +91,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     // Create Window
     //hWnd = CreateWindow(szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - 2D Rotations - Triangle"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
+    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - 3D BW Cube"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
     ghWnd = hWnd;
 
     // Show Windows
@@ -263,6 +263,7 @@ int initialize(void){
     pfd.cGreenBits = 8;
     pfd.cBlueBits = 8;
     pfd.cAlphaBits = 8;
+    pfd.cDepthBits = 8;
 
     // GetDC
     ghdc = GetDC(ghWnd);
@@ -301,7 +302,17 @@ int initialize(void){
     printGLInfo();
 
     // From hear onwards openGL code starts
-    
+
+    // Tell openGL to choose the color to clear the screen
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    //Depth related code
+    glShadeModel(GL_SMOOTH);
+    glClearDepth(1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
     // Warm up resize
     RECT rect;
     GetClientRect(ghWnd, &rect);
@@ -351,12 +362,11 @@ void resize(int width, int height){
 
 void display(void){
     //code
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Set matrix to model view mode
     glMatrixMode(GL_MODELVIEW);
 
-    // Triangle
     {
         // Set to identity matrix
         glLoadIdentity();
@@ -364,18 +374,58 @@ void display(void){
         // Translate triangle backwards by z
         glTranslatef(0.0f, 0.0f, -6.0f);
 
-        // Rotate triangle along y
-        glRotatef(angleTriangle, 0.0f, 1.0f, 0.0f);
+        // Rotate triangle along x,y,z
 
-        glBegin(GL_TRIANGLES);
-            glColor3f(1.0f, 0.0f, 0.0f);
-            glVertex3f(0.0f, 1.0f, 0.0f);
+        glRotatef(angleCube, 1.0f, 1.0f, 1.0f);
 
-            glColor3f(0.0f, 1.0f, 0.0f);
-            glVertex3f(-1.0f, -1.0f, 0.0f);
+        glBegin(GL_QUADS);
+            /* Front Face */
+            {
+                glVertex3f(1.0f, 1.0f, 1.0f);
+                glVertex3f(-1.0f, 1.0f, 1.0f);
+                glVertex3f(-1.0f, -1.0f, 1.0f);
+                glVertex3f(1.0f, -1.0f, 1.0f);
+            }
 
-            glColor3f(0.0f, 0.0f, 1.0f);
-            glVertex3f(1.0f, -1.0f, 0.0f);
+            /* Right Face */
+            {
+                glVertex3f(1.0f, 1.0f, -1.0f);
+                glVertex3f(1.0f, 1.0f, 1.0f);
+                glVertex3f(1.0f, -1.0f, 1.0f);
+                glVertex3f(1.0f, -1.0f, -1.0f);
+            }
+
+            /* Back Face */
+            {
+                glVertex3f(-1.0f, 1.0f, -1.0f);
+                glVertex3f(1.0f, 1.0f, -1.0f);
+                glVertex3f(1.0f, -1.0f, -1.0f);
+                glVertex3f(-1.0f, -1.0f, -1.0f);
+            }
+
+            /* Left Face */
+            {
+                glVertex3f(-1.0f, 1.0f, 1.0f);
+                glVertex3f(-1.0f, 1.0f, -1.0f);
+                glVertex3f(-1.0f, -1.0f, -1.0f);
+                glVertex3f(-1.0f, -1.0f, 1.0f);
+            }
+
+            /* Top Face */
+            {
+                glVertex3f(1.0f, 1.0f, -1.0f);
+                glVertex3f(-1.0f, 1.0f, -1.0f);
+                glVertex3f(-1.0f, 1.0f, 1.0f);
+                glVertex3f(1.0f, 1.0f, 1.0f);
+            }
+
+            /* Bottom Face */
+            {
+                glVertex3f(1.0f, -1.0f, 1.0f);
+                glVertex3f(-1.0f, -1.0f, 1.0f);
+                glVertex3f(-1.0f, -1.0f, -1.0f);
+                glVertex3f(1.0f, -1.0f, -1.0f);
+            }
         glEnd();
     }
     
@@ -385,9 +435,9 @@ void display(void){
 
 void update(void){
     //code
-    angleTriangle = angleTriangle + 0.05f;
-    if(angleTriangle >= 360.0f){
-        angleTriangle = angleTriangle - 360.0f;
+    angleCube = angleCube + 0.05f;
+    if(angleCube >= 360.0f){
+        angleCube = angleCube - 360.0f;
     }
 }
 

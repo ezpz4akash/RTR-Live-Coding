@@ -42,7 +42,6 @@ HDC ghdc = NULL;
 HGLRC ghrc = NULL;
 
 /* Rotation angle variables */
-GLfloat angleTriangle = 0.0f;
 GLfloat angleRectangle = 0.0f;
 
 // Entry Point Functions
@@ -92,7 +91,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     // Create Window
     //hWnd = CreateWindow(szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - Perspective - Shapes"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
+    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - 2D Rotations - Rectangle"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
     ghWnd = hWnd;
 
     // Show Windows
@@ -384,11 +383,6 @@ void display(void){
 
 void update(void){
     //code
-    angleTriangle = angleTriangle + 0.05f;
-    if(angleTriangle >= 360.0f){
-        angleTriangle = angleTriangle - 360.0f;
-    }
-
     angleRectangle = angleRectangle - 0.05f;
     if(angleRectangle <= 0.0f){
         angleRectangle = 360.0f - angleRectangle;

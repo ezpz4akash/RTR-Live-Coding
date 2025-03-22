@@ -42,7 +42,6 @@ HDC ghdc = NULL;
 HGLRC ghrc = NULL;
 
 /* Rotation angle variables */
-GLfloat angleTriangle = 0.0f;
 GLfloat angleRectangle = 0.0f;
 
 // Entry Point Functions
@@ -383,11 +382,6 @@ void display(void){
 
 void update(void){
     //code
-    angleTriangle = angleTriangle + 0.05f;
-    if(angleTriangle >= 360.0f){
-        angleTriangle = angleTriangle - 360.0f;
-    }
-
     angleRectangle = angleRectangle - 0.05f;
     if(angleRectangle <= 0.0f){
         angleRectangle = 360.0f - angleRectangle;
