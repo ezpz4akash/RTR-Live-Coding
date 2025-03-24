@@ -4,6 +4,7 @@
         "winuser.h": "c",
         "window.h": "c",
         "ogl.h": "c",
-        "glu.h": "c"
+        "glu.h": "c",
+        "math.h": "c"
     }
 }
