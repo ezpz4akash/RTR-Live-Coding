@@ -375,6 +375,7 @@ void resize(int width, int height){
 
 void display(void){
     void drawBHARAT();
+    void drawJet();
 
     //code
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -384,8 +385,10 @@ void display(void){
 
     // Set to identity matrix
     glLoadIdentity();
-    //glScalef(1.7f, 1.7f, 1.0f);
+    
     drawBHARAT();
+
+    drawJet();
 
     // Swap the buffers
     SwapBuffers(ghdc);
@@ -403,7 +406,6 @@ void drawBHARAT(){
     void drawA2();
     void drawT();
 
-    glColor3f(0.5f, 0.5f, 0.5f);
     drawB();
     drawH();
     drawA1();
@@ -757,32 +759,32 @@ void drawA2(){
 void drawT(){
     glBegin(GL_QUADS);
         glColor3fv(orangeColor);
-        glVertex3f(56.0f, 15.0f, 0.0f);
+        glVertex3f(57.0f, 15.0f, 0.0f);
         glColor3fv(whiteColor);
-        glVertex3f(56.0f, 1.0f, 0.0f);
+        glVertex3f(57.0f, 1.0f, 0.0f);
         glColor3fv(whiteColor);
-        glVertex3f(64.0f, 1.0f, 0.0f);
+        glVertex3f(63.0f, 1.0f, 0.0f);
         glColor3fv(orangeColor);
-        glVertex3f(64.0f, 15.0f, 0.0f);
+        glVertex3f(63.0f, 15.0f, 0.0f);
     glEnd();
 
     glBegin(GL_QUADS);
         glColor3fv(whiteColor);
-        glVertex3f(56.0f, 1.0f, 0.0f);
-        glVertex3f(56.0f, -1.0f, 0.0f);
-        glVertex3f(64.0f, -1.0f, 0.0f);
-        glVertex3f(64.0f, 1.0f, 0.0f);
+        glVertex3f(57.0f, 1.0f, 0.0f);
+        glVertex3f(57.0f, -1.0f, 0.0f);
+        glVertex3f(63.0f, -1.0f, 0.0f);
+        glVertex3f(63.0f, 1.0f, 0.0f);
     glEnd();
 
     glBegin(GL_QUADS);
         glColor3fv(whiteColor);
-        glVertex3f(56.0f, -1.0f, 0.0f);
+        glVertex3f(57.0f, -1.0f, 0.0f);
         glColor3fv(greenColor);
-        glVertex3f(56.0f, -15.0f, 0.0f);
+        glVertex3f(57.0f, -15.0f, 0.0f);
         glColor3fv(greenColor);
-        glVertex3f(64.0f, -15.0f, 0.0f);
+        glVertex3f(63.0f, -15.0f, 0.0f);
         glColor3fv(whiteColor);
-        glVertex3f(64.0f, -1.0f, 0.0f);
+        glVertex3f(63.0f, -1.0f, 0.0f);
     glEnd();
 
     glBegin(GL_QUADS);
@@ -792,6 +794,10 @@ void drawT(){
         glVertex3f(70.0f, 9.0f, 0.0f);
         glVertex3f(70.0f, 15.0f, 0.0f);
     glEnd();
+}
+
+void drawJet(){
+    
 }
 
 void uninitialize(void){
