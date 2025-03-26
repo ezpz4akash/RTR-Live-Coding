@@ -454,7 +454,7 @@ void display(void){
     
     if(drawCircle){
         glLineWidth(2.0f);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(1.0f, 1.0f, 0.0f);
         GLfloat radius = 0.5f;
         if(drawCircleUsingPoints)
             glBegin(GL_POINTS);

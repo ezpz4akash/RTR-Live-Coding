@@ -2,7 +2,6 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 // OpenGL related header file
 #include <gl/GL.h>      // CoreGL
@@ -18,9 +17,6 @@
 // Macros
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
-
-#define GL_PI 3.145
-#define DEG_TO_RAD(deg) ((GLfloat)deg * (GL_PI / 180.0f))
 
 // Global function declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -44,9 +40,6 @@ BOOL gbEscapeKeyPressed = FALSE;
 /* OpenGL related global variables */
 HDC ghdc = NULL;
 HGLRC ghrc = NULL;
-
-/* Boolean */
-GLboolean drawTriangle = TRUE, drawCircle = TRUE, drawSquare = TRUE, drawGraph = TRUE, drawCircleUsingPoints = FALSE;
 
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
@@ -200,36 +193,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
                         gbFullScreen = FALSE;
                         toggleFullScreen();
                     }
-                break;
-
-                case 'T':
-                case 't':
-                    drawTriangle = !drawTriangle;
-                break;
-
-                case 'C':
-                case 'c':
-                    drawCircle = !drawCircle;
-                break;
-
-                case 'S':
-                case 's':
-                    drawSquare = !drawSquare;
-                break;
-
-                case 'G':
-                case 'g':
-                    drawGraph = !drawGraph;
-                break;
-
-                case 'P':
-                case 'p':
-                    drawCircleUsingPoints = TRUE;
-                break;
-
-                case 'L':
-                case 'l':
-                    drawCircleUsingPoints = FALSE;
                 break;
             }
         break;
@@ -395,120 +358,166 @@ void resize(int width, int height){
 }
 
 void display(void){
+    void drawDots();
+    void drawTriangle();
+    void drawQuadsUnfilled();
+    void drawQuadsFilled();
+    void drawTriangleStrip();
+    void drawTriangleFan();
+    
     //code
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Set matrix to model view mode
     glMatrixMode(GL_MODELVIEW);
 
-    // Set to identity matrix
     glLoadIdentity();
+    glTranslatef(-1.15f, 0.65f, -3.0f);
+    drawDots();
 
-    // Translate triangle backwards by z
-    glTranslatef(0.0f, 0.0f, -3.0f);
+    glLoadIdentity();
+    glTranslatef(-1.15f, -0.35f, -3.0f);
+    drawTriangleStrip();
 
-    GLint lineCounter = 0;
-    GLfloat spacing = (1.0f / 20.0f);
+    glLoadIdentity();
+    glTranslatef(-0.15f, 0.65f, -3.0f);
+    drawTriangle();
+
+    glLoadIdentity();
+    glTranslatef(-0.15f, -0.35f, -3.0f);
+    drawTriangleFan();
+
+    glLoadIdentity();
+    glTranslatef(0.85f, 0.65f, -3.0f);
+    drawQuadsUnfilled();
+
+    glLoadIdentity();
+    glTranslatef(0.85f, -0.35f, -3.0f);
+    drawQuadsFilled();
     
-    glLineWidth(1.0f);
-    if(drawGraph){
-        glLineWidth(1.0f);
-        glColor3f(0.0f, 0.0f, 1.0f);
-
-        for(GLfloat y = -1.0f; y < 1.0f + spacing; y = y + spacing){
-            if(lineCounter % 5 == 0)
-                glLineWidth(3.0f);
-            else
-                glLineWidth(1.0f);
-            glBegin(GL_LINES);
-                glVertex3f(-1.0f, y, 0.0f);
-                glVertex3f(1.0f, y, 0.0f);
-            glEnd();    
-            lineCounter = lineCounter + 1;
-        }
-
-        lineCounter = 0;
-        glLineWidth(1.0f);
-        glColor3f(0.0f, 0.0f, 1.0f);
-        for(GLfloat x = -1.0f; x < 1.0f + spacing; x = x + spacing){
-            if(lineCounter % 5 == 0)
-                glLineWidth(3.0f);
-            else
-                glLineWidth(1.0f);
-            glBegin(GL_LINES);
-                glVertex3f(x, -1.0f, 0.0f);
-                glVertex3f(x, 1.0f, 0.0f);
-            glEnd();    
-            lineCounter = lineCounter + 1;
-        }
-
-        glLineWidth(3.0f);
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glBegin(GL_LINES);
-            glVertex3f(-1.0f, 0.0f, 0.0f);
-            glVertex3f(1.0f, 0.0f, 0.0f);
-        glEnd();
-
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glBegin(GL_LINES);
-            glVertex3f(0.0f, -1.0f, 0.0f);
-            glVertex3f(0.0f, 1.0f, 0.0f);
-        glEnd();
-
-        glLineWidth(1.0f);
-        glColor3f(1.0f, 1.0f, 1.0f);
-    }
-
-    // Polygon mode
-    glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
-
-    if(drawSquare){
-        glLineWidth(2.0f);
-        glColor3f(1.0f, 1.0f, 0.0f);
-        glBegin(GL_QUADS);
-            glVertex3f(-0.5f, 0.5f, 0.0f);
-            glVertex3f(-0.5f, -0.5f, 0.0f);
-            glVertex3f(0.5f, -0.5f, 0.0f);
-            glVertex3f(0.5f, 0.5f, 0.0f);
-        glEnd();
-        glLineWidth(1.0f);
-        glColor3f(1.0f, 1.0f, 1.0f);
-    }
-
-    if(drawTriangle){
-        glLineWidth(2.0f);
-        glColor3f(1.0f, 1.0f, 0.0f);
-        glBegin(GL_TRIANGLES);
-            glVertex3f(0.0f, 0.5f, 0.0f);
-            glVertex3f(-0.5f, -0.5f, 0.0f);
-            glVertex3f(0.5f, -0.5f, 0.0f);
-        glEnd();
-        glLineWidth(1.0f);
-        glColor3f(1.0f, 1.0f, 1.0f);
-    }
-    
-    if(drawCircle){
-        glLineWidth(2.0f);
-        glColor3f(1.0f, 1.0f, 0.0f);
-        GLfloat radius = 0.5f;
-        if(drawCircleUsingPoints)
-            glBegin(GL_POINTS);
-        else
-            glBegin(GL_LINE_LOOP);
-            for(GLfloat angle = 0.0f ; angle <= (360.0f); angle = angle + 1.0f){
-                glVertex3f((radius * cos(DEG_TO_RAD(angle))), (radius * sin(DEG_TO_RAD(angle))), 0.0f);
-            }
-        glEnd();
-        glLineWidth(1.0f);
-        glColor3f(1.0f, 1.0f, 1.0f);
-    }
-    
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     // Swap the buffers
     SwapBuffers(ghdc);
 }
 
 void update(void){
     //code
+}
+
+void drawDots(){
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glPointSize(2.0f);
+    for(GLfloat y = 0.0f; y <= 0.3f; y = y + 0.1f){
+        for(GLfloat x = 0.0f; x <= 0.3f; x = x + 0.1f){
+            glBegin(GL_POINTS);
+                glVertex3f(x, -y, 0.0f);
+            glEnd();
+        }
+    }
+    glPointSize(1.0f);
+    glColor3f(1.0f, 1.0f, 1.0f);
+}
+
+void drawTriangleStrip(){
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glLineWidth(2.0f);
+    for(GLfloat y = 0.0f; y < 0.3f; y = y + 0.1f){
+        glBegin(GL_TRIANGLE_STRIP);
+        for(GLfloat x = 0.0f; x <= 0.3f; x = x + 0.1f){
+            glVertex3f(x, -y, 0.0f);
+            glVertex3f(x, -y-0.1f , 0.0f);
+        }
+        glEnd();
+    }
+    glLineWidth(1.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glColor3f(1.0f, 1.0f, 1.0f);
+}
+
+void drawTriangle(){
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glLineWidth(2.0f);
+    for(GLfloat y = 0.0f; y < 0.3f; y = y + 0.1f){
+        glBegin(GL_TRIANGLES);
+        for(GLfloat x = 0.0f; x < 0.3f; x = x + 0.1f){
+            glVertex3f(x, -y, 0.0f);
+            glVertex3f(x+0.1f, -y, 0.0f);
+            glVertex3f(x, -y-0.1f , 0.0f);
+        }
+        glEnd();
+    }
+    glLineWidth(1.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glColor3f(1.0f, 1.0f, 1.0f);
+}
+
+void drawQuadsUnfilled(){
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glLineWidth(2.0f);
+    for(GLfloat y = 0.0f; y < 0.3f; y = y + 0.1f){
+        for(GLfloat x = 0.0f; x < 0.3f; x = x + 0.1f){
+            glBegin(GL_QUADS);
+                glVertex3f(x, -y, 0.0f);
+                glVertex3f(x, -y - 0.1f, 0.0f);
+                glVertex3f(x + 0.1f, -y - 0.1f, 0.0f);
+                glVertex3f(x + 0.1f, -y, 0.0f);
+            glEnd();
+        }
+    }
+    glLineWidth(1.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glColor3f(1.0f, 1.0f, 1.0f);
+}
+
+void drawQuadsFilled(){
+    void drawQuadsUnfilled();
+
+    glColor3f(1.0f, 1.0f, 1.0f);
+    GLint colorIndex = 0;
+    GLfloat colors[3][3] = {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
+    for(GLfloat x = 0.0f; x < 0.3f; x = x + 0.1f){
+        glColor3fv(colors[colorIndex]);
+        for(GLfloat y = 0.0f; y < 0.3f; y = y + 0.1f){
+            glBegin(GL_QUADS);
+                glVertex3f(x, -y, 0.0f);
+                glVertex3f(x, -y - 0.1f, 0.0f);
+                glVertex3f(x + 0.1f, -y - 0.1f, 0.0f);
+                glVertex3f(x + 0.1f, -y, 0.0f);
+            glEnd();
+        }
+        colorIndex = colorIndex + 1;
+    }
+    drawQuadsUnfilled();
+    glColor3f(1.0f, 1.0f, 1.0f);
+}
+
+void drawTriangleFan(){
+    GLfloat x = 0.0f, y = 0.0f;
+
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glLineWidth(2.0f);
+
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    for(x = 0.0f; x <= 0.3f; x = x + 0.1f){
+        glVertex3f(x, -0.3f, 0.0f);
+    }
+    glEnd();
+
+    glBegin(GL_TRIANGLE_FAN);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    for(y = 0.0f; y <= 0.3f; y = y + 0.1f){
+        glVertex3f(0.3f, -y, 0.0f);
+    }
+    glEnd();
+
+    glLineWidth(1.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glColor3f(1.0f, 1.0f, 1.0f);
 }
 
 void uninitialize(void){
