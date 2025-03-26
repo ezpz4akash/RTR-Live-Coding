@@ -340,29 +340,38 @@ void resize(int width, int height){
     // Set to identity matrix
     glLoadIdentity();
 
-    GLdouble left   = -100.0f;
-    GLdouble right  = 100.0f;
-    GLdouble bottom = -100.0f;
-    GLdouble top    = 100.0f;
-    GLdouble nearZ  = -100.0f;
-    GLdouble farZ   = 100.0f;
+    GLfloat left   = -100.0f;
+    GLfloat right  = 100.0f;
+    GLfloat bottom = -100.0f;
+    GLfloat top    = 100.0f;
+    GLfloat nearZ  = -100.0f;
+    GLfloat farZ   = 100.0f;
+
+    if(width <= height){
+        bottom = bottom * ((GLfloat)height / (GLfloat)width);
+        top = top * ((GLfloat)height / (GLfloat)width);
+    }
+    else{
+        left = left * ((GLfloat)width / (GLfloat)height);
+        right = right * ((GLfloat)width / (GLfloat)height);
+    }
     
-    projectionMatrix[0] = (2.0 / (right - left));
-    projectionMatrix[1] = 0;
-    projectionMatrix[2] = 0;
-    projectionMatrix[3] = 0;
-    projectionMatrix[4] = 0;
-    projectionMatrix[5] = (2.0 / (top - bottom));
-    projectionMatrix[6] = 0;
-    projectionMatrix[7] = 0;
-    projectionMatrix[8] = 0;
-    projectionMatrix[9] = 0;
-    projectionMatrix[10] = -(2.0 / (farZ - nearZ));
-    projectionMatrix[11] = 0;
+    projectionMatrix[0] = (2.0f / (right - left));
+    projectionMatrix[1] = 0.0f;
+    projectionMatrix[2] = 0.0f;
+    projectionMatrix[3] = 0.0f;
+    projectionMatrix[4] = 0.0f;
+    projectionMatrix[5] = (2.0f / (top - bottom));
+    projectionMatrix[6] = 0.0f;
+    projectionMatrix[7] = 0.0f;
+    projectionMatrix[8] = 0.0f;
+    projectionMatrix[9] = 0.0f;
+    projectionMatrix[10] = -(2.0f / (farZ - nearZ));
+    projectionMatrix[11] = 0.0f;
     projectionMatrix[12] = -((right + left) / (right - bottom));
     projectionMatrix[13] = -((top + bottom) / (top - bottom));
     projectionMatrix[14] = -((farZ + nearZ) / (farZ - nearZ));
-    projectionMatrix[15] = 1;
+    projectionMatrix[15] = 1.0f;
 
     glLoadMatrixf(projectionMatrix);
 
