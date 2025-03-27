@@ -5,6 +5,8 @@
         "window.h": "c",
         "ogl.h": "c",
         "glu.h": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "gl.h": "c",
+        "stdio.h": "c"
     }
 }
