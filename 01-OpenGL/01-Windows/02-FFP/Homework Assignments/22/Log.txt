@@ -1,9 +1,0 @@
-Program Started Successfully!
-OPENGL INFORMATION
-******************
-OpenGL Vendor : ATI Technologies Inc.
-OpenGL Renderer : AMD Radeon(TM) Graphics
-OpenGL Version : 4.6.0 Compatibility Profile Context 24.9.1.240813
-******************
-Initialize() Completed Successfully!
-Program Terminated Successfully!
