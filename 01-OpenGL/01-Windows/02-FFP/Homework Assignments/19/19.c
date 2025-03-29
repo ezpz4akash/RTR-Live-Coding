@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 // OpenGL related header file
 #include <gl/GL.h>      // CoreGL
@@ -17,6 +18,9 @@
 // Macros
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
+
+#define GL_PI 3.145
+#define DEG_TO_RAD(deg) ((GLfloat)deg * (GL_PI / 180.0f))
 
 // Global function declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -361,6 +365,8 @@ void resize(int width, int height){
 }
 
 void display(void){
+    void drawPyramid();
+    void drawCube();
     //code
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -369,134 +375,135 @@ void display(void){
 
     // Set to identity matrix
     glLoadIdentity();
-
     {
-        
-        // Translate triangle backwards by z
-        glTranslatef(0.0f, 0.0f, -10.0f);
-        glRotatef(-angleOfRotation, 0.0f, 1.0f, 0.0f);
-
-        glBegin(GL_TRIANGLES);
-            /* Front Face */
-            {
-                glColor3f(1.0f, 0.0f, 0.0f);
-                glVertex3f(0.0f, 1.0f, 0.0f);
-
-                glColor3f(0.0f, 1.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
-
-                glColor3f(0.0f, 0.0f, 1.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-            }
-
-            /* Right Face */
-            {
-                glColor3f(1.0f, 0.0f, 0.0f);
-                glVertex3f(0.0f, 1.0f, 0.0f);
-
-                glColor3f(0.0f, 0.0f, 1.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-
-                glColor3f(0.0f, 1.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-            }
-
-            /* Back Face */
-            {
-                glColor3f(1.0f, 0.0f, 0.0f);
-                glVertex3f(0.0f, 1.0f, 0.0f);
-
-                glColor3f(0.0f, 1.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-
-                glColor3f(0.0f, 0.0f, 1.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-            }
-
-            /* Left Face */
-            {
-                glColor3f(1.0f, 0.0f, 0.0f);
-                glVertex3f(0.0f, 1.0f, 0.0f);
-
-                glColor3f(0.0f, 0.0f, 1.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-
-                glColor3f(0.0f, 1.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
-            }
-        glEnd();
+        glTranslatef(0.0f, 0.0f, -12.0f);
+        glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+        drawPyramid();
     }
 
+    glLoadIdentity();
     {
-        glLoadIdentity();
+        GLfloat radius = 12.0f;
+        GLfloat x = radius * cos(DEG_TO_RAD(angleOfRotation));
+        GLfloat z = radius * sin(DEG_TO_RAD(angleOfRotation));
+        gluLookAt(x, 0.0f, z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        glTranslatef(0.0f, 0.0f, -5.0f);
+        glScalef(0.5f, 0.5f, 0.5f);
+        drawCube();
 
-        glTranslatef(0.0f, 0.0f, -10.0f);
-
-        glRotatef(angleOfRotation, 0.0f, 1.0f, 0.0f);
-
-        // Translate triangle backwards by z
-        glTranslatef(5.0f, 0.0f, 0.0f);
-
-        glScalef(0.3f, 0.3f, 0.3f);
-
-        glBegin(GL_QUADS);
-            /* Front Face */
-            {
-                glColor3f(1.0f, 0.0f, 0.0f);
-                glVertex3f(1.0f, 1.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, 1.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-            }
-
-            /* Right Face */
-            {
-                glColor3f(0.0f, 1.0f, 0.0f);
-                glVertex3f(1.0f, 1.0f, -1.0f);
-                glVertex3f(1.0f, 1.0f, 1.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-            }
-
-            /* Back Face */
-            {
-                glColor3f(0.0f, 0.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, -1.0f);
-                glVertex3f(1.0f, 1.0f, -1.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-            }
-
-            /* Left Face */
-            {
-                glColor3f(0.0f, 1.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, -1.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
-            }
-
-            /* Top Face */
-            {
-                glColor3f(1.0f, 1.0f, 0.0f);
-                glVertex3f(1.0f, 1.0f, -1.0f);
-                glVertex3f(-1.0f, 1.0f, -1.0f);
-                glVertex3f(-1.0f, 1.0f, 1.0f);
-                glVertex3f(1.0f, 1.0f, 1.0f);
-            }
-
-            /* Bottom Face */
-            {
-                glColor3f(1.0f, 0.0f, 1.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-            }
-        glEnd();
     }
     // Swap the buffers
     SwapBuffers(ghdc);
+}
+
+void drawPyramid(){
+    glBegin(GL_TRIANGLES);
+        /* Front Face */
+        {
+            glColor3f(1.0f, 0.0f, 0.0f);
+            glVertex3f(0.0f, 1.0f, 0.0f);
+
+            glColor3f(0.0f, 1.0f, 0.0f);
+            glVertex3f(-1.0f, -1.0f, 1.0f);
+
+            glColor3f(0.0f, 0.0f, 1.0f);
+            glVertex3f(1.0f, -1.0f, 1.0f);
+        }
+
+        /* Right Face */
+        {
+            glColor3f(1.0f, 0.0f, 0.0f);
+            glVertex3f(0.0f, 1.0f, 0.0f);
+
+            glColor3f(0.0f, 0.0f, 1.0f);
+            glVertex3f(1.0f, -1.0f, 1.0f);
+
+            glColor3f(0.0f, 1.0f, 0.0f);
+            glVertex3f(1.0f, -1.0f, -1.0f);
+        }
+
+        /* Back Face */
+        {
+            glColor3f(1.0f, 0.0f, 0.0f);
+            glVertex3f(0.0f, 1.0f, 0.0f);
+
+            glColor3f(0.0f, 1.0f, 0.0f);
+            glVertex3f(1.0f, -1.0f, -1.0f);
+
+            glColor3f(0.0f, 0.0f, 1.0f);
+            glVertex3f(-1.0f, -1.0f, -1.0f);
+        }
+
+        /* Left Face */
+        {
+            glColor3f(1.0f, 0.0f, 0.0f);
+            glVertex3f(0.0f, 1.0f, 0.0f);
+
+            glColor3f(0.0f, 0.0f, 1.0f);
+            glVertex3f(-1.0f, -1.0f, -1.0f);
+
+            glColor3f(0.0f, 1.0f, 0.0f);
+            glVertex3f(-1.0f, -1.0f, 1.0f);
+        }
+    glEnd();
+}
+
+void drawCube(){
+    glBegin(GL_QUADS);
+        /* Front Face */
+        {
+            glColor3f(1.0f, 0.0f, 0.0f);
+            glVertex3f(1.0f, 1.0f, 1.0f);
+            glVertex3f(-1.0f, 1.0f, 1.0f);
+            glVertex3f(-1.0f, -1.0f, 1.0f);
+            glVertex3f(1.0f, -1.0f, 1.0f);
+        }
+
+        /* Right Face */
+        {
+            glColor3f(0.0f, 1.0f, 0.0f);
+            glVertex3f(1.0f, 1.0f, -1.0f);
+            glVertex3f(1.0f, 1.0f, 1.0f);
+            glVertex3f(1.0f, -1.0f, 1.0f);
+            glVertex3f(1.0f, -1.0f, -1.0f);
+        }
+
+        /* Back Face */
+        {
+            glColor3f(0.0f, 0.0f, 1.0f);
+            glVertex3f(-1.0f, 1.0f, -1.0f);
+            glVertex3f(1.0f, 1.0f, -1.0f);
+            glVertex3f(1.0f, -1.0f, -1.0f);
+            glVertex3f(-1.0f, -1.0f, -1.0f);
+        }
+
+        /* Left Face */
+        {
+            glColor3f(0.0f, 1.0f, 1.0f);
+            glVertex3f(-1.0f, 1.0f, 1.0f);
+            glVertex3f(-1.0f, 1.0f, -1.0f);
+            glVertex3f(-1.0f, -1.0f, -1.0f);
+            glVertex3f(-1.0f, -1.0f, 1.0f);
+        }
+
+        /* Top Face */
+        {
+            glColor3f(1.0f, 1.0f, 0.0f);
+            glVertex3f(1.0f, 1.0f, -1.0f);
+            glVertex3f(-1.0f, 1.0f, -1.0f);
+            glVertex3f(-1.0f, 1.0f, 1.0f);
+            glVertex3f(1.0f, 1.0f, 1.0f);
+        }
+
+        /* Bottom Face */
+        {
+            glColor3f(1.0f, 0.0f, 1.0f);
+            glVertex3f(1.0f, -1.0f, 1.0f);
+            glVertex3f(-1.0f, -1.0f, 1.0f);
+            glVertex3f(-1.0f, -1.0f, -1.0f);
+            glVertex3f(1.0f, -1.0f, -1.0f);
+        }
+    glEnd();
 }
 
 void update(void){

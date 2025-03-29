@@ -382,7 +382,7 @@ void display(void){
     // Translate triangle backwards by z
     glTranslatef(0.0f, 0.0f, -3.0f);
 
-    glPointSize(5.0f);
+    glPointSize(10.0f);
     glColor3f(1.0f, 1.0f, 0.0f);
     glBegin(GL_POINTS);
         glVertex3f(0.0f, 0.0f, 0.0f);

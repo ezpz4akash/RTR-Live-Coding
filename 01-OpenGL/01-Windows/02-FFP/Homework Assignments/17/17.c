@@ -220,19 +220,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
                 break;
                 case '5':
                     index = 5;
-                    glViewport(0, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight);
+                    glViewport(0, 0, (GLsizei)gWidth, (GLsizei)gHeight / 2);
                 break;
                 case '6':
                     index = 6;
-                    glViewport((GLsizei)gWidth / 2, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight);
+                    glViewport(0, (GLsizei)gHeight / 2, (GLsizei)gWidth, (GLsizei)gHeight / 2);
+                    
                 break;
                 case '7':
                     index = 7;
-                    glViewport(0, (GLsizei)gHeight / 2, (GLsizei)gWidth, (GLsizei)gHeight / 2);
+                    glViewport(0, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight);
+                    
                 break;
                 case '8':
                     index = 8;
-                    glViewport(0, 0, (GLsizei)gWidth, (GLsizei)gHeight / 2);
+                    glViewport((GLsizei)gWidth / 2, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight);
                 break;
                 case '9':
                     index = 9;
@@ -345,7 +347,7 @@ int initialize(void){
     // From hear onwards openGL code starts
 
     // Tell openGL to choose the color to clear the screen
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
 
     //Depth related code
     glShadeModel(GL_SMOOTH);
@@ -416,37 +418,49 @@ void display(void){
     // Translate triangle backwards by z
     glTranslatef(0.0f, 0.0f, -3.0f);
     switch(index){
-        case 0:
-            glViewport(0, 0, gWidth, gHeight);
+        case '0':
+        index = 0;
+        glViewport(0, 0, gWidth, gHeight);
         break;
-        case 1:
+        case '1':
+            index = 1;
             glViewport(0, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
         break;
-        case 2:
+        case '2':
+            index = 2;
             glViewport((GLsizei)gWidth / 2, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
         break;
-        case 3:
+        case '3':
+            index = 3;
             glViewport((GLsizei)gWidth / 2, (GLsizei)gHeight / 2, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
         break;
-        case 4:
+        case '4':
+            index = 4;
             glViewport(0, (GLsizei)gHeight / 2, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
         break;
-        case 5:
-            glViewport(0, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight);
-        break;
-        case 6:
-            glViewport((GLsizei)gWidth / 2, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight);
-        break;
-        case 7:
-            glViewport(0, (GLsizei)gHeight / 2, (GLsizei)gWidth, (GLsizei)gHeight / 2);
-        break;
-        case 8:
+        case '5':
+            index = 5;
             glViewport(0, 0, (GLsizei)gWidth, (GLsizei)gHeight / 2);
         break;
-        case 9:
+        case '6':
+            index = 6;
+            glViewport(0, (GLsizei)gHeight / 2, (GLsizei)gWidth, (GLsizei)gHeight / 2);
+            
+        break;
+        case '7':
+            index = 7;
+            glViewport(0, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight);
+            
+        break;
+        case '8':
+            index = 8;
+            glViewport((GLsizei)gWidth / 2, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight);
+        break;
+        case '9':
+            index = 9;
             glViewport((GLsizei)gWidth / 4, (GLsizei)gHeight / 4, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
         break;
-}
+    }
 
     glBegin(GL_TRIANGLES);
         glVertex3f(0.0f, 1.0f, 0.0f);

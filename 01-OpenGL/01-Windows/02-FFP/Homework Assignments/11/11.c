@@ -388,6 +388,8 @@ void display(void){
     // Translate triangle backwards by z
     glTranslatef(0.0f, 0.0f, -3.0f);
 
+    glLineWidth(3.0f);
+    glColor3ub(255, 165, 0);
     glBegin(GL_LINE_LOOP);
         glVertex3f(leftTop.x, leftTop.y, 0.0f);
         glVertex3f(rightTop.x, rightTop.y, 0.0f);

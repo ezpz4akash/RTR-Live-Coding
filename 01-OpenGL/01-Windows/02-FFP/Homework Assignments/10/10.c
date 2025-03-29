@@ -46,7 +46,7 @@ HDC ghdc = NULL;
 HGLRC ghrc = NULL;
 
 /* Boolean */
-GLboolean drawTriangle = TRUE, drawCircle = TRUE, drawSquare = TRUE, drawGraph = TRUE, drawCircleUsingPoints = FALSE;
+GLboolean drawTriangle = FALSE, drawCircle = FALSE, drawSquare = FALSE, drawGraph = FALSE, drawCircleUsingPoints = FALSE;
 
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
@@ -229,6 +229,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
 
                 case 'L':
                 case 'l':
+                    drawCircleUsingPoints = FALSE;
+                break;
+
+                case '0':
+                    drawTriangle = FALSE;
+                    drawCircle = FALSE;
+                    drawSquare = FALSE;
+                    drawGraph = FALSE;
                     drawCircleUsingPoints = FALSE;
                 break;
             }

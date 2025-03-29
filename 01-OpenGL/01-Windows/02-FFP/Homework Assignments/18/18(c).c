@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 // OpenGL related header file
 #include <gl/GL.h>
@@ -15,6 +16,8 @@
 // Macros
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
+#define GL_PI 3.145
+#define DEG_TO_RAD(deg) ((GLfloat)deg * (GL_PI / 180.0f))
 
 // Global function declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -332,64 +335,59 @@ void resize(int width, int height){
     
     glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 
-    /* Set projection mode */
-
-    // Set matrix projection mode
-    glMatrixMode(GL_PROJECTION);
-
-    // Set to identity matrix
-    glLoadIdentity();
-
-    GLfloat left   = -100.0f;
-    GLfloat right  = 100.0f;
-    GLfloat bottom = -100.0f;
-    GLfloat top    = 100.0f;
-    GLfloat nearZ  = -100.0f;
+    GLfloat nearZ  = 0.1f;
     GLfloat farZ   = 100.0f;
 
-    if(width <= height){
-        bottom = bottom * ((GLfloat)height / (GLfloat)width);
-        top = top * ((GLfloat)height / (GLfloat)width);
-    }
-    else{
-        left = left * ((GLfloat)width / (GLfloat)height);
-        right = right * ((GLfloat)width / (GLfloat)height);
-    }
+    /* Set projection mode */
+    glMatrixMode(GL_PROJECTION);
+
+    ZeroMemory(projectionMatrix, sizeof(projectionMatrix));
+    projectionMatrix[0] = 1.0f;
+    projectionMatrix[5] = 1.0f;
+    projectionMatrix[10] = 1.0f;
+    projectionMatrix[15] = 1.0f;
+
+    glLoadMatrixf(projectionMatrix);
+
+    GLfloat aspectRatio = ((GLfloat)width / (GLfloat)height);
+    GLfloat f = (1.0f / tan(DEG_TO_RAD(45.0f))) / 2.0f;
     
-    projectionMatrix[0] = (2.0f / (right - left));
+    projectionMatrix[0] = f / aspectRatio;
     projectionMatrix[1] = 0.0f;
     projectionMatrix[2] = 0.0f;
     projectionMatrix[3] = 0.0f;
     projectionMatrix[4] = 0.0f;
-    projectionMatrix[5] = (2.0f / (top - bottom));
+    projectionMatrix[5] = f;
     projectionMatrix[6] = 0.0f;
     projectionMatrix[7] = 0.0f;
     projectionMatrix[8] = 0.0f;
     projectionMatrix[9] = 0.0f;
-    projectionMatrix[10] = -(2.0f / (farZ - nearZ));
-    projectionMatrix[11] = 0.0f;
-    projectionMatrix[12] = -((right + left) / (right - bottom));
-    projectionMatrix[13] = -((top + bottom) / (top - bottom));
-    projectionMatrix[14] = -((farZ + nearZ) / (farZ - nearZ));
-    projectionMatrix[15] = 1.0f;
+    projectionMatrix[10] = ((farZ + nearZ) / (nearZ - farZ));
+    projectionMatrix[11] = -1.0f;
+    projectionMatrix[12] = 0.0f;
+    projectionMatrix[13] = 0.0f;
+    projectionMatrix[14] = ((2 * farZ * nearZ) / (nearZ - farZ));
+    projectionMatrix[15] = 0.0f;
 
-    glLoadMatrixf(projectionMatrix);
+    glMultMatrixf(projectionMatrix);
 
     // Set matrix to model view mode
     glMatrixMode(GL_MODELVIEW);
 
     // Set to identity matrix
     glLoadIdentity();
+
+    glTranslatef(0.0f, 0.0f, -1.0f);
 }
 
 void display(void){
     //code
     glClear(GL_COLOR_BUFFER_BIT);
-
+    
     glBegin(GL_TRIANGLES);
-        glVertex3f(0.0f, 50.0f, 0.0f);
-        glVertex3f(-50.0f, -50.0f, 0.0f);
-        glVertex3f(50.0f, -50.0f, 0.0f);
+        glVertex3f(0.0f, 1.0f, 0.0f);
+        glVertex3f(-1.0f, -1.0f, 0.0f);
+        glVertex3f(1.0f, -1.0f, 0.0f);
     glEnd();
 
     // Swap the buffers

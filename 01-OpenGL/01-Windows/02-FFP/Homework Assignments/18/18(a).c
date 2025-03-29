@@ -2,18 +2,15 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 // OpenGL related header file
-#include <gl/GL.h>      // CoreGL
-#include <gl/GLU.h>     // GL Utility
+#include <gl/GL.h>
 
 // Custom Header File
 #include "OGL.h"
 
 //OpenGL related libraries
-#pragma comment(lib, "opengl32.lib")    // CoreGL
-#pragma comment(lib, "glu32.lib")       // GL Utility
+#pragma comment(lib, "opengl32.lib")
 
 // Macros
 #define WIN_WIDTH 800
@@ -42,19 +39,7 @@ BOOL gbEscapeKeyPressed = FALSE;
 HDC ghdc = NULL;
 HGLRC ghrc = NULL;
 
-/* Colors */
-GLfloat colors[10][3] = {
-    {255, 0, 0},
-    {0, 255, 0},
-    {0, 0, 255},
-    {0, 255, 255},
-    {255, 0, 255},
-    {255, 255, 0},
-    {255, 255, 255},
-    {128, 0, 128},
-    {128, 128, 128},
-    {255, 165, 0},
-};
+GLfloat projectionMatrix[16];
 
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
@@ -103,7 +88,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     // Create Window
     //hWnd = CreateWindow(szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - Perspective"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
+    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
     ghWnd = hWnd;
 
     // Show Windows
@@ -275,7 +260,6 @@ int initialize(void){
     pfd.cGreenBits = 8;
     pfd.cBlueBits = 8;
     pfd.cAlphaBits = 8;
-    pfd.cDepthBits = 8;
 
     // GetDC
     ghdc = GetDC(ghWnd);
@@ -318,13 +302,6 @@ int initialize(void){
     // Tell openGL to choose the color to clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    //Depth related code
-    glShadeModel(GL_SMOOTH);
-    glClearDepth(1.0f);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
     // Warm up resize
     RECT rect;
     GetClientRect(ghWnd, &rect);
@@ -346,6 +323,7 @@ void printGLInfo(void){
 }
 
 void resize(int width, int height){
+    
     //code
     
     //If height becomes zero, make height 1
@@ -355,15 +333,49 @@ void resize(int width, int height){
     glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 
     /* Set projection mode */
-
-    // Set matrix projection mode
     glMatrixMode(GL_PROJECTION);
+    ZeroMemory(projectionMatrix, sizeof(projectionMatrix));
+    projectionMatrix[0] = 1;
+    projectionMatrix[5] = 1;
+    projectionMatrix[10] = 1;
+    projectionMatrix[15] = 1;
 
-    // Set to identity matrix
-    glLoadIdentity();
+    glLoadMatrixf(projectionMatrix);
 
-    // To Perspective projection
-    gluPerspective(45.0, ((GLfloat)width / (GLfloat)height), 0.1, 100.0);
+    GLfloat left   = -100.0f;
+    GLfloat right  = 100.0f;
+    GLfloat bottom = -100.0f;
+    GLfloat top    = 100.0f;
+    GLfloat nearZ  = -100.0f;
+    GLfloat farZ   = 100.0f;
+
+    if(width <= height){
+        bottom = bottom * ((GLfloat)height / (GLfloat)width);
+        top = top * ((GLfloat)height / (GLfloat)width);
+    }
+    else{
+        left = left * ((GLfloat)width / (GLfloat)height);
+        right = right * ((GLfloat)width / (GLfloat)height);
+    }
+    
+    projectionMatrix[0] = (2.0f / (right - left));
+    projectionMatrix[1] = 0.0f;
+    projectionMatrix[2] = 0.0f;
+    projectionMatrix[3] = 0.0f;
+    projectionMatrix[4] = 0.0f;
+    projectionMatrix[5] = (2.0f / (top - bottom));
+    projectionMatrix[6] = 0.0f;
+    projectionMatrix[7] = 0.0f;
+    projectionMatrix[8] = 0.0f;
+    projectionMatrix[9] = 0.0f;
+    projectionMatrix[10] = -(2.0f / (farZ - nearZ));
+    projectionMatrix[11] = 0.0f;
+    projectionMatrix[12] = -((right + left) / (right - bottom));
+    projectionMatrix[13] = -((top + bottom) / (top - bottom));
+    projectionMatrix[14] = -((farZ + nearZ) / (farZ - nearZ));
+    projectionMatrix[15] = 1.0f;
+
+    glMultMatrixf(projectionMatrix);
 
     // Set matrix to model view mode
     glMatrixMode(GL_MODELVIEW);
@@ -374,30 +386,14 @@ void resize(int width, int height){
 
 void display(void){
     //code
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-     // Polygon mode
-    glPolygonMode(GL_FRONT_AND_BACK , GL_LINE);
+    glBegin(GL_TRIANGLES);
+        glVertex3f(0.0f, 50.0f, 0.0f);
+        glVertex3f(-50.0f, -50.0f, 0.0f);
+        glVertex3f(50.0f, -50.0f, 0.0f);
+    glEnd();
 
-    // Set matrix to model view mode
-    glMatrixMode(GL_MODELVIEW);
-
-    GLint colorIndex = 0;
-    for(GLfloat scale = 1.0f; scale >= 0.0f; scale = scale - 0.1){
-        glLoadIdentity();
-        glTranslatef(0.0f, 0.0f, -4.0f);
-        glScalef(scale, scale, 1.0f);
-        glColor3ub(colors[colorIndex][0], colors[colorIndex][1], colors[colorIndex][2]);
-        glBegin(GL_QUADS);
-            glVertex3f(1.0f, 1.0f, 0.0f);
-            glVertex3f(-1.0f, 1.0f, 0.0f);
-            glVertex3f(-1.0f, -1.0f, 0.0f);
-            glVertex3f(1.0f, -1.0f, 0.0f);
-        glEnd();
-
-        colorIndex = colorIndex + 1;
-    }
-    
     // Swap the buffers
     SwapBuffers(ghdc);
 }

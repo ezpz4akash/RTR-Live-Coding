@@ -418,7 +418,7 @@ void display(void){
     // Translate triangle backwards by z
     glTranslatef(trianglePos.x, trianglePos.y, -7.0f);
 
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glColor3ub(255, 215, 0);
     glBegin(GL_TRIANGLES);
         glVertex3f(0.0f, 1.0f, 0.0f);
         glVertex3f(-1.0f, -1.0f, 0.0f);
@@ -432,7 +432,6 @@ void display(void){
     // Translate triangle backwards by z
     glTranslatef(circlePos.x, circlePos.y, -7.0f);
 
-    glColor3f(1.0f, 1.0f, 0.0f);
     glBegin(GL_LINE_LOOP);
 		for(GLfloat angle = 0.0f ; angle <= (360.0f); angle = angle + 1.0f){
 			glVertex3f((radius * cos(DEG_TO_RAD(angle))), (radius * sin(DEG_TO_RAD(angle))), 0.0f);
@@ -445,7 +444,6 @@ void display(void){
     // Translate triangle backwards by z
     glTranslatef(wandPos.x, wandPos.y, -7.0f);
 
-    glColor3f(1.0f, 0.65f, 0.0f);
     glBegin(GL_LINES);
 		glVertex3f(0.0f, 1.0f, 0.0f);
         glVertex3f(0.0f, -1.0f, 0.0f);

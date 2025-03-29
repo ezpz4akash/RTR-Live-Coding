@@ -42,6 +42,20 @@ BOOL gbEscapeKeyPressed = FALSE;
 HDC ghdc = NULL;
 HGLRC ghrc = NULL;
 
+/* Colors */
+GLfloat colors[10][3] = {
+    {255, 0, 0},
+    {0, 255, 0},
+    {0, 0, 255},
+    {0, 255, 255},
+    {255, 0, 255},
+    {255, 255, 0},
+    {255, 255, 255},
+    {128, 0, 128},
+    {128, 128, 128},
+    {255, 165, 0},
+};
+
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
     int initialize(void);
@@ -368,16 +382,20 @@ void display(void){
     // Set matrix to model view mode
     glMatrixMode(GL_MODELVIEW);
 
+    GLint colorIndex = 0;
     for(GLfloat scale = 1.0f; scale >= 0.0f; scale = scale - 0.1f){
         glLoadIdentity();
         glTranslatef(0.0f, 0.0f, -3.0f);
         glScalef(scale, scale, 1.0f);
         glTranslatef(0.0f, 0.2f, 0.0f);
+        glColor3ub(colors[colorIndex][0], colors[colorIndex][1], colors[colorIndex][2]);
         glBegin(GL_TRIANGLES);
             glVertex3f(0.0f, 1.0f, 0.0f);
             glVertex3f(-1.0f, -1.0f, 0.0f);
             glVertex3f(1.0f, -1.0f, 0.0f);
         glEnd();
+
+        colorIndex = colorIndex + 1;
     }
     
     // Swap the buffers
