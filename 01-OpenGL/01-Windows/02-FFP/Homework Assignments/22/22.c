@@ -658,6 +658,7 @@ void update(void){
             }
             else{
                 JET_PATH = STRAIGHT;
+                t = 0.0f;
             }
         }
     
@@ -677,6 +678,7 @@ void update(void){
     
                 t = 0.0f;
             }
+            t = t + CURVE_PRECISION;
         }
     
         if(JET_PATH == CURVE2){
