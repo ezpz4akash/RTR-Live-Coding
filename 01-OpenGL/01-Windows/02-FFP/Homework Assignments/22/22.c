@@ -19,8 +19,11 @@
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
 
-#define GL_PI 3.145
+#define DRAW_CURVE 1
+
+#define GL_PI 3.14159265359f
 #define DEG_TO_RAD(deg) ((GLfloat)deg * (GL_PI / 180.0f))
+#define CURVE_PRECISION 0.0001f
 
 #define CHARACTER_WIDTH 20
 #define GAP_BETWEEN_CHARACTERS 4
@@ -52,6 +55,24 @@ GLfloat orangeColor[]   = {255.0f / 255.0f, 103.0f / 255.0f, 31.0f / 255.0f};
 GLfloat whiteColor[]    = {1.0f, 1.0f, 1.0f};
 GLfloat greenColor[]    = {4.0f / 255.0f, 106.0f / 255.0f, 56.0f / 255.0f};
 GLfloat grayColor[]     = {0.5f, 0.5f, 0.5f};
+
+typedef enum PATH{
+    CURVE1, STRAIGHT, CURVE2
+}PATH;
+
+PATH JET_PATH = CURVE1;
+
+typedef struct Point{
+    GLfloat x, y;
+} Point;
+
+Point p1;
+Point p2;
+Point pControl;
+GLfloat curveXPoint;
+GLfloat curveYPoint;
+GLfloat t = 0.0f;
+GLfloat jetRotation = 0.0f;
 
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
@@ -327,6 +348,15 @@ int initialize(void){
     GetClientRect(ghWnd, &rect);
     resize(rect.right - rect.left, rect.bottom - rect.top);
 
+    p1.x    = -200.0f, 
+    p1.y    = -120.0f;
+    p2.x    = -100.0f;
+    p2.y    =  -10.0f;
+    pControl.x = -140.0f;
+    pControl.y = -10.0f;
+
+    curveXPoint = p1.x;
+    curveYPoint = p1.y;
     return 0;
 }
 
@@ -393,16 +423,137 @@ void display(void){
     drawBHARAT();
 
     glLoadIdentity();
+    glTranslatef(curveXPoint, curveYPoint, 0.0f);
+    glRotatef(-jetRotation, 0.0f, 0.0f, 1.0f);
     glScalef(0.5f, 0.5f, 1.0f);
-    glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
     drawJet();
+    glPointSize(5.0f);
 
+    #if DRAW_CURVE == 1
+        glLoadIdentity();
+        for(GLfloat p = 0.0f; p <= t; p = p + CURVE_PRECISION){
+            GLfloat xP1Control = (1 - p) * p1.x + p * pControl.x;
+            GLfloat yP1Control = (1 - p) * p1.y + p * pControl.y;
+
+            GLfloat xP2Control = p * p2.x + (1 - p) * pControl.x;
+            GLfloat yP2Control = p * p2.y + (1 - p) * pControl.y;
+
+            GLfloat xPoint = (1 - p) * xP1Control + p * xP2Control;
+            GLfloat yPoint = (1 - p) * yP1Control + p * yP2Control;
+
+            glBegin(GL_POINTS);
+            glVertex3f(xPoint, yPoint, 0.0f);
+            glEnd();
+        }
+    #endif
     // Swap the buffers
     SwapBuffers(ghdc);
 }
 
 void update(void){
-    //code
+    //codef
+
+    if(JET_PATH == CURVE1){
+        if(t <= 1.0f){
+            /* Current point */
+            GLfloat xP1Control = (1.0f - t) * p1.x + t * pControl.x;
+            GLfloat yP1Control = (1.0f - t) * p1.y + t * pControl.y;
+    
+            GLfloat xP2Control = t * p2.x + (1.0f - t) * pControl.x;
+            GLfloat yP2Control = t * p2.y + (1.0f - t) * pControl.y;
+    
+            curveXPoint = (1.0f - t) * xP1Control + t * xP2Control;
+            curveYPoint = (1.0f - t) * yP1Control + t * yP2Control;
+
+            GLfloat currentPointX = curveXPoint;
+            GLfloat currentPointY = curveYPoint;
+
+            /* Next Point */
+            xP1Control = (1.0f - (t + CURVE_PRECISION)) * p1.x + (t + CURVE_PRECISION) * pControl.x;
+            yP1Control = (1.0f - (t + CURVE_PRECISION)) * p1.y + (t + CURVE_PRECISION) * pControl.y;
+    
+            xP2Control = (t + CURVE_PRECISION) * p2.x + (1.0f - (t + CURVE_PRECISION)) * pControl.x;
+            yP2Control = (t + CURVE_PRECISION) * p2.y + (1.0f - (t + CURVE_PRECISION)) * pControl.y;
+    
+            GLfloat nextCurveXPoint = (1.0f - (t + CURVE_PRECISION)) * xP1Control + (t + CURVE_PRECISION) * xP2Control;
+            GLfloat nextCurveYPoint = (1.0f - (t + CURVE_PRECISION)) * yP1Control + (t + CURVE_PRECISION) * yP2Control;
+
+            GLfloat nextPointX = nextCurveXPoint;
+            GLfloat nextPointY = nextCurveYPoint;
+
+            GLfloat dy = (nextPointY - currentPointY);
+            GLfloat dx = (nextPointX - currentPointX);
+
+            //fprintf(gpFile, "%f, %f, %f, %f\n", curveXPoint, curveYPoint, nextCurveXPoint, nextCurveYPoint);
+            //fprintf(gpFile, "%f, %f\n", dy, dx);
+            jetRotation = 90.0f - (atanf((dy) / (dx)) * (180.0f / GL_PI));
+            //fprintf(gpFile, "jetRotation : %f\n", jetRotation);
+
+            t = t + CURVE_PRECISION;
+        }
+        else{
+            JET_PATH = STRAIGHT;
+        }
+    }
+
+    if(JET_PATH == STRAIGHT){
+        curveXPoint = curveXPoint + 0.03f;
+        if(curveXPoint >= 100.0f){
+            JET_PATH = CURVE2;
+            p1.x    = 100.0f, 
+            p1.y    = -10.0f;
+            p2.x    = 200.0f;
+            p2.y    =  -120.0f;
+            pControl.x = 140.0f;
+            pControl.y = -10.0f;
+
+            curveXPoint = p1.x;
+            curveYPoint = p1.y;
+
+            t = 0.0f;
+        }
+    }
+
+    if(JET_PATH == CURVE2){
+        if(t <= 1.0f){
+            /* Current point */
+            GLfloat xP1Control = (1.0f - t) * p1.x + t * pControl.x;
+            GLfloat yP1Control = (1.0f - t) * p1.y + t * pControl.y;
+    
+            GLfloat xP2Control = t * p2.x + (1.0f - t) * pControl.x;
+            GLfloat yP2Control = t * p2.y + (1.0f - t) * pControl.y;
+    
+            curveXPoint = (1.0f - t) * xP1Control + t * xP2Control;
+            curveYPoint = (1.0f - t) * yP1Control + t * yP2Control;
+
+            GLfloat currentPointX = curveXPoint;
+            GLfloat currentPointY = curveYPoint;
+
+            /* Next Point */
+            xP1Control = (1.0f - (t + CURVE_PRECISION)) * p1.x + (t + CURVE_PRECISION) * pControl.x;
+            yP1Control = (1.0f - (t + CURVE_PRECISION)) * p1.y + (t + CURVE_PRECISION) * pControl.y;
+    
+            xP2Control = (t + CURVE_PRECISION) * p2.x + (1.0f - (t + CURVE_PRECISION)) * pControl.x;
+            yP2Control = (t + CURVE_PRECISION) * p2.y + (1.0f - (t + CURVE_PRECISION)) * pControl.y;
+    
+            GLfloat nextCurveXPoint = (1.0f - (t + CURVE_PRECISION)) * xP1Control + (t + CURVE_PRECISION) * xP2Control;
+            GLfloat nextCurveYPoint = (1.0f - (t + CURVE_PRECISION)) * yP1Control + (t + CURVE_PRECISION) * yP2Control;
+
+            GLfloat nextPointX = nextCurveXPoint;
+            GLfloat nextPointY = nextCurveYPoint;
+
+            GLfloat dy = (nextPointY - currentPointY);
+            GLfloat dx = (nextPointX - currentPointX);
+
+            //fprintf(gpFile, "%f, %f, %f, %f\n", curveXPoint, curveYPoint, nextCurveXPoint, nextCurveYPoint);
+            //fprintf(gpFile, "%f, %f\n", dy, dx);
+            jetRotation = 90.0f - (atanf((dy) / (dx)) * (180.0f / GL_PI));
+            //fprintf(gpFile, "jetRotation : %f\n", jetRotation);
+
+            t = t + CURVE_PRECISION;
+        }
+    }
+    
 }
 
 void drawBHARAT(){
@@ -820,7 +971,7 @@ void drawJet(){
 
         glColor3ub(78, 136, 122);
         glBegin(GL_POLYGON);
-        for(GLfloat t = 0.0f; t <= 1.0f; t = t + 0.01f){
+        for(GLfloat t = 0.0f; t <= 1.0f; t = t + CURVE_PRECISION){
             GLfloat xP1Control = (1 - t) * xP1 + t * xControl;
             GLfloat yP1Control = (1 - t) * yP1 + t * yControl;
 
@@ -859,7 +1010,7 @@ void drawJet(){
 
         glColor3ub(78, 136, 122);
         glBegin(GL_POLYGON);
-        for(GLfloat t = 0.0f; t <= 1.0f; t = t + 0.01f){
+        for(GLfloat t = 0.0f; t <= 1.0f; t = t + CURVE_PRECISION){
             GLfloat xP1Control = (1 - t) * xP1 + t * xControl;
             GLfloat yP1Control = (1 - t) * yP1 + t * yControl;
 
@@ -894,7 +1045,7 @@ void drawJet(){
         yControl = -20.0f;
 
         glBegin(GL_POLYGON);
-        for(GLfloat t = 0.0f; t <= 1.0f; t = t + 0.01f){
+        for(GLfloat t = 0.0f; t <= 1.0f; t = t + CURVE_PRECISION){
             GLfloat xP1Control = (1 - t) * xP1 + t * xControl;
             GLfloat yP1Control = (1 - t) * yP1 + t * yControl;
 
@@ -925,7 +1076,7 @@ void drawJet(){
         yControl = -25.0f;
 
         glBegin(GL_POLYGON);
-        for(GLfloat t = 0.0f; t <= 1.0f; t = t + 0.01f){
+        for(GLfloat t = 0.0f; t <= 1.0f; t = t + CURVE_PRECISION){
             GLfloat xP1Control = (1 - t) * xP1 + t * xControl;
             GLfloat yP1Control = (1 - t) * yP1 + t * yControl;
 
@@ -996,7 +1147,7 @@ void drawJet(){
         yControl = -20.0f;
 
         glBegin(GL_POLYGON);
-        for(GLfloat t = 0.0f; t <= 1.0f; t = t + 0.01f){
+        for(GLfloat t = 0.0f; t <= 1.0f; t = t + CURVE_PRECISION){
             GLfloat xP1Control = (1 - t) * xP1 + t * xControl;
             GLfloat yP1Control = (1 - t) * yP1 + t * yControl;
 
@@ -1027,7 +1178,7 @@ void drawJet(){
         yControl = -25.0f;
 
         glBegin(GL_POLYGON);
-        for(GLfloat t = 0.0f; t <= 1.0f; t = t + 0.01f){
+        for(GLfloat t = 0.0f; t <= 1.0f; t = t + CURVE_PRECISION){
             GLfloat xP1Control = (1 - t) * xP1 + t * xControl;
             GLfloat yP1Control = (1 - t) * yP1 + t * yControl;
 
