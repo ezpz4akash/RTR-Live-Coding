@@ -24,6 +24,7 @@
 #define GL_PI 3.14159265359f
 #define DEG_TO_RAD(deg) ((GLfloat)deg * (GL_PI / 180.0f))
 #define CURVE_PRECISION 0.0002f
+#define JETS_SPEED_ON_STRAIGHT_PROJECTION 0.025f
 
 #define CHARACTER_WIDTH 20
 #define GAP_BETWEEN_CHARACTERS 4
@@ -75,6 +76,8 @@ GLfloat t = 0.0f;
 GLfloat jetRotation = 0.0f;
 
 GLfloat midJetPosX, midJetPosY;
+
+GLboolean colorB = FALSE, colorH = FALSE, colorA1 = FALSE, colorR = FALSE, colorA2 = FALSE, colorT = FALSE;
 
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
@@ -228,6 +231,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
                         gbFullScreen = FALSE;
                         toggleFullScreen();
                     }
+                break;
+
+                case 'S':
+                case 's':
+                    fprintf(gpFile, "%f\n", midJetPosX);
                 break;
             }
         break;
@@ -517,7 +525,7 @@ void update(void){
     }
 
     if(JET_PATH == STRAIGHT){
-        curveXPoint = curveXPoint + 0.025f;
+        curveXPoint = curveXPoint + JETS_SPEED_ON_STRAIGHT_PROJECTION;
         if(curveXPoint >= 100.0f){
             JET_PATH = CURVE2;
             p1.x    = 100.0f, 
@@ -571,8 +579,34 @@ void update(void){
         }
     }
 
-    midJetPosX = midJetPosX + 0.025f;
+    midJetPosX = midJetPosX + JETS_SPEED_ON_STRAIGHT_PROJECTION;
 
+    /* 
+        -68.838966
+        -33.586815
+        1.337936
+        40.438107
+        72.665070
+        112.167480
+    */
+    if(midJetPosX >= -68.838966){
+        colorB = TRUE;
+    }
+    if(midJetPosX >= -33.586815){
+        colorH = TRUE;
+    }
+    if(midJetPosX >= 1.337936){
+        colorA1 = TRUE;
+    }
+    if(midJetPosX >= 40.438107){
+        colorR = TRUE;
+    }
+    if(midJetPosX >= 72.665070){
+        colorA2 = TRUE;
+    }
+    if(midJetPosX >= 112.167480){
+        colorT = TRUE;
+    }
 }
 
 void drawBHARAT(){
@@ -593,33 +627,33 @@ void drawBHARAT(){
 
 void drawB(){
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorB ? glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-70.0f, 15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorB ?  glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-70.0f, 1.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorB ?  glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-64.0f, 1.0f, 0.0f);
-        glColor3fv(orangeColor);
+        colorB ?  glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-64.0f, 15.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorB ?  glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-70.0f, 1.0f, 0.0f);
         glVertex3f(-70.0f, -1.0f, 0.0f);
         glVertex3f(-64.0f, -1.0f, 0.0f);
         glVertex3f(-64.0f, 1.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorB ?  glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-70.0f, -1.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorB ?  glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-70.0f, -15.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorB ?  glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-64.0f, -15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorB ?  glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-64.0f, -1.0f, 0.0f);
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorB ?  glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-64.0f, 15.0f, 0.0f);
         glVertex3f(-64.0f, 9.0f, 0.0f);
         glVertex3f(-56.0f, 9.0f, 0.0f);
@@ -627,7 +661,7 @@ void drawB(){
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(whiteColor);
+        colorB ?  glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-64.0f, 3.0f, 0.0f);
         glVertex3f(-64.0f, -3.0f, 0.0f);
         glVertex3f(-56.0f, -3.0f, 0.0f);
@@ -635,7 +669,7 @@ void drawB(){
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(greenColor);
+        colorB ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-64.0f, -15.0f, 0.0f);
         glVertex3f(-56.0f, -15.0f, 0.0f);
         glVertex3f(-56.0f, -9.0f, 0.0f);
@@ -643,57 +677,57 @@ void drawB(){
     glEnd();
 
     glBegin(GL_POLYGON);
-        glColor3fv(orangeColor);
+        colorB ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-56.0f, 15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorB ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-56.0f, 0.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorB ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-50.0f, 6.0f, 0.0f);
-        glColor3fv(orangeColor);
+        colorB ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-50.0f, 12.0f, 0.0f);
     glEnd();
 
     glBegin(GL_POLYGON);
-        glColor3fv(whiteColor);
+        colorB ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-56.0f, 0.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorB ?  glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-56.0f, -15.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorB ?  glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-50.0f, -12.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorB ?  glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-50.0f, -3.0f, 0.0f);
     glEnd();
 }
 
 void drawH(){
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorH ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-46.0f, 15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorH ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-46.0f, 1.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorH ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-40.0f, 1.0f, 0.0f);
-        glColor3fv(orangeColor);
+        colorH ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-40.0f, 15.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorH ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-46.0f, 1.0f, 0.0f);
         glVertex3f(-46.0f, -1.0f, 0.0f);
         glVertex3f(-40.0f, -1.0f, 0.0f);
         glVertex3f(-40.0f, 1.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorH ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-46.0f, -1.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorH ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-46.0f, -15.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorH ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-40.0f, -15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorH ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-40.0f, -1.0f, 0.0f);
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(whiteColor);
+        colorH ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-40.0f, 3.0f, 0.0f);
         glVertex3f(-40.0f, -3.0f, 0.0f);
         glVertex3f(-32.0f, -3.0f, 0.0f);
@@ -701,61 +735,61 @@ void drawH(){
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorH ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-32.0f, 15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorH ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-32.0f, 1.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorH ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-26.0f, 1.0f, 0.0f);
-        glColor3fv(orangeColor);
+        colorH ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-26.0f, 15.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorH ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-32.0f, 1.0f, 0.0f);
         glVertex3f(-32.0f, -1.0f, 0.0f);
         glVertex3f(-26.0f, -1.0f, 0.0f);
         glVertex3f(-26.0f, 1.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorH ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-32.0f, -1.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorH ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-32.0f, -15.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorH ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-26.0f, -15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorH ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-26.0f, -1.0f, 0.0f);
     glEnd();
 }
 
 void drawA1(){
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);    
+        colorA1 ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-22.0f, 15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorA1 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-22.0f, 1.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorA1 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-16.0f, 1.0f, 0.0f);
-        glColor3fv(orangeColor);
+        colorA1 ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-16.0f, 15.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorA1 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-22.0f, 1.0f, 0.0f);
         glVertex3f(-22.0f, -1.0f, 0.0f);
         glVertex3f(-16.0f, -1.0f, 0.0f);
         glVertex3f(-16.0f, 1.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorA1 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-22.0f, -1.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorA1 ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-22.0f, -15.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorA1 ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-16.0f, -15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorA1 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-16.0f, -1.0f, 0.0f);
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorA1 ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-16.0f, 15.0f, 0.0f);
         glVertex3f(-16.0f, 9.0f, 0.0f);
         glVertex3f(-8.0f, 9.0f, 0.0f);
@@ -763,7 +797,7 @@ void drawA1(){
     glEnd();
 
     glBegin(GL_QUADS);
-    glColor3fv(whiteColor);
+        colorA1 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-16.0f, 3.0f, 0.0f);
         glVertex3f(-16.0f, -3.0f, 0.0f);
         glVertex3f(-8.0f, -3.0f, 0.0f);
@@ -771,61 +805,61 @@ void drawA1(){
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorA1 ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-8.0f, 15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorA1 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-8.0f, 1.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorA1 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-2.0f, 1.0f, 0.0f);
-        glColor3fv(orangeColor);
+        colorA1 ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(-2.0f, 15.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorA1 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-8.0f, 1.0f, 0.0f);
         glVertex3f(-8.0f, -1.0f, 0.0f);
         glVertex3f(-2.0f, -1.0f, 0.0f);
         glVertex3f(-2.0f, 1.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorA1 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-8.0f, -1.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorA1 ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-8.0f, -15.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorA1 ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(-2.0f, -15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorA1 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(-2.0f, -1.0f, 0.0f);
     glEnd();
 }
 
 void drawR(){
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorR ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(2.0f, 15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorR ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(2.0f, 1.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorR ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(8.0f, 1.0f, 0.0f);
-        glColor3fv(orangeColor);
+        colorR ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(8.0f, 15.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorR ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(2.0f, 1.0f, 0.0f);
         glVertex3f(2.0f, -1.0f, 0.0f);
         glVertex3f(8.0f, -1.0f, 0.0f);
         glVertex3f(8.0f, 1.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorR ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(2.0f, -1.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorR ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(2.0f, -15.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorR ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(8.0f, -15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorR ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(8.0f, -1.0f, 0.0f);
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorR ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(8.0f, 15.0f, 0.0f);
         glVertex3f(8.0f, 9.0f, 0.0f);
         glVertex3f(16.0f, 9.0f, 0.0f);
@@ -833,7 +867,7 @@ void drawR(){
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(whiteColor);
+        colorR ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(8.0f, 3.0f, 0.0f);
         glVertex3f(8.0f, -3.0f, 0.0f);
         glVertex3f(16.0f, -3.0f, 0.0f);
@@ -841,57 +875,57 @@ void drawR(){
     glEnd();
 
     glBegin(GL_POLYGON);
-        glColor3fv(orangeColor);
+        colorR ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(16.0f, 15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorR ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(16.0f, -3.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorR ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(22.0f, 0.0f, 0.0f);
-        glColor3fv(orangeColor);
+        colorR ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(22.0f, 12.0f, 0.0f);
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(whiteColor);
+        colorR ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(8.0f, -3.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorR ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(15.0f, -15.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorR ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(22.0f, -15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorR ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(16.0f, -3.0f, 0.0f);
     glEnd();
 }
 
 void drawA2(){
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorA2 ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(26.0f, 15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorA2 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(26.0f, 1.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorA2 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(32.0f, 1.0f, 0.0f);
-        glColor3fv(orangeColor);
+        colorA2 ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(32.0f, 15.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorA2 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(26.0f, 1.0f, 0.0f);
         glVertex3f(26.0f, -1.0f, 0.0f);
         glVertex3f(32.0f, -1.0f, 0.0f);
         glVertex3f(32.0f, 1.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorA2 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(26.0f, -1.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorA2 ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(26.0f, -15.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorA2 ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(32.0f, -15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorA2 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(32.0f, -1.0f, 0.0f);
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorA2 ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(32.0f, 15.0f, 0.0f);
         glVertex3f(32.0f, 9.0f, 0.0f);
         glVertex3f(40.0f, 9.0f, 0.0f);
@@ -899,7 +933,7 @@ void drawA2(){
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(whiteColor);
+        colorA2 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(32.0f, 3.0f, 0.0f);
         glVertex3f(32.0f, -3.0f, 0.0f);
         glVertex3f(40.0f, -3.0f, 0.0f);
@@ -907,46 +941,46 @@ void drawA2(){
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorA2 ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(40.0f, 15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorA2 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(40.0f, 1.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorA2 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(46.0f, 1.0f, 0.0f);
-        glColor3fv(orangeColor);
+        colorA2 ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(46.0f, 15.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorA2 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(40.0f, 1.0f, 0.0f);
         glVertex3f(40.0f, -1.0f, 0.0f);
         glVertex3f(46.0f, -1.0f, 0.0f);
         glVertex3f(46.0f, 1.0f, 0.0f);
 
-        glColor3fv(whiteColor);
+        colorA2 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(40.0f, -1.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorA2 ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(40.0f, -15.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorA2 ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(46.0f, -15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorA2 ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(46.0f, -1.0f, 0.0f);
     glEnd();
 }
 
 void drawT(){
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorT ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(57.0f, 15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorT ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(57.0f, 1.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorT ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(63.0f, 1.0f, 0.0f);
-        glColor3fv(orangeColor);
+        colorT ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(63.0f, 15.0f, 0.0f);
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(whiteColor);
+        colorT ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(57.0f, 1.0f, 0.0f);
         glVertex3f(57.0f, -1.0f, 0.0f);
         glVertex3f(63.0f, -1.0f, 0.0f);
@@ -954,18 +988,18 @@ void drawT(){
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(whiteColor);
+        colorT ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(57.0f, -1.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorT ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(57.0f, -15.0f, 0.0f);
-        glColor3fv(greenColor);
+        colorT ?   glColor3fv(greenColor) : glColor3fv(grayColor);
         glVertex3f(63.0f, -15.0f, 0.0f);
-        glColor3fv(whiteColor);
+        colorT ?   glColor3fv(whiteColor) : glColor3fv(grayColor);
         glVertex3f(63.0f, -1.0f, 0.0f);
     glEnd();
 
     glBegin(GL_QUADS);
-        glColor3fv(orangeColor);
+        colorT ?   glColor3fv(orangeColor) : glColor3fv(grayColor);
         glVertex3f(50.0f, 15.0f, 0.0f);
         glVertex3f(50.0f, 9.0f, 0.0f);
         glVertex3f(70.0f, 9.0f, 0.0f);
