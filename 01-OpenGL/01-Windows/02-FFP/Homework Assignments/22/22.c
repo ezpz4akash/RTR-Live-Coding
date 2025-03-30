@@ -24,6 +24,7 @@
 #define GL_PI 3.14159265359f
 #define DEG_TO_RAD(deg) ((GLfloat)deg * (GL_PI / 180.0f))
 #define CURVE_PRECISION 0.0002f
+#define CHAR_ANIMATION 0.0005f
 #define JETS_SPEED_ON_STRAIGHT_PROJECTION 0.025f
 
 #define CHARACTER_WIDTH 20
@@ -78,6 +79,16 @@ GLfloat jetRotation = 0.0f;
 GLfloat midJetPosX, midJetPosY;
 
 GLboolean colorB = FALSE, colorH = FALSE, colorA1 = FALSE, colorR = FALSE, colorA2 = FALSE, colorT = FALSE;
+
+Point posB, posH, posA1, posR, posA2, posT;
+Point posInitialB, posInitialH, posInitialA1, posInitialR, posInitialA2, posInitialT;
+Point posFinalB, posFinalH, posFinalA1, posFinalR, posFinalA2, posFinalT;
+
+GLboolean run = FALSE;
+GLboolean startJet = FALSE;
+GLboolean animateB = TRUE, animateH = FALSE, animateA1 = FALSE, animateR = FALSE, animateA2 = FALSE, animateT = FALSE;
+
+GLfloat charInterpolate = 0.0f;
 
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
@@ -168,9 +179,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
                 /* Render */
                 display();
-
-                /* Update */
-                update();
+                
+                if(run){
+                    /* Update */
+                    update();
+                }
             }
         }
     }
@@ -213,6 +226,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
                 case VK_ESCAPE:
                     gbEscapeKeyPressed = TRUE;
                 break;
+
+                case VK_SPACE:
+                    run = TRUE;
+                break;
+
                 default:
                 break;
             }
@@ -233,10 +251,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
                     }
                 break;
 
-                case 'S':
+                /* case 'S':
                 case 's':
                     fprintf(gpFile, "%f\n", midJetPosX);
-                break;
+                break; */
             }
         break;
 
@@ -358,18 +376,57 @@ int initialize(void){
     GetClientRect(ghWnd, &rect);
     resize(rect.right - rect.left, rect.bottom - rect.top);
 
-    p1.x    = -200.0f, 
-    p1.y    = -120.0f;
-    p2.x    = -100.0f;
-    p2.y    =  -20.0f;
-    pControl.x = -140.0f;
-    pControl.y = -20.0f;
+    posInitialB.x   = -200.0f;
+    posInitialB.y   = 0.0f;
+    posInitialH.x   = -200.0f;
+    posInitialH.y   = 120.0f;
+    posInitialA1.x  = -200.0f;
+    posInitialA1.y  = -120.0f;
+    posInitialR.x   = 200.0f;
+    posInitialR.y   = 120.0f;
+    posInitialA2.x  = 200.0f;
+    posInitialA2.y  = 0.0f;
+    posInitialT.x   = 200.0f;
+    posInitialT.y   = -120.0f;
+
+    posB.x  = posInitialB.x; 
+    posB.y  = posInitialB.y; 
+    posH.x  = posInitialH.x;
+    posH.y  = posInitialH.y;
+    posA1.x = posInitialA1.x;
+    posA1.y = posInitialA1.y;
+    posR.x  = posInitialR.x;
+    posR.y  = posInitialR.y;
+    posA2.x = posInitialA2.x;
+    posA2.y = posInitialA2.y;
+    posT.x  = posInitialT.x;
+    posT.y  = posInitialT.y;
+
+    posFinalB.x     = 0.0f;
+    posFinalB.y     = 0.0f;
+    posFinalH.x     = 0.0f;
+    posFinalH.y     = 0.0f;
+    posFinalA1.x    = 0.0f;
+    posFinalA1.y    = 0.0f;
+    posFinalR.x     = 0.0f;
+    posFinalR.y     = 0.0f;
+    posFinalA2.x    = 0.0f;
+    posFinalA2.y    = 0.0f;
+    posFinalT.x     = 0.0f;
+    posFinalT.y     = 0.0f;
+
+    p1.x        = -200.0f, 
+    p1.y        = -120.0f;
+    p2.x        = -100.0f;
+    p2.y        =  -20.0f;
+    pControl.x  = -140.0f;
+    pControl.y  = -20.0f;
 
     curveXPoint = p1.x;
     curveYPoint = p1.y;
 
-    midJetPosX = p1.x;
-    midJetPosY = 0.0f;
+    midJetPosX  = p1.x;
+    midJetPosY  = 0.0f;
     return 0;
 }
 
@@ -432,7 +489,6 @@ void display(void){
 
     // Set to identity matrix
     glLoadIdentity();
-    glScalef(1.5f, 1.5f, 0.0f);
     drawBHARAT();
 
     glLoadIdentity();
@@ -473,6 +529,7 @@ void display(void){
             glEnd();
         }
     #endif
+    
     // Swap the buffers
     SwapBuffers(ghdc);
 }
@@ -480,134 +537,216 @@ void display(void){
 void update(void){
     //code
 
-    if(JET_PATH == CURVE1){
-        if(t <= 1.0f){
-            /* Current point */
-            GLfloat xP1Control = (1.0f - t) * p1.x + t * pControl.x;
-            GLfloat yP1Control = (1.0f - t) * p1.y + t * pControl.y;
-    
-            GLfloat xP2Control = t * p2.x + (1.0f - t) * pControl.x;
-            GLfloat yP2Control = t * p2.y + (1.0f - t) * pControl.y;
-    
-            curveXPoint = (1.0f - t) * xP1Control + t * xP2Control;
-            curveYPoint = (1.0f - t) * yP1Control + t * yP2Control;
-
-            GLfloat currentPointX = curveXPoint;
-            GLfloat currentPointY = curveYPoint;
-
-            /* Next Point */
-            xP1Control = (1.0f - (t + CURVE_PRECISION)) * p1.x + (t + CURVE_PRECISION) * pControl.x;
-            yP1Control = (1.0f - (t + CURVE_PRECISION)) * p1.y + (t + CURVE_PRECISION) * pControl.y;
-    
-            xP2Control = (t + CURVE_PRECISION) * p2.x + (1.0f - (t + CURVE_PRECISION)) * pControl.x;
-            yP2Control = (t + CURVE_PRECISION) * p2.y + (1.0f - (t + CURVE_PRECISION)) * pControl.y;
-    
-            GLfloat nextCurveXPoint = (1.0f - (t + CURVE_PRECISION)) * xP1Control + (t + CURVE_PRECISION) * xP2Control;
-            GLfloat nextCurveYPoint = (1.0f - (t + CURVE_PRECISION)) * yP1Control + (t + CURVE_PRECISION) * yP2Control;
-
-            GLfloat nextPointX = nextCurveXPoint;
-            GLfloat nextPointY = nextCurveYPoint;
-
-            GLfloat dy = (nextPointY - currentPointY);
-            GLfloat dx = (nextPointX - currentPointX);
-
-            jetRotation = 90.0f - (atanf((dy) / (dx)) * (180.0f / GL_PI));
-
-            //fprintf(gpFile, "%f, %f, %f, %f\n", curveXPoint, curveYPoint, nextCurveXPoint, nextCurveYPoint);
-            //fprintf(gpFile, "%f, %f\n", dy, dx);
-            //fprintf(gpFile, "jetRotation : %f\n", jetRotation);
-
-            t = t + CURVE_PRECISION;
+    if(animateB){
+        if(charInterpolate <= 1.0f){
+            posB.x = (1.0f - charInterpolate) * posInitialB.x + charInterpolate * posFinalB.x;
+            posB.y = (1.0f - charInterpolate) * posInitialB.y + charInterpolate * posFinalB.y;
+            charInterpolate = charInterpolate + CHAR_ANIMATION;
         }
         else{
-            JET_PATH = STRAIGHT;
+            animateB = FALSE;
+            animateH = TRUE;
+            charInterpolate = 0.0f;
         }
     }
 
-    if(JET_PATH == STRAIGHT){
-        curveXPoint = curveXPoint + JETS_SPEED_ON_STRAIGHT_PROJECTION;
-        if(curveXPoint >= 100.0f){
-            JET_PATH = CURVE2;
-            p1.x    = 100.0f, 
-            p1.y    = -20.0f;
-            p2.x    = 200.0f;
-            p2.y    =  -120.0f;
-            pControl.x = 140.0f;
-            pControl.y = -20.0f;
-
-            curveXPoint = p1.x;
-            curveYPoint = p1.y;
-
-            t = 0.0f;
+    if(animateH){
+        if(charInterpolate <= 1.0f){
+            posH.x = (1.0f - charInterpolate) * posInitialH.x + charInterpolate * posFinalH.x;
+            posH.y = (1.0f - charInterpolate) * posInitialH.y + charInterpolate * posFinalH.y;
+            charInterpolate = charInterpolate + CHAR_ANIMATION;
+        }
+        else{
+            animateH = FALSE;
+            animateA1 = TRUE;
+            charInterpolate = 0.0f;
         }
     }
 
-    if(JET_PATH == CURVE2){
-        if(t <= 1.0f){
-            /* Current point */
-            GLfloat xP1Control = (1.0f - t) * p1.x + t * pControl.x;
-            GLfloat yP1Control = (1.0f - t) * p1.y + t * pControl.y;
-    
-            GLfloat xP2Control = t * p2.x + (1.0f - t) * pControl.x;
-            GLfloat yP2Control = t * p2.y + (1.0f - t) * pControl.y;
-    
-            curveXPoint = (1.0f - t) * xP1Control + t * xP2Control;
-            curveYPoint = (1.0f - t) * yP1Control + t * yP2Control;
-
-            GLfloat currentPointX = curveXPoint;
-            GLfloat currentPointY = curveYPoint;
-
-            /* Next Point */
-            xP1Control = (1.0f - (t + CURVE_PRECISION)) * p1.x + (t + CURVE_PRECISION) * pControl.x;
-            yP1Control = (1.0f - (t + CURVE_PRECISION)) * p1.y + (t + CURVE_PRECISION) * pControl.y;
-    
-            xP2Control = (t + CURVE_PRECISION) * p2.x + (1.0f - (t + CURVE_PRECISION)) * pControl.x;
-            yP2Control = (t + CURVE_PRECISION) * p2.y + (1.0f - (t + CURVE_PRECISION)) * pControl.y;
-    
-            GLfloat nextCurveXPoint = (1.0f - (t + CURVE_PRECISION)) * xP1Control + (t + CURVE_PRECISION) * xP2Control;
-            GLfloat nextCurveYPoint = (1.0f - (t + CURVE_PRECISION)) * yP1Control + (t + CURVE_PRECISION) * yP2Control;
-
-            GLfloat nextPointX = nextCurveXPoint;
-            GLfloat nextPointY = nextCurveYPoint;
-
-            GLfloat dy = (nextPointY - currentPointY);
-            GLfloat dx = (nextPointX - currentPointX);
-
-            jetRotation = 90.0f - (atanf((dy) / (dx)) * (180.0f / GL_PI));
-
-            t = t + CURVE_PRECISION;
+    if(animateA1){
+        if(charInterpolate <= 1.0f){
+            posA1.x = (1.0f - charInterpolate) * posInitialA1.x + charInterpolate * posFinalA1.x;
+            posA1.y = (1.0f - charInterpolate) * posInitialA1.y + charInterpolate * posFinalA1.y;
+            charInterpolate = charInterpolate + CHAR_ANIMATION;
+        }
+        else{
+            animateA1 = FALSE;
+            animateR = TRUE;
+            charInterpolate = 0.0f;
         }
     }
 
-    midJetPosX = midJetPosX + JETS_SPEED_ON_STRAIGHT_PROJECTION;
+    if(animateR){
+        if(charInterpolate <= 1.0f){
+            posR.x = (1.0f - charInterpolate) * posInitialR.x + charInterpolate * posFinalR.x;
+            posR.y = (1.0f - charInterpolate) * posInitialR.y + charInterpolate * posFinalR.y;
+            charInterpolate = charInterpolate + CHAR_ANIMATION;
+        }
+        else{
+            animateR = FALSE;
+            animateA2 = TRUE;
+            charInterpolate = 0.0f;
+        }
+    }
 
-    /* 
-        -68.838966
-        -33.586815
-        1.337936
-        40.438107
-        72.665070
-        112.167480
-    */
+    if(animateA2){
+        if(charInterpolate <= 1.0f){
+            posA2.x = (1.0f - charInterpolate) * posInitialA2.x + charInterpolate * posFinalA2.x;
+            posA2.y = (1.0f - charInterpolate) * posInitialA2.y + charInterpolate * posFinalA2.y;
+            charInterpolate = charInterpolate + CHAR_ANIMATION;
+        }
+        else{
+            animateA2 = FALSE;
+            animateT = TRUE;
+            charInterpolate = 0.0f;
+        }
+    }
 
-    if(midJetPosX >= -68.838966){
-        colorB = TRUE;
+    if(animateT){
+        if(charInterpolate <= 1.0f){
+            posT.x = (1.0f - charInterpolate) * posInitialT.x + charInterpolate * posFinalT.x;
+            posT.y = (1.0f - charInterpolate) * posInitialT.y + charInterpolate * posFinalT.y;
+            charInterpolate = charInterpolate + CHAR_ANIMATION;
+        }
+        else{
+            animateT = FALSE;
+            startJet = TRUE;
+            charInterpolate = 0.0f;
+        }
     }
-    if(midJetPosX >= -33.586815){
-        colorH = TRUE;
+
+
+    if(startJet){
+        if(JET_PATH == CURVE1){
+            if(t <= 1.0f){
+                /* Current point */
+                GLfloat xP1Control = (1.0f - t) * p1.x + t * pControl.x;
+                GLfloat yP1Control = (1.0f - t) * p1.y + t * pControl.y;
+        
+                GLfloat xP2Control = t * p2.x + (1.0f - t) * pControl.x;
+                GLfloat yP2Control = t * p2.y + (1.0f - t) * pControl.y;
+        
+                curveXPoint = (1.0f - t) * xP1Control + t * xP2Control;
+                curveYPoint = (1.0f - t) * yP1Control + t * yP2Control;
+    
+                GLfloat currentPointX = curveXPoint;
+                GLfloat currentPointY = curveYPoint;
+    
+                /* Next Point */
+                xP1Control = (1.0f - (t + CURVE_PRECISION)) * p1.x + (t + CURVE_PRECISION) * pControl.x;
+                yP1Control = (1.0f - (t + CURVE_PRECISION)) * p1.y + (t + CURVE_PRECISION) * pControl.y;
+        
+                xP2Control = (t + CURVE_PRECISION) * p2.x + (1.0f - (t + CURVE_PRECISION)) * pControl.x;
+                yP2Control = (t + CURVE_PRECISION) * p2.y + (1.0f - (t + CURVE_PRECISION)) * pControl.y;
+        
+                GLfloat nextCurveXPoint = (1.0f - (t + CURVE_PRECISION)) * xP1Control + (t + CURVE_PRECISION) * xP2Control;
+                GLfloat nextCurveYPoint = (1.0f - (t + CURVE_PRECISION)) * yP1Control + (t + CURVE_PRECISION) * yP2Control;
+    
+                GLfloat nextPointX = nextCurveXPoint;
+                GLfloat nextPointY = nextCurveYPoint;
+    
+                GLfloat dy = (nextPointY - currentPointY);
+                GLfloat dx = (nextPointX - currentPointX);
+    
+                jetRotation = 90.0f - (atanf((dy) / (dx)) * (180.0f / GL_PI));
+    
+                //fprintf(gpFile, "%f, %f, %f, %f\n", curveXPoint, curveYPoint, nextCurveXPoint, nextCurveYPoint);
+                //fprintf(gpFile, "%f, %f\n", dy, dx);
+                //fprintf(gpFile, "jetRotation : %f\n", jetRotation);
+    
+                t = t + CURVE_PRECISION;
+            }
+            else{
+                JET_PATH = STRAIGHT;
+            }
+        }
+    
+        if(JET_PATH == STRAIGHT){
+            curveXPoint = curveXPoint + JETS_SPEED_ON_STRAIGHT_PROJECTION;
+            if(curveXPoint >= 100.0f){
+                JET_PATH = CURVE2;
+                p1.x    = 100.0f, 
+                p1.y    = -20.0f;
+                p2.x    = 200.0f;
+                p2.y    =  -120.0f;
+                pControl.x = 140.0f;
+                pControl.y = -20.0f;
+    
+                curveXPoint = p1.x;
+                curveYPoint = p1.y;
+    
+                t = 0.0f;
+            }
+        }
+    
+        if(JET_PATH == CURVE2){
+            if(t <= 1.0f){
+                /* Current point */
+                GLfloat xP1Control = (1.0f - t) * p1.x + t * pControl.x;
+                GLfloat yP1Control = (1.0f - t) * p1.y + t * pControl.y;
+        
+                GLfloat xP2Control = t * p2.x + (1.0f - t) * pControl.x;
+                GLfloat yP2Control = t * p2.y + (1.0f - t) * pControl.y;
+        
+                curveXPoint = (1.0f - t) * xP1Control + t * xP2Control;
+                curveYPoint = (1.0f - t) * yP1Control + t * yP2Control;
+    
+                GLfloat currentPointX = curveXPoint;
+                GLfloat currentPointY = curveYPoint;
+    
+                /* Next Point */
+                xP1Control = (1.0f - (t + CURVE_PRECISION)) * p1.x + (t + CURVE_PRECISION) * pControl.x;
+                yP1Control = (1.0f - (t + CURVE_PRECISION)) * p1.y + (t + CURVE_PRECISION) * pControl.y;
+        
+                xP2Control = (t + CURVE_PRECISION) * p2.x + (1.0f - (t + CURVE_PRECISION)) * pControl.x;
+                yP2Control = (t + CURVE_PRECISION) * p2.y + (1.0f - (t + CURVE_PRECISION)) * pControl.y;
+        
+                GLfloat nextCurveXPoint = (1.0f - (t + CURVE_PRECISION)) * xP1Control + (t + CURVE_PRECISION) * xP2Control;
+                GLfloat nextCurveYPoint = (1.0f - (t + CURVE_PRECISION)) * yP1Control + (t + CURVE_PRECISION) * yP2Control;
+    
+                GLfloat nextPointX = nextCurveXPoint;
+                GLfloat nextPointY = nextCurveYPoint;
+    
+                GLfloat dy = (nextPointY - currentPointY);
+                GLfloat dx = (nextPointX - currentPointX);
+    
+                jetRotation = 90.0f - (atanf((dy) / (dx)) * (180.0f / GL_PI));
+    
+                t = t + CURVE_PRECISION;
+            }
+        }
+    
+        midJetPosX = midJetPosX + JETS_SPEED_ON_STRAIGHT_PROJECTION;
+    
+        /* 
+            -68.838966
+            -33.586815
+            1.337936
+            40.438107
+            72.665070
+            112.167480
+        */
+    
+        if(midJetPosX >= -68.838966){
+            colorB = TRUE;
+        }
+        if(midJetPosX >= -33.586815){
+            colorH = TRUE;
+        }
+        if(midJetPosX >= 1.337936){
+            colorA1 = TRUE;
+        }
+        if(midJetPosX >= 40.438107){
+            colorR = TRUE;
+        }
+        if(midJetPosX >= 72.665070){
+            colorA2 = TRUE;
+        }
+        if(midJetPosX >= 112.167480){
+            colorT = TRUE;
+        }
     }
-    if(midJetPosX >= 1.337936){
-        colorA1 = TRUE;
-    }
-    if(midJetPosX >= 40.438107){
-        colorR = TRUE;
-    }
-    if(midJetPosX >= 72.665070){
-        colorA2 = TRUE;
-    }
-    if(midJetPosX >= 112.167480){
-        colorT = TRUE;
-    }
+    
 }
 
 void drawBHARAT(){
@@ -618,11 +757,34 @@ void drawBHARAT(){
     void drawA2();
     void drawT();
 
+    glLoadIdentity();
+    glTranslatef(posB.x, posB.y, 0.0f);
+    glScalef(1.5f, 1.5f, 0.0f);
     drawB();
+
+    glLoadIdentity();
+    glTranslatef(posH.x, posH.y, 0.0f);
+    glScalef(1.5f, 1.5f, 0.0f);
     drawH();
+
+    glLoadIdentity();
+    glTranslatef(posA1.x, posA1.y, 0.0f);
+    glScalef(1.5f, 1.5f, 0.0f);
     drawA1();
+
+    glLoadIdentity();
+    glTranslatef(posR.x, posR.y, 0.0f);
+    glScalef(1.5f, 1.5f, 0.0f);
     drawR();
+
+    glLoadIdentity();
+    glTranslatef(posA2.x, posA2.y, 0.0f);
+    glScalef(1.5f, 1.5f, 0.0f);
     drawA2();
+
+    glLoadIdentity();
+    glTranslatef(posT.x, posT.y, 0.0f);
+    glScalef(1.5f, 1.5f, 0.0f);
     drawT();
 }
 
