@@ -422,7 +422,7 @@ void resize(int width, int height){
 
 void display(void){
     void drawBHARAT();
-    void drawJet();
+    void drawJet(GLfloat*);
 
     //code
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -436,23 +436,23 @@ void display(void){
     drawBHARAT();
 
     glLoadIdentity();
-    glTranslatef(midJetPosX, midJetPosY, 0.0f);
-    glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-    glScalef(0.4f, 0.4f, 1.0f);
-    drawJet();
-
-    glLoadIdentity();
     glTranslatef(curveXPoint, curveYPoint, 0.0f);
     glRotatef(-jetRotation, 0.0f, 0.0f, 1.0f);
     glScalef(0.4f, 0.4f, 1.0f);
-    drawJet();
+    drawJet(greenColor);
+
+    glLoadIdentity();
+    glTranslatef(midJetPosX, midJetPosY, 0.0f);
+    glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
+    glScalef(0.4f, 0.4f, 1.0f);
+    drawJet(whiteColor);
 
     glLoadIdentity();
     glTranslatef(curveXPoint, -curveYPoint, 0.0f);
     glRotatef(-180.0f, 0.0f, 0.0f, 1.0f);
     glRotatef(jetRotation, 0.0f, 0.0f, 1.0f);
     glScalef(0.4f, 0.4f, 1.0f);
-    drawJet();
+    drawJet(orangeColor);
 
     
     #if DRAW_CURVE == 1
@@ -589,6 +589,7 @@ void update(void){
         72.665070
         112.167480
     */
+
     if(midJetPosX >= -68.838966){
         colorB = TRUE;
     }
@@ -1007,11 +1008,12 @@ void drawT(){
     glEnd();
 }
 
-void drawJet(){
+void drawJet(GLfloat* tailColor){
     glColor3f(0.5f, 0.5f, 0.5f);
 
     GLfloat xP1, xP2, yP1, yP2, xControl, yControl, radius;
 
+    // Body
     {
         xP1 = -5.0f;
         yP1 = 30.0f;
@@ -1050,6 +1052,15 @@ void drawJet(){
             glVertex3f(-5.0f, -50.0f, 0.0f);
             glVertex3f(5.0f, -50.0f, 0.0f);
             glVertex3f(5.0f, -30.0f, 0.0f);
+        glEnd();
+
+        /* Flame */
+        glBegin(GL_TRIANGLES);
+            glColor3fv(tailColor);
+            glVertex3f(-5.0f, -50.0f, 0.0f);
+            GLint animateY = ((int)(t * (1.0f / CURVE_PRECISION))) % 5;
+            animateY == 0 ? glVertex3f(0.0f, -70.0f, 0.0f) : glVertex3f(0.0f, -50.0f, 0.0f);
+            glVertex3f(5.0f, -50.0f, 0.0f);
         glEnd();
 
         xP1 = -5.0f;
@@ -1281,6 +1292,7 @@ void drawJet(){
         glColor3ub(55, 113, 99);
     }
 
+    /* Left lower wing */ 
     {
         glBegin(GL_QUADS);
             glVertex3f(-5.0f, -40.0f, 0.0f);
@@ -1290,6 +1302,7 @@ void drawJet(){
         glEnd();
     }
 
+    /* Right lower wing */
     {
         glBegin(GL_QUADS);
             glVertex3f(5.0f, -40.0f, 0.0f);
