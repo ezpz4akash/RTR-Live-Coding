@@ -74,6 +74,8 @@ GLfloat curveYPoint;
 GLfloat t = 0.0f;
 GLfloat jetRotation = 0.0f;
 
+GLfloat midJetPosX, midJetPosY;
+
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
     int initialize(void);
@@ -357,6 +359,9 @@ int initialize(void){
 
     curveXPoint = p1.x;
     curveYPoint = p1.y;
+
+    midJetPosX = p1.x;
+    midJetPosY = 0.0f;
     return 0;
 }
 
@@ -423,11 +428,16 @@ void display(void){
     drawBHARAT();
 
     glLoadIdentity();
+    glTranslatef(midJetPosX, midJetPosY, 0.0f);
+    glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
+    glScalef(0.4f, 0.4f, 1.0f);
+    drawJet();
+
+    glLoadIdentity();
     glTranslatef(curveXPoint, curveYPoint, 0.0f);
     glRotatef(-jetRotation, 0.0f, 0.0f, 1.0f);
     glScalef(0.4f, 0.4f, 1.0f);
     drawJet();
-    glPointSize(5.0f);
 
     glLoadIdentity();
     glTranslatef(curveXPoint, -curveYPoint, 0.0f);
@@ -435,9 +445,10 @@ void display(void){
     glRotatef(jetRotation, 0.0f, 0.0f, 1.0f);
     glScalef(0.4f, 0.4f, 1.0f);
     drawJet();
-    glPointSize(5.0f);
 
+    
     #if DRAW_CURVE == 1
+        glPointSize(5.0f);
         glLoadIdentity();
         for(GLfloat p = 0.0f; p <= t; p = p + CURVE_PRECISION){
             GLfloat xP1Control = (1 - p) * p1.x + p * pControl.x;
@@ -459,7 +470,7 @@ void display(void){
 }
 
 void update(void){
-    //codef
+    //code
 
     if(JET_PATH == CURVE1){
         if(t <= 1.0f){
@@ -492,9 +503,10 @@ void update(void){
             GLfloat dy = (nextPointY - currentPointY);
             GLfloat dx = (nextPointX - currentPointX);
 
+            jetRotation = 90.0f - (atanf((dy) / (dx)) * (180.0f / GL_PI));
+
             //fprintf(gpFile, "%f, %f, %f, %f\n", curveXPoint, curveYPoint, nextCurveXPoint, nextCurveYPoint);
             //fprintf(gpFile, "%f, %f\n", dy, dx);
-            jetRotation = 90.0f - (atanf((dy) / (dx)) * (180.0f / GL_PI));
             //fprintf(gpFile, "jetRotation : %f\n", jetRotation);
 
             t = t + CURVE_PRECISION;
@@ -505,7 +517,7 @@ void update(void){
     }
 
     if(JET_PATH == STRAIGHT){
-        curveXPoint = curveXPoint + 0.03f;
+        curveXPoint = curveXPoint + 0.025f;
         if(curveXPoint >= 100.0f){
             JET_PATH = CURVE2;
             p1.x    = 100.0f, 
@@ -553,15 +565,14 @@ void update(void){
             GLfloat dy = (nextPointY - currentPointY);
             GLfloat dx = (nextPointX - currentPointX);
 
-            //fprintf(gpFile, "%f, %f, %f, %f\n", curveXPoint, curveYPoint, nextCurveXPoint, nextCurveYPoint);
-            //fprintf(gpFile, "%f, %f\n", dy, dx);
             jetRotation = 90.0f - (atanf((dy) / (dx)) * (180.0f / GL_PI));
-            //fprintf(gpFile, "jetRotation : %f\n", jetRotation);
 
             t = t + CURVE_PRECISION;
         }
     }
-    
+
+    midJetPosX = midJetPosX + 0.025f;
+
 }
 
 void drawBHARAT(){
