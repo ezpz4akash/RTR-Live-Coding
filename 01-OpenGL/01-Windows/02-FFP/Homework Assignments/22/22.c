@@ -19,11 +19,11 @@
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
 
-#define DRAW_CURVE 1
+#define DRAW_CURVE 0
 
 #define GL_PI 3.14159265359f
 #define DEG_TO_RAD(deg) ((GLfloat)deg * (GL_PI / 180.0f))
-#define CURVE_PRECISION 0.0001f
+#define CURVE_PRECISION 0.0002f
 
 #define CHARACTER_WIDTH 20
 #define GAP_BETWEEN_CHARACTERS 4
@@ -351,9 +351,9 @@ int initialize(void){
     p1.x    = -200.0f, 
     p1.y    = -120.0f;
     p2.x    = -100.0f;
-    p2.y    =  -10.0f;
+    p2.y    =  -20.0f;
     pControl.x = -140.0f;
-    pControl.y = -10.0f;
+    pControl.y = -20.0f;
 
     curveXPoint = p1.x;
     curveYPoint = p1.y;
@@ -425,7 +425,15 @@ void display(void){
     glLoadIdentity();
     glTranslatef(curveXPoint, curveYPoint, 0.0f);
     glRotatef(-jetRotation, 0.0f, 0.0f, 1.0f);
-    glScalef(0.5f, 0.5f, 1.0f);
+    glScalef(0.4f, 0.4f, 1.0f);
+    drawJet();
+    glPointSize(5.0f);
+
+    glLoadIdentity();
+    glTranslatef(curveXPoint, -curveYPoint, 0.0f);
+    glRotatef(-180.0f, 0.0f, 0.0f, 1.0f);
+    glRotatef(jetRotation, 0.0f, 0.0f, 1.0f);
+    glScalef(0.4f, 0.4f, 1.0f);
     drawJet();
     glPointSize(5.0f);
 
@@ -501,11 +509,11 @@ void update(void){
         if(curveXPoint >= 100.0f){
             JET_PATH = CURVE2;
             p1.x    = 100.0f, 
-            p1.y    = -10.0f;
+            p1.y    = -20.0f;
             p2.x    = 200.0f;
             p2.y    =  -120.0f;
             pControl.x = 140.0f;
-            pControl.y = -10.0f;
+            pControl.y = -20.0f;
 
             curveXPoint = p1.x;
             curveYPoint = p1.y;
