@@ -385,7 +385,38 @@ void resize(int width, int height){
     gWidth = width;
     gHeight = height;
 
-    glViewport(0, 0, width, height);
+    switch(index){
+        case 0:
+            glViewport(0, 0, gWidth, gHeight);
+        break;
+        case 1:
+            glViewport(0, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
+        break;
+        case 2:
+            glViewport((GLsizei)gWidth / 2, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
+        break;
+        case 3:
+            glViewport((GLsizei)gWidth / 2, (GLsizei)gHeight / 2, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
+        break;
+        case 4:
+            glViewport(0, (GLsizei)gHeight / 2, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
+        break;
+        case 5:
+            glViewport(0, 0, (GLsizei)gWidth, (GLsizei)gHeight / 2);
+        break;
+        case 6:
+            glViewport(0, (GLsizei)gHeight / 2, (GLsizei)gWidth, (GLsizei)gHeight / 2);
+        break;
+        case 7:
+            glViewport(0, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight);
+        break;
+        case 8:
+            glViewport((GLsizei)gWidth / 2, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight);
+        break;
+        case 9:
+            glViewport((GLsizei)gWidth / 4, (GLsizei)gHeight / 4, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
+        break;
+    }
 
     /* Set projection mode */
 
