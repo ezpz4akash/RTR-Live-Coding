@@ -711,7 +711,8 @@ void update(void){
     
                 GLfloat dy = (nextPointY - currentPointY);
                 GLfloat dx = (nextPointX - currentPointX);
-    
+                
+                /* Fourth quadrant points result in negative angle with x axis, so 90 - (-angle) = 90 + angle with x axis = negative rotation to glRotate for correct */
                 jetRotation = 90.0f - (atanf((dy) / (dx)) * (180.0f / GL_PI));
     
                 t = t + CURVE_PRECISION;

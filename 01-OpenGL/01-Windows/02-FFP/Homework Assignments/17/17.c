@@ -378,14 +378,14 @@ void printGLInfo(void){
 
 void resize(int width, int height){
     //code
-    
     //If height becomes zero, make height 1
     if(height <= 0)
         height = 1;
     
-    glViewport(0, 0, (GLsizei)width, (GLsizei)height);
     gWidth = width;
     gHeight = height;
+
+    glViewport(0, 0, width, height);
 
     /* Set projection mode */
 
@@ -396,7 +396,7 @@ void resize(int width, int height){
     glLoadIdentity();
 
     // To Perspective projection
-    gluPerspective(45.0, ((GLfloat)width / (GLfloat)height), 0.1, 100.0);
+    gluPerspective(45.0, ((GLfloat)gWidth / (GLfloat)gHeight), 0.1, 100.0);
 
     // Set matrix to model view mode
     glMatrixMode(GL_MODELVIEW);
@@ -418,46 +418,34 @@ void display(void){
     // Translate triangle backwards by z
     glTranslatef(0.0f, 0.0f, -3.0f);
     switch(index){
-        case '0':
-        index = 0;
-        glViewport(0, 0, gWidth, gHeight);
+        case 0:
+            glViewport(0, 0, gWidth, gHeight);
         break;
-        case '1':
-            index = 1;
+        case 1:
             glViewport(0, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
         break;
-        case '2':
-            index = 2;
+        case 2:
             glViewport((GLsizei)gWidth / 2, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
         break;
-        case '3':
-            index = 3;
+        case 3:
             glViewport((GLsizei)gWidth / 2, (GLsizei)gHeight / 2, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
         break;
-        case '4':
-            index = 4;
+        case 4:
             glViewport(0, (GLsizei)gHeight / 2, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
         break;
-        case '5':
-            index = 5;
+        case 5:
             glViewport(0, 0, (GLsizei)gWidth, (GLsizei)gHeight / 2);
         break;
-        case '6':
-            index = 6;
+        case 6:
             glViewport(0, (GLsizei)gHeight / 2, (GLsizei)gWidth, (GLsizei)gHeight / 2);
-            
         break;
-        case '7':
-            index = 7;
+        case 7:
             glViewport(0, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight);
-            
         break;
-        case '8':
-            index = 8;
+        case 8:
             glViewport((GLsizei)gWidth / 2, 0, (GLsizei)gWidth / 2, (GLsizei)gHeight);
         break;
-        case '9':
-            index = 9;
+        case 9:
             glViewport((GLsizei)gWidth / 4, (GLsizei)gHeight / 4, (GLsizei)gWidth / 2, (GLsizei)gHeight / 2);
         break;
     }
