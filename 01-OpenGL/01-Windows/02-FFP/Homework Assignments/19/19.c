@@ -383,15 +383,46 @@ void display(void){
 
     glLoadIdentity();
     {
+        /* Cube : front face is red, left face is cyan, right is green, back is blue */
+        /* 
+            gluLookAt : 
+                - Translating the world by -eyex, -eyey, -eyez
+                - Rotating the world coordinate space to match as if we are looking from the camera
+        */
+
+        /* Using gluLookAt */
         GLfloat radius = 12.0f;
         GLfloat x = radius * cos(DEG_TO_RAD(angleOfRotation));
         GLfloat z = radius * sin(DEG_TO_RAD(angleOfRotation));
         gluLookAt(x, 0.0f, z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
         glTranslatef(0.0f, 0.0f, -5.0f);
         glScalef(0.5f, 0.5f, 0.5f);
+        
+        /* Not using gluLookAt */
+        /* glTranslatef(0.0f, 0.0f, -12.0f);
+        glRotatef(angleOfRotation, 0.0f, 1.0f, 0.0f);
+        glTranslatef(0.0f, 0.0f, -5.0f);
+        glScalef(0.5f, 0.5f, 0.5f); */
+
+
         drawCube();
 
     }
+
+    /* To understand gluLookAt more, uncomment the following code and use y when giving eye position */
+    /* glLoadIdentity();
+    {
+        GLfloat radius = 12.0f;
+        GLfloat x = radius * cos(DEG_TO_RAD(angleOfRotation));
+        GLfloat z = radius * sin(DEG_TO_RAD(angleOfRotation));
+        gluLookAt(x, 10.0f, z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        glTranslatef(0.0f, 0.0f, 5.0f);
+        glScalef(0.5f, 0.5f, 0.5f);
+
+        drawCube();
+    } */
+
+
     // Swap the buffers
     SwapBuffers(ghdc);
 }
