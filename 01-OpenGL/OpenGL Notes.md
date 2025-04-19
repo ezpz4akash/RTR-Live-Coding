@@ -73,3 +73,24 @@
         6) OpenGL Game Programming (Game development series) By Dave Astle 
 
 ------------------------------------------------------------------------------------------------
+
+# Most commonly used Image formarts as texture
+Average Quality : 
+1. BMP : Bitmap
+2. JPG/JPEG : Joint Picture Expert Group
+3. PNG : Portable Network Graphics
+4. GIF : Graphics Interchangeable Format
+5. TGA : TrueVision Graphics Adaptor
+6. TARGA : True Vision Raster Graphics Adaptor
+
+Best Quality
+1. DDS : Direct Draw Surface
+2. HDR : High Dynamic Range
+3. OpenEXR : Open EXtended Range
+4. ASTC : Adaptive Scalable Texture Compression
+5. KTX : Khronos TeXture
+
+Better than average but less than Best Quality
+1. TIFF : Tagged Image File Format
+2. HEIF : High Efficiency Image Format
+

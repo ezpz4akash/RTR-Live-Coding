@@ -41,13 +41,8 @@ BOOL gbEscapeKeyPressed = FALSE;
 HDC ghdc = NULL;
 HGLRC ghrc = NULL;
 
-/* Rotation angle variables */
-GLfloat angleCube = 0.0f;
-GLfloat anglePyramid = 0.0f;
-
-/* Texture related global variables */
-GLuint textureStone;
-GLuint textureKundali;
+// Solar system related variables
+GLUquadric* quadric = NULL;
 
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
@@ -96,7 +91,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     // Create Window
     //hWnd = CreateWindow(szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - 3D BW Shapes"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
+    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - Sphere"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
     ghWnd = hWnd;
 
     // Show Windows
@@ -249,7 +244,6 @@ int initialize(void){
     // function declarations
     void printGLInfo(void);
     void resize(int width, int height);
-    BOOL loadGLTexture(GLuint* texture, TCHAR imageResourceID[]);
 
     // variable declarations
     PIXELFORMATDESCRIPTOR pfd;
@@ -319,17 +313,8 @@ int initialize(void){
     glDepthFunc(GL_LEQUAL);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-    /* Load Textures */
-    if(!loadGLTexture(&textureStone, MAKEINTRESOURCE(IDBITMAP_STONE))){
-        fprintf(gpFile, "loadGLTexture Failed to Load Stone Texture\n");
-    }
-
-    if(!loadGLTexture(&textureKundali, MAKEINTRESOURCE(IDBITMAP_KUNDALI))){
-        fprintf(gpFile, "loadGLTexture Failed to Load Kundali Texture\n");
-    }
-
-    /* Enable Texturing */
-    glEnable(GL_TEXTURE_2D);
+    // Initialize quadric
+    quadric = gluNewQuadric();
 
     // Warm up resize
     RECT rect;
@@ -349,60 +334,6 @@ void printGLInfo(void){
     fprintf(gpFile, "OpenGL Renderer : %s\n", glGetString(GL_RENDERER));
     fprintf(gpFile, "OpenGL Version : %s\n", glGetString(GL_VERSION));
     fprintf(gpFile, "******************\n");
-}
-
-/* 
-    Steps to use textures : 
-        1. Enable Texturing
-        2. Generate Texture Object
-        3. Bind the Texture
-        4. Unpack the pixel store
-        5. Specify Texture Parameters
-        6. Give the bytes of image data to opengl using gluBuild2DMipmaps
-            - Load image into exe as a resource
-            - Use LoadImage to get handle to bitmap image 
-            - Copy the image bytes data in bmp structure
-            - Use in this step(6)
-        7. Disable Texturing
-*/
-BOOL loadGLTexture(GLuint* texture, TCHAR imageResourceID[]){
-    // Variable declarations
-    HBITMAP hBitMap = NULL;
-    BITMAP bmp;
-    BOOL bResult = FALSE;
-
-    // Load the bitmap as image
-    hBitMap = (HBITMAP)LoadImage(GetModuleHandle(NULL), imageResourceID, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    if(hBitMap){
-        bResult = TRUE;
-
-        // Get bitmap structure from Loaded Bitmap image
-        GetObject(hBitMap, sizeof(BITMAP), &bmp);
-
-        // Generate openGL Texture Object
-        glGenTextures(1, texture);
-
-        // Bind to that texture
-        glBindTexture(GL_TEXTURE_2D, *texture);
-
-        // Unpack the image in memory for faster loading, 4~RGBA
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
-        // Set texture parameters : GL_LINEAR ~ Highest Quality, GL_NEAREST ~ Performance over quality
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);               //  ~Mag = magnified = object close
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // ~Min = minified = object far
-
-        // Combination of two functions : glTextImage2D and glGenerateMipMap (Used in my terrain example)
-        gluBuild2DMipmaps(GL_TEXTURE_2D, 3, bmp.bmWidth, bmp.bmHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, (VOID*)bmp.bmBits);
-
-        // Unbind texture
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        DeleteObject(hBitMap);
-        hBitMap = NULL;
-    }
-
-    return bResult;
 }
 
 void resize(int width, int height){
@@ -439,191 +370,31 @@ void display(void){
     // Set matrix to model view mode
     glMatrixMode(GL_MODELVIEW);
 
-    glBindTexture(GL_TEXTURE_2D, textureStone);
-    // Pyramid
-    {
-        // Set to identity matrix
-        glLoadIdentity();
+    // Set to identity matrix
+    glLoadIdentity();
 
-        // Translate triangle backwards by z
-        glTranslatef(-2.0f, 0.0f, -8.0f);
+    // Do view transformation
+    gluLookAt(0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
-        // Rotate triangle along y
-        glRotatef(anglePyramid, 0.0f, 1.0f, 0.0f);
+    // Save above transformation to modelview matrix stack
+    glPushMatrix();
+        // Adjust the poles of sphere of sun
+        glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
 
-        glBegin(GL_TRIANGLES);
-            /* Front Face */
-            {
-                glTexCoord2f(0.5f, 1.0f);
-                glVertex3f(0.0f, 1.0f, 0.0f);
+        // Set sun's polygon properties
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
+        gluSphere(quadric, 1.5, 30, 30);
 
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-            }
+    // WE need to go back to the origin, hence pop/restore the matrix
+    glPopMatrix();
 
-            /* Right Face */
-            {
-                glTexCoord2f(0.5f, 1.0f);
-                glVertex3f(0.0f, 1.0f, 0.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-            }
-
-            /* Back Face */
-            {
-                glTexCoord2f(0.5f, 1.0f);
-                glVertex3f(0.0f, 1.0f, 0.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-            }
-
-            /* Left Face */
-            {
-                glTexCoord2f(0.5f, 1.0f);
-                glVertex3f(0.0f, 1.0f, 0.0f);
-                
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
-            }
-        glEnd();
-    }
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glBindTexture(GL_TEXTURE_2D, textureKundali);
-    {
-        // Set to identity matrix
-        glLoadIdentity();
-
-        // Translate triangle backwards by z
-        glTranslatef(2.0f, 0.0f, -8.0f);
-
-        glScalef(0.75f, 0.75f, 0.75f);
-
-        // Rotate triangle along x,y,z
-        glRotatef(angleCube, 1.0f, 1.0f, 1.0f);
-
-        glBegin(GL_QUADS);
-            /* Front Face */
-            {
-                glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(1.0f, 1.0f, 1.0f);
-
-                glTexCoord2f(0.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, 1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-            }
-
-            /* Right Face */
-            {
-                glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(1.0f, 1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 1.0f);
-                glVertex3f(1.0f, 1.0f, 1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-            }
-
-            /* Back Face */
-            {
-                glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 1.0f);
-                glVertex3f(1.0f, 1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-            }
-
-            /* Left Face */
-            {
-                glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, 1.0f);
-
-                glTexCoord2f(0.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
-            }
-
-            /* Top Face */
-            {
-                glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(1.0f, 1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(-1.0f, 1.0f, 1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(1.0f, 1.0f, 1.0f);
-            }
-
-            /* Bottom Face */
-            {
-                glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-
-                glTexCoord2f(0.0f, 1.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-            }
-        glEnd();
-    }
-    glBindTexture(GL_TEXTURE_2D, 0);
     // Swap the buffers
     SwapBuffers(ghdc);
 }
 
 void update(void){
     //code
-    anglePyramid = anglePyramid + 0.1f;
-    if(anglePyramid >= 360.0f){
-        anglePyramid = anglePyramid - 360.0f;
-    }
-
-    angleCube = angleCube + 0.1f;
-    if(angleCube >= 360.0f){
-        angleCube = angleCube - 360.0f;
-    }
 }
 
 void uninitialize(void){
@@ -632,20 +403,15 @@ void uninitialize(void){
 
     //code
     
+    if(quadric){
+        gluDeleteQuadric(quadric);
+        quadric = NULL;
+    }
+
     //If use is exiting in fullscreen, then restore the fullscreen back to normal
     if(gbFullScreen == TRUE){
         toggleFullScreen();
         gbFullScreen = FALSE;
-    }
-
-    if(textureKundali){
-        glDeleteTextures(1, &textureKundali);
-        textureKundali = 0;
-    }
-
-    if(textureStone){
-        glDeleteTextures(1, &textureStone);
-        textureStone = 0;
     }
 
     // Make HDC as current context by releasing rendering context as current context

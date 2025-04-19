@@ -41,13 +41,10 @@ BOOL gbEscapeKeyPressed = FALSE;
 HDC ghdc = NULL;
 HGLRC ghrc = NULL;
 
-/* Rotation angle variables */
-GLfloat angleCube = 0.0f;
-GLfloat anglePyramid = 0.0f;
-
 /* Texture related global variables */
-GLuint textureStone;
-GLuint textureKundali;
+GLuint textureSmiley;
+
+int keyPressed = -1;
 
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
@@ -96,7 +93,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     // Create Window
     //hWnd = CreateWindow(szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - 3D BW Shapes"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
+    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - Smiley Texture"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
     ghWnd = hWnd;
 
     // Show Windows
@@ -183,7 +180,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
                 case VK_ESCAPE:
                     gbEscapeKeyPressed = TRUE;
                 break;
+
+                case '1':
+                case VK_NUMPAD0:
+                    keyPressed = 1;
+                break;
+
+                case '2':
+                case VK_NUMPAD1:
+                    keyPressed = 2;
+                break;
+
+                case '3':
+                case VK_NUMPAD2:
+                    keyPressed = 3;
+                break;
+
+                case '4':
+                case VK_NUMPAD3:
+                    keyPressed = 4;
+                break;
+
                 default:
+                keyPressed = -1;
                 break;
             }
         break;
@@ -319,13 +338,9 @@ int initialize(void){
     glDepthFunc(GL_LEQUAL);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-    /* Load Textures */
-    if(!loadGLTexture(&textureStone, MAKEINTRESOURCE(IDBITMAP_STONE))){
-        fprintf(gpFile, "loadGLTexture Failed to Load Stone Texture\n");
-    }
-
-    if(!loadGLTexture(&textureKundali, MAKEINTRESOURCE(IDBITMAP_KUNDALI))){
-        fprintf(gpFile, "loadGLTexture Failed to Load Kundali Texture\n");
+     /* Load Textures */
+    if(!loadGLTexture(&textureSmiley, MAKEINTRESOURCE(IDBITMAP_SMILE))){
+        fprintf(gpFile, "loadGLTexture Failed to Load Smiley Texture\n");
     }
 
     /* Enable Texturing */
@@ -351,20 +366,6 @@ void printGLInfo(void){
     fprintf(gpFile, "******************\n");
 }
 
-/* 
-    Steps to use textures : 
-        1. Enable Texturing
-        2. Generate Texture Object
-        3. Bind the Texture
-        4. Unpack the pixel store
-        5. Specify Texture Parameters
-        6. Give the bytes of image data to opengl using gluBuild2DMipmaps
-            - Load image into exe as a resource
-            - Use LoadImage to get handle to bitmap image 
-            - Copy the image bytes data in bmp structure
-            - Use in this step(6)
-        7. Disable Texturing
-*/
 BOOL loadGLTexture(GLuint* texture, TCHAR imageResourceID[]){
     // Variable declarations
     HBITMAP hBitMap = NULL;
@@ -439,191 +440,101 @@ void display(void){
     // Set matrix to model view mode
     glMatrixMode(GL_MODELVIEW);
 
-    glBindTexture(GL_TEXTURE_2D, textureStone);
-    // Pyramid
-    {
-        // Set to identity matrix
-        glLoadIdentity();
+    // Set to identity matrix
+    glLoadIdentity();
 
-        // Translate triangle backwards by z
-        glTranslatef(-2.0f, 0.0f, -8.0f);
+    // Translate triangle backwards by z
+    glTranslatef(0.0f, 0.0f, -3.0f);
 
-        // Rotate triangle along y
-        glRotatef(anglePyramid, 0.0f, 1.0f, 0.0f);
+    if(keyPressed == 1){
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, textureSmiley);
+        glBegin(GL_QUADS);
+            glTexCoord2f(0.5f, 0.5f);
+            glVertex3f(1.0f, 1.0f, 0.0f);
 
-        glBegin(GL_TRIANGLES);
-            /* Front Face */
-            {
-                glTexCoord2f(0.5f, 1.0f);
-                glVertex3f(0.0f, 1.0f, 0.0f);
+            glTexCoord2f(0.0f, 0.5f);
+            glVertex3f(-1.0f, 1.0f, 0.0f);
 
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
+            glTexCoord2f(0.0f, 0.0f);
+            glVertex3f(-1.0f, -1.0f, 0.0f);
 
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-            }
-
-            /* Right Face */
-            {
-                glTexCoord2f(0.5f, 1.0f);
-                glVertex3f(0.0f, 1.0f, 0.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-            }
-
-            /* Back Face */
-            {
-                glTexCoord2f(0.5f, 1.0f);
-                glVertex3f(0.0f, 1.0f, 0.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-            }
-
-            /* Left Face */
-            {
-                glTexCoord2f(0.5f, 1.0f);
-                glVertex3f(0.0f, 1.0f, 0.0f);
-                
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
-            }
+            glTexCoord2f(0.5f, 0.0f);
+            glVertex3f(1.0f, -1.0f, 0.0f);
         glEnd();
     }
-    glBindTexture(GL_TEXTURE_2D, 0);
+    else if(keyPressed == 2){
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, textureSmiley);
+        glBegin(GL_QUADS);
+            glTexCoord2f(1.0f, 1.0f);
+            glVertex3f(1.0f, 1.0f, 0.0f);
 
-    glBindTexture(GL_TEXTURE_2D, textureKundali);
-    {
-        // Set to identity matrix
-        glLoadIdentity();
+            glTexCoord2f(0.0f, 1.0f);
+            glVertex3f(-1.0f, 1.0f, 0.0f);
 
-        // Translate triangle backwards by z
-        glTranslatef(2.0f, 0.0f, -8.0f);
+            glTexCoord2f(0.0f, 0.0f);
+            glVertex3f(-1.0f, -1.0f, 0.0f);
 
-        glScalef(0.75f, 0.75f, 0.75f);
+            glTexCoord2f(1.0f, 0.0f);
+            glVertex3f(1.0f, -1.0f, 0.0f);
+        glEnd();
+    }
+    else if(keyPressed == 3){
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, textureSmiley);
 
-        // Rotate triangle along x,y,z
-        glRotatef(angleCube, 1.0f, 1.0f, 1.0f);
+        /* These are default hence not required */
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         glBegin(GL_QUADS);
-            /* Front Face */
-            {
-                glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(1.0f, 1.0f, 1.0f);
+            glTexCoord2f(2.0f, 2.0f);
+            glVertex3f(1.0f, 1.0f, 0.0f);
 
-                glTexCoord2f(0.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, 1.0f);
+            glTexCoord2f(0.0f, 2.0f);
+            glVertex3f(-1.0f, 1.0f, 0.0f);
 
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
+            glTexCoord2f(0.0f, 0.0f);
+            glVertex3f(-1.0f, -1.0f, 0.0f);
 
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-            }
-
-            /* Right Face */
-            {
-                glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(1.0f, 1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 1.0f);
-                glVertex3f(1.0f, 1.0f, 1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-            }
-
-            /* Back Face */
-            {
-                glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 1.0f);
-                glVertex3f(1.0f, 1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-            }
-
-            /* Left Face */
-            {
-                glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, 1.0f);
-
-                glTexCoord2f(0.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
-            }
-
-            /* Top Face */
-            {
-                glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(1.0f, 1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 1.0f);
-                glVertex3f(-1.0f, 1.0f, -1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(-1.0f, 1.0f, 1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(1.0f, 1.0f, 1.0f);
-            }
-
-            /* Bottom Face */
-            {
-                glTexCoord2f(1.0f, 1.0f);
-                glVertex3f(1.0f, -1.0f, 1.0f);
-
-                glTexCoord2f(0.0f, 1.0f);
-                glVertex3f(-1.0f, -1.0f, 1.0f);
-
-                glTexCoord2f(0.0f, 0.0f);
-                glVertex3f(-1.0f, -1.0f, -1.0f);
-
-                glTexCoord2f(1.0f, 0.0f);
-                glVertex3f(1.0f, -1.0f, -1.0f);
-            }
+            glTexCoord2f(2.0f, 0.0f);
+            glVertex3f(1.0f, -1.0f, 0.0f);
         glEnd();
     }
-    glBindTexture(GL_TEXTURE_2D, 0);
+    else if(keyPressed == 4){
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, textureSmiley);
+        glBegin(GL_QUADS);
+            glTexCoord2f(0.5f, 0.5f);
+            glVertex3f(1.0f, 1.0f, 0.0f);
+
+            glTexCoord2f(0.5f, 0.5f);
+            glVertex3f(-1.0f, 1.0f, 0.0f);
+
+            glTexCoord2f(0.5f, 0.5f);
+            glVertex3f(-1.0f, -1.0f, 0.0f);
+
+            glTexCoord2f(0.5f, 0.5f);
+            glVertex3f(1.0f, -1.0f, 0.0f);
+        glEnd();
+    }
+    else{
+        glDisable(GL_TEXTURE_2D);
+        glBegin(GL_QUADS);
+            glVertex3f(1.0f, 1.0f, 0.0f);
+            glVertex3f(-1.0f, 1.0f, 0.0f);
+            glVertex3f(-1.0f, -1.0f, 0.0f);
+            glVertex3f(1.0f, -1.0f, 0.0f);
+        glEnd();
+    }
+
     // Swap the buffers
     SwapBuffers(ghdc);
 }
 
 void update(void){
     //code
-    anglePyramid = anglePyramid + 0.1f;
-    if(anglePyramid >= 360.0f){
-        anglePyramid = anglePyramid - 360.0f;
-    }
-
-    angleCube = angleCube + 0.1f;
-    if(angleCube >= 360.0f){
-        angleCube = angleCube - 360.0f;
-    }
 }
 
 void uninitialize(void){
@@ -638,14 +549,9 @@ void uninitialize(void){
         gbFullScreen = FALSE;
     }
 
-    if(textureKundali){
-        glDeleteTextures(1, &textureKundali);
-        textureKundali = 0;
-    }
-
-    if(textureStone){
-        glDeleteTextures(1, &textureStone);
-        textureStone = 0;
+    if(textureSmiley){
+        glDeleteTextures(1, &textureSmiley);
+        textureSmiley = 0;
     }
 
     // Make HDC as current context by releasing rendering context as current context
