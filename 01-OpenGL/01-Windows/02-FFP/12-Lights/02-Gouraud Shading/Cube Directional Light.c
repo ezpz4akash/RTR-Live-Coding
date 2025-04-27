@@ -41,46 +41,20 @@ BOOL gbEscapeKeyPressed = FALSE;
 HDC ghdc = NULL;
 HGLRC ghrc = NULL;
 
-// Solar system related variables
-GLUquadric* quadric = NULL;
+/* Rotation angle variables */
+GLfloat angleCube = 0.0f;
 
 /* Variable for lights */
-
-/* 
-    Light is completely white,
-    the color of the sphere comes from diffuse property of material (purple color reflcting material)
-
-    and since we are not using glEnable(GL_COLOR_MATERIAL), color is not involved in calculating the color
-    THE COLOR completely depends on the COLOR OF LIGHT and COLOR OF MATERIAL and NOT COLOR SET USING glColor3f
-
-    Specular component is generally : gray or white : 
-    {0.7f, 0.7f, 0.7f, 1.0f}; 
-    {1.0f, 1.0f, 1.0f, 1.0f};
-
-    Some more notes : 
-    1. Ambient lighting
-        - Not directional.
-        - It is uniform light — it hits the object from everywhere equally.
-        - No normals, no light direction involved.
-        - Just material ambient × light ambient (and possibly global ambient).
-
-    2. Diffuse lighting
-        - Directional.
-        - Depends on the angle between light direction and surface normal.
-
-    3. Specular lighting
-        - Also directional.
-        - Depends on view direction, light direction, and surface normal.
-*/
 GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
 GLfloat lightDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
 GLfloat lightSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-GLfloat lightPosition[] = {100.0f, 100.0f, 100.0f, 1.0f};
+GLfloat lightPosition[] = {100.0f, 100.0f, 100.0f, 0.0f};
 
 GLfloat materialAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
 GLfloat materialDiffuse[] = {0.5f, 0.2f, 0.7f, 1.0f};
 GLfloat materialSpecular[] = {0.7f, 0.7f, 0.7f, 1.0f};
 GLfloat materialShininess[] = {128.0f};
+
 
 BOOL bLight = FALSE;
 
@@ -131,7 +105,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     // Create Window
     //hWnd = CreateWindow(szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - Sphere"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
+    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - 3D BW Cube"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
     ghWnd = hWnd;
 
     // Show Windows
@@ -166,6 +140,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
             }
         }
         else{
+            gbActiveWindow = TRUE;
             if(gbActiveWindow == TRUE){ 
                 if(gbEscapeKeyPressed == TRUE){
                     bDone = TRUE;
@@ -364,11 +339,6 @@ int initialize(void){
     glDepthFunc(GL_LEQUAL);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-    // Initialize quadric
-    quadric = gluNewQuadric();
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
     /* Light and material Configuration */
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
@@ -380,27 +350,6 @@ int initialize(void){
     glMaterialfv(GL_FRONT, GL_DIFFUSE, materialDiffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, materialSpecular);
     glMaterialfv(GL_FRONT, GL_SHININESS, materialShininess);
-
-    /* 
-        glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
-        glColorMaterial(GL_FRONT, GL_SPECULAR);
-        glEnable(GL_COLOR_MATERIAL);
-
-        If we enable GL_COLOR_MATERIAL, the glColor3f start contributing in color calculations
-        since gluSphere does not set glColor and default color is white, the sphere becomes white
-
-        When glColor* is used and GL_COLOR_MATERIAL is enabled, OpenGL ignores the material color (for the parts you told it to control).
-            - Without GL_COLOR_MATERIAL → 
-                - glColor has NO EFFECT on lighting. 
-                - Only glMaterial properties matter.
-            - With GL_COLOR_MATERIAL → 
-                - glColor REPLACES the material's color for ambient, diffuse, or both (depending on settings).
-
-        Entire object has same material	
-            -> Use glMaterial. No need for glColor.
-        Object has per-face or per-vertex colors
-            -> Use glColor + GL_COLOR_MATERIAL
-    */
 
     // Warm up resize
     RECT rect;
@@ -456,31 +405,87 @@ void display(void){
     // Set matrix to model view mode
     glMatrixMode(GL_MODELVIEW);
 
-    // Set to identity matrix
-    glLoadIdentity();
+    {
+        // Set to identity matrix
+        glLoadIdentity();
 
-    // Do view transformation
-    gluLookAt(0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+        // Translate triangle backwards by z
+        //glTranslatef(0.0f, 0.0f, -6.0f);
+        gluLookAt(0.0f, 0.0f, 10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
-    // Save above transformation to modelview matrix stack
-    glPushMatrix();
-        // Adjust the poles of sphere of sun
-        glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+        // Rotate triangle along x,y,z
 
-        // Set sun's polygon properties
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glRotatef(angleCube, 1.0f, 0.0f, 0.0f);
+        glRotatef(angleCube, 0.0f, 1.0f, 0.0f);
+        glRotatef(angleCube, 0.0f, 0.0f, 1.0f);
 
-        gluSphere(quadric, 1.0, 50, 50);
+        glBegin(GL_QUADS);
+            /* Front Face */
+            {
+                glNormal3f(0.0f, 0.0f, 1.0f);
+                glVertex3f(1.0f, 1.0f, 1.0f);
+                glVertex3f(-1.0f, 1.0f, 1.0f);
+                glVertex3f(-1.0f, -1.0f, 1.0f);
+                glVertex3f(1.0f, -1.0f, 1.0f);
+            }
 
-    // WE need to go back to the origin, hence pop/restore the matrix
-    glPopMatrix();
+            /* Right Face */
+            {
+                glNormal3f(1.0f, 0.0f, 0.0f);
+                glVertex3f(1.0f, 1.0f, -1.0f);
+                glVertex3f(1.0f, 1.0f, 1.0f);
+                glVertex3f(1.0f, -1.0f, 1.0f);
+                glVertex3f(1.0f, -1.0f, -1.0f);
+            }
 
+            /* Back Face */
+            {
+                glNormal3f(0.0f, 0.0f, -1.0f);
+                glVertex3f(-1.0f, 1.0f, -1.0f);
+                glVertex3f(1.0f, 1.0f, -1.0f);
+                glVertex3f(1.0f, -1.0f, -1.0f);
+                glVertex3f(-1.0f, -1.0f, -1.0f);
+            }
+
+            /* Left Face */
+            {
+                glNormal3f(-1.0f, 0.0f, 0.0f);
+                glVertex3f(-1.0f, 1.0f, 1.0f);
+                glVertex3f(-1.0f, 1.0f, -1.0f);
+                glVertex3f(-1.0f, -1.0f, -1.0f);
+                glVertex3f(-1.0f, -1.0f, 1.0f);
+            }
+
+            /* Top Face */
+            {
+                glNormal3f(0.0f, 1.0f, 0.0f);
+                glVertex3f(1.0f, 1.0f, -1.0f);
+                glVertex3f(-1.0f, 1.0f, -1.0f);
+                glVertex3f(-1.0f, 1.0f, 1.0f);
+                glVertex3f(1.0f, 1.0f, 1.0f);
+            }
+
+            /* Bottom Face */
+            {
+                glNormal3f(0.0f, -1.0f, 0.0f);
+                glVertex3f(1.0f, -1.0f, 1.0f);
+                glVertex3f(-1.0f, -1.0f, 1.0f);
+                glVertex3f(-1.0f, -1.0f, -1.0f);
+                glVertex3f(1.0f, -1.0f, -1.0f);
+            }
+        glEnd();
+    }
+    
     // Swap the buffers
     SwapBuffers(ghdc);
 }
 
 void update(void){
     //code
+    angleCube = angleCube + 0.05f;
+    if(angleCube >= 360.0f){
+        angleCube = angleCube - 360.0f;
+    }
 }
 
 void uninitialize(void){
@@ -489,11 +494,6 @@ void uninitialize(void){
 
     //code
     
-    if(quadric){
-        gluDeleteQuadric(quadric);
-        quadric = NULL;
-    }
-
     //If use is exiting in fullscreen, then restore the fullscreen back to normal
     if(gbFullScreen == TRUE){
         toggleFullScreen();
