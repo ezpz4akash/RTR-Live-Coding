@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <mmsystem.h>
 
 // OpenGL related header file
 #include <gl/GL.h>      // CoreGL
@@ -14,6 +15,7 @@
 //OpenGL related libraries
 #pragma comment(lib, "opengl32.lib")    // CoreGL
 #pragma comment(lib, "glu32.lib")       // GL Utility
+#pragma comment(lib, "Winmm.lib")
 
 // Macros
 #define WIN_WIDTH 800
@@ -44,6 +46,8 @@ BOOL gbEscapeKeyPressed = FALSE;
 /* OpenGL related global variables */
 HDC ghdc = NULL;
 HGLRC ghrc = NULL;
+
+GLboolean run = FALSE;
 
 typedef struct Point{
     GLfloat x, y;
@@ -150,8 +154,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
                 /* Render */
                 display();
 
-                /* Update */
-                update();
+                if(run){
+                    /* Update */
+                    update();
+                }
             }
         }
     }
@@ -193,6 +199,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
             switch(wParam){
                 case VK_ESCAPE:
                     gbEscapeKeyPressed = TRUE;
+                break;
+                case VK_SPACE:
+                    PlaySound(TEXT("PotterTheme.wav"), NULL, SND_ASYNC | SND_FILENAME);
+                    run = TRUE;
                 break;
                 default:
                 break;

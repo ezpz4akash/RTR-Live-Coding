@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <mmsystem.h>
 
 // OpenGL related header file
 #include <gl/GL.h>      // CoreGL
@@ -14,6 +15,7 @@
 //OpenGL related libraries
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glu32.lib")
+#pragma comment(lib, "Winmm.lib")
 
 // Macros
 #define WIN_WIDTH 800
@@ -23,9 +25,9 @@
 
 #define GL_PI 3.14159265359f
 #define DEG_TO_RAD(deg) ((GLfloat)deg * (GL_PI / 180.0f))
-#define CURVE_PRECISION 0.0002f
+#define CURVE_PRECISION 0.00014f
 #define CHAR_ANIMATION 0.0005f
-#define JETS_SPEED_ON_STRAIGHT_PROJECTION 0.025f
+#define JETS_SPEED_ON_STRAIGHT_PROJECTION 0.0175f
 
 #define CHARACTER_WIDTH 20
 #define GAP_BETWEEN_CHARACTERS 4
@@ -228,6 +230,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
                 break;
 
                 case VK_SPACE:
+                    PlaySound(TEXT("RangDeBasanti.wav"), NULL, SND_ASYNC | SND_FILENAME);
                     run = TRUE;
                 break;
 
@@ -427,6 +430,7 @@ int initialize(void){
 
     midJetPosX  = p1.x;
     midJetPosY  = 0.0f;
+
     return 0;
 }
 

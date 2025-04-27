@@ -1,3 +1,3 @@
-cl.exe /c /EHsc OGL.c
+cl.exe /c /EHsc 13.c
 rc.exe OGL.rc
-link.exe OGL.obj OGL.res gdi32.lib user32.lib /SUBSYSTEM:WINDOWS
+link.exe 13.obj OGL.res gdi32.lib user32.lib /SUBSYSTEM:WINDOWS
