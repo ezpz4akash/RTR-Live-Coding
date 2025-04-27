@@ -485,19 +485,19 @@ void update(void){
     if(tTrianglePos <= 1.0f){
         trianglePos.x = (1.0f - tTrianglePos) * triangleStartPos.x + triangleEndPos.x * tTrianglePos;
         trianglePos.y = (1.0f - tTrianglePos) * triangleStartPos.y  + triangleEndPos.y * tTrianglePos;
-        tTrianglePos = tTrianglePos + 0.0001f;
+        tTrianglePos = tTrianglePos + 0.0002f;
     }
     else{
         if(tCirclePos <= 1.0f){
             circlePos.x = (1.0f - tCirclePos) * circleStartPos.x + circleEndPos.x * tCirclePos;
             circlePos.y = (1.0f - tCirclePos) * circleStartPos.y  + circleEndPos.y * tCirclePos;
-            tCirclePos = tCirclePos + 0.0001f;
+            tCirclePos = tCirclePos + 0.0002f;
         }
         else{
             if(tWandPos <= 1.0f){
                 wandPos.x = (1.0f - tWandPos) * wandStartPos.x + wandEndPos.x * tWandPos;
                 wandPos.y = (1.0f - tWandPos) * wandStartPos.y  + wandEndPos.y * tWandPos;
-                tWandPos = tWandPos + 0.0001f;
+                tWandPos = tWandPos + 0.0002f;
             }
         }
     }
