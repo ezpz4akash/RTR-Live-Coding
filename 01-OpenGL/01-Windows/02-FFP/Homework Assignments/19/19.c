@@ -364,6 +364,20 @@ void resize(int width, int height){
     glLoadIdentity();
 }
 
+void printModelViewMatrix() {
+    GLfloat mvMatrix[16];
+    glGetFloatv(GL_MODELVIEW_MATRIX, mvMatrix);
+
+    fprintf(gpFile, "ModelView Matrix:\n");
+    for (int i = 0; i < 4; ++i) {
+        fprintf(gpFile, "[ %7.3f %7.3f %7.3f %7.3f ]\n",
+            mvMatrix[0 + i],
+            mvMatrix[4 + i],
+            mvMatrix[8 + i],
+            mvMatrix[12 + i]);
+    }
+}
+
 void display(void){
     void drawPyramid();
     void drawCube();
@@ -394,7 +408,11 @@ void display(void){
         GLfloat radius = 12.0f;
         GLfloat x = radius * cos(DEG_TO_RAD(angleOfRotation));
         GLfloat z = radius * sin(DEG_TO_RAD(angleOfRotation));
+        printModelViewMatrix();
         gluLookAt(x, 0.0f, z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        printModelViewMatrix();
+        fprintf(gpFile, "\n\n");
+
         glTranslatef(0.0f, 0.0f, -5.0f);
         glScalef(0.5f, 0.5f, 0.5f);
         

@@ -230,7 +230,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
                 break;
 
                 case VK_SPACE:
-                    PlaySound(TEXT("RangDeBasanti.wav"), NULL, SND_ASYNC | SND_FILENAME);
+                    //PlaySound(TEXT("RangDeBasanti.wav"), NULL, SND_ASYNC | SND_FILENAME);
                     run = TRUE;
                 break;
 
