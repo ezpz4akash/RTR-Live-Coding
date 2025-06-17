@@ -94,3 +94,6 @@ Better than average but less than Best Quality
 1. TIFF : Tagged Image File Format
 2. HEIF : High Efficiency Image Format
 
+# General
+    - Linux Cleanup : 
+        find . -type f \( -name 'OGL' -o -name 'OGL.o' -o -name 'Log.txt' \) -exec rm -v {} +

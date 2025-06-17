@@ -8,6 +8,7 @@
         "math.h": "c",
         "gl.h": "c",
         "stdio.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "xlib.h": "c"
     }
 }

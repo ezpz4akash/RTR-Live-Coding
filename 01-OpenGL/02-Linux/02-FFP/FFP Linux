@@ -1,0 +1,48 @@
+- PrintGLInfo as it is
+- display copy paste as it is except swap buffer
+- resize copy paste
+- For gluPerspective : 
+  	1. #include <GL/glu.h>
+  	2. -lGLU
+  
+- For depth : 
+  	1. GLX_DEPTH_SIZE 32, (Mesa recommends 24 bit depth)
+  	2. glClear depth buffer bit
+  	3. glClearColor chya varti 5 romantic line
+  		glShadeModel
+  		glClearDepth
+  		glEnable depth
+  		glDepthFunc
+  		glHint
+- Texture : 
+	- Linux recommends to use formats like ppm(portable pixmap)
+	1) To use other formats, ue third party open source libraries
+		1) SOIL : sudo apt-get install libsoil-dev (dpkg -l <package-name> OR apt list)
+		2) FreeImage
+		3) GIMP
+		4) STB
+		
+	2) #include <SOIL/SOIL.h>
+	3) Bool loadGLTexture(GLuint* texture, const char* path){
+		int width, height;
+		unsigned char* imageData = NULL;
+		
+		imageData = SOIL_load_image(path, &width, &height, NULL, SOIL_LOAD_RGB);
+		if(imageData == NULL){
+			fprintf(gpFile, "Failed to load image\n");
+			return False;
+		}
+		glGenTextures(1, texture);
+        glBindTexture(GL_TEXTURE_2D, *texture);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        SOIL_free_image_data(imageData);
+        return True;
+	}
+	
+- sh File Changes
+	-lX11 -lGL -lGLU -lSOIL

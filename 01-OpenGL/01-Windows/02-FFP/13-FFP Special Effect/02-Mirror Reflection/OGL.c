@@ -604,9 +604,9 @@ void display(void){
 void drawFloor(){
     glPushMatrix(); 
     {
-        glTranslatef(0.0f, 0.0f, -10.0f);
+        glTranslatef(0.0f, 0.0f, 0.0f);
         glRotatef(0.0f, 0.0f, 1.0f, 0.0f);
-        glScalef(5.0f, 5.0f, 1.0f);
+        glScalef(3.0f, 3.0f, 1.0f);
 
         glBindTexture(GL_TEXTURE_2D, textureMarble);
         glBegin(GL_QUADS);
