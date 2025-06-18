@@ -9,6 +9,9 @@
         "gl.h": "c",
         "stdio.h": "c",
         "stdlib.h": "c",
-        "xlib.h": "c"
+        "xlib.h": "c",
+        "memory.h": "c",
+        "xutil.h": "c",
+        "glx.h": "c"
     }
 }
