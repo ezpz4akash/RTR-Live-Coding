@@ -9,6 +9,13 @@
 #include <X11/Xutil.h>
 #include <X11/XKBlib.h>
 
+// For multithreading and process management to play sound asynchronously
+#include <unistd.h>
+#include <pthread.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
 // OpenGL related header files
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -22,7 +29,7 @@
 #define GL_PI 3.14159265359f
 #define DEG_TO_RAD(deg) ((GLfloat)deg * (GL_PI / 180.0f))
 #define CURVE_PRECISION 0.0019f
-#define CHAR_ANIMATION 0.007f
+#define CHAR_ANIMATION 0.002f
 #define JETS_SPEED_ON_STRAIGHT_PROJECTION 0.25f
 
 #define CHARACTER_WIDTH 20
@@ -79,6 +86,38 @@ GLboolean startJet = False;
 GLboolean animateB = True, animateH = False, animateA1 = False, animateR = False, animateA2 = False, animateT = False;
 
 GLfloat charInterpolate = 0.0f;
+
+pid_t soundPid = -1;
+
+void* PlaySoundThread(void* arg) {
+    const char* filepath = (const char*)arg;
+
+    pid_t pid = fork();
+    if (pid == 0) {
+        execlp("aplay", "aplay", filepath, (char*)NULL);
+        exit(EXIT_FAILURE); 
+    } else if (pid > 0) {
+        soundPid = pid;
+        int status;
+        waitpid(pid, &status, 0);
+        
+    }
+    return NULL;
+}
+
+void PlaySoundAsync(const char* filepath) {
+    pthread_t tid;
+    pthread_create(&tid, NULL, PlaySoundThread, (void*)filepath);
+    pthread_detach(tid);
+}
+
+void StopSoundAsync() {
+    if (soundPid > 0) {
+        kill(soundPid, SIGTERM);
+        soundPid = -1;
+    }
+}
+
 
 int main(void){
     // Function declarations
@@ -236,6 +275,7 @@ int main(void){
                     
                     case XK_space:
                         //PlaySound(TEXT("RangDeBasanti.wav"), NULL, SND_ASYNC | SND_FILENAME);
+                        PlaySoundAsync("RangDeBasanti.wav");
                         run = True;
                     break;
                     
@@ -296,6 +336,7 @@ int main(void){
         }
     }
 
+    StopSoundAsync();
     uninitialize();
     return 0;
 }

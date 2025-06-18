@@ -12,6 +12,7 @@
         "xlib.h": "c",
         "memory.h": "c",
         "xutil.h": "c",
-        "glx.h": "c"
+        "glx.h": "c",
+        "cstdlib": "c"
     }
 }

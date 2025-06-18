@@ -37,11 +37,11 @@ FILE *gpFile = NULL;
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
 
-#define MAX_LIMIT_CUBE_TRANSLATE_X  8.0f
-#define MIN_LIMIT_CUBE_TRANSLATE_X -8.0f
+#define MAX_LIMIT_CUBE_TRANSLATE_X  5.0f
+#define MIN_LIMIT_CUBE_TRANSLATE_X -5.0f
 
-#define MAX_LIMIT_CUBE_TRANSLATE_Y  4.0f
-#define MIN_LIMIT_CUBE_TRANSLATE_Y  -4.0f
+#define MAX_LIMIT_CUBE_TRANSLATE_Y  3.0f
+#define MIN_LIMIT_CUBE_TRANSLATE_Y  -3.0f
 
 #define CLOSETS_LIMIT_CUBE_TRANSLATE_Z  20.0f
 #define FARTHEST_LIMIT_CUBE_TRANSLATE_Z 3.0f
@@ -105,6 +105,7 @@ int main(void){
                                     GLX_BLUE_SIZE, 8,
                                     GLX_ALPHA_SIZE, 8,
                                     GLX_DEPTH_SIZE, 24,
+                                    GLX_STENCIL_SIZE, 8,
                                     None
                                 };
     Bool bDone = False;

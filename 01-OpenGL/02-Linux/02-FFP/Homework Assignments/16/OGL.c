@@ -4,6 +4,13 @@
 #include <memory.h>
 #include <math.h>
 
+// For multithreading and process management to play sound asynchronously
+#include <unistd.h>
+#include <pthread.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
 //Xlib header files
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -51,6 +58,38 @@ GLfloat tTrianglePos = 0.0f;
 GLfloat tCirclePos = 0.0f;
 GLfloat tWandPos = 0.0f;
 GLfloat radius = 0.0f;
+
+
+pid_t soundPid = -1;
+
+void* PlaySoundThread(void* arg) {
+    const char* filepath = (const char*)arg;
+
+    pid_t pid = fork();
+    if (pid == 0) {
+        execlp("aplay", "aplay", filepath, (char*)NULL);
+        exit(EXIT_FAILURE); 
+    } else if (pid > 0) {
+        soundPid = pid;
+        int status;
+        waitpid(pid, &status, 0);
+        
+    }
+    return NULL;
+}
+
+void PlaySoundAsync(const char* filepath) {
+    pthread_t tid;
+    pthread_create(&tid, NULL, PlaySoundThread, (void*)filepath);
+    pthread_detach(tid);
+}
+
+void StopSoundAsync() {
+    if (soundPid > 0) {
+        kill(soundPid, SIGTERM);
+        soundPid = -1;
+    }
+}
 
 int main(void){
     // Function declarations
@@ -207,6 +246,7 @@ int main(void){
                     break;      
                     case XK_space:
                         //PlaySound(TEXT("PotterTheme.wav"), NULL, SND_ASYNC | SND_FILENAME);
+                        PlaySoundAsync("PotterTheme.wav");
                         run = True;
                     break;            
                     
@@ -267,6 +307,7 @@ int main(void){
         }
     }
 
+    StopSoundAsync();
     uninitialize();
     return 0;
 }
