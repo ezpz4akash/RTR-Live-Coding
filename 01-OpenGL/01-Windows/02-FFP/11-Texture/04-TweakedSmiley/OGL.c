@@ -202,7 +202,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
                 break;
 
                 default:
-                keyPressed = -1;
+                //keyPressed = -1;
                 break;
             }
         break;

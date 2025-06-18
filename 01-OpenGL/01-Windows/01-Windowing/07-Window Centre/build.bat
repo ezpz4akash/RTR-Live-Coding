@@ -1,3 +1,3 @@
-cl.exe /c /EHsc logfile.c
+cl.exe /c /EHsc window.c
 rc.exe window.rc
-link.exe logfile.obj window.res gdi32.lib user32.lib /SUBSYSTEM:WINDOWS
+link.exe window.obj window.res gdi32.lib user32.lib /SUBSYSTEM:WINDOWS
