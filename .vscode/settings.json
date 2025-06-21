@@ -13,6 +13,7 @@
         "memory.h": "c",
         "xutil.h": "c",
         "glx.h": "c",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "glew.h": "c"
     }
 }
