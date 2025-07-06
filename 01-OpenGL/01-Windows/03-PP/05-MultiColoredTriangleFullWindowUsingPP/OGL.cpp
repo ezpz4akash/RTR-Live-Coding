@@ -44,6 +44,15 @@ HGLRC ghrc = NULL;
 // Shader related variables
 GLuint shaderProgramObject = 0;
 
+enum {
+    AMC_ATTRIBUTE_POSITION = 0,
+    AMC_ATTRIBUTE_COLOR,
+};
+
+GLuint vao = 0;
+GLuint vbo_position = 0;
+GLuint vbo_color = 0;
+
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
     int initialize(void);
@@ -91,7 +100,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     // Create Window
     //hWnd = CreateWindow(szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - BlueScreenWithEmptyShader"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
+    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - MultiColoredTriangleFullWindowUsingPP"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
     ghWnd = hWnd;
 
     // Show Windows
@@ -321,8 +330,13 @@ int initialize(void){
     GLuint vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
     const GLchar *vertexShaderSourceCode = 
         "#version 460 core\n" \
+        "in vec4 aPosition;\n" \
+        "in vec4 aColor;\n" \
+        "out vec4 out_color;\n" \
         "void main(void)\n" \
         "{\n" \
+        "gl_Position = aPosition;\n" \
+        "out_color = aColor;\n" \
         "}\n";
     glShaderSource(vertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
     glCompileShader(vertexShaderObject);
@@ -355,8 +369,11 @@ int initialize(void){
     GLuint fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
     const GLchar *fragmentShaderSourceCode = 
         "#version 460 core\n" \
+        "out vec4 FragColor;\n" \
+        "in vec4 out_color;\n" \
         "void main(void)\n" \
         "{\n" \
+        "FragColor = out_color;\n" \
         "}\n";
     glShaderSource(fragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
     glCompileShader(fragmentShaderObject);  
@@ -384,11 +401,16 @@ int initialize(void){
         fprintf(gpFile, "glCreateProgram failed\n");
         return -9;
     }
+
     // Attach vertex shader to the shader program object
     glAttachShader(shaderProgramObject, vertexShaderObject);
 
     // Attach fragment shader to the shader program object
     glAttachShader(shaderProgramObject, fragmentShaderObject);
+
+    // Bind the vertex attribute at a certain index in shader to same index in host program
+    glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_POSITION, "aPosition");
+    glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_COLOR, "aColor");
 
     // Link the shader program and check for errors
     glLinkProgram(shaderProgramObject);
@@ -410,15 +432,58 @@ int initialize(void){
         return -10;
     }
 
-    // From hear onwards openGL code starts
+    // Provide vertex position, color, texture coordinates, normals, etc. to the shader program object
 
-    // Tell openGL to choose the color to clear the screen
-    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+    const GLfloat triangle_position[] = {
+        0.0f,   1.0f,   0.0f,
+        -1.0f,  -1.0f,  0.0f,
+        1.0f,   -1.0f,  0.0f
+    };
+
+    const GLfloat triangle_color[] = {
+        1.0f,   0.0f,   0.0f,
+        0.0f,  1.0f,  0.0f,
+        0.0f,   0.0f,  1.0f
+    };
+
+    // Create Vertex Array Object (VAO) for array of vertex attributes
+    // vao is an array object that stores the state of vertex attributes
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+    {
+        // Position VBO
+        {
+            glGenBuffers(1, &vbo_position);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo_position);
+            {
+                glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_position), triangle_position, GL_STATIC_DRAW);
+                glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+                glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
+            }
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+
+        // Color VBO
+        {
+            glGenBuffers(1, &vbo_color);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo_color);
+            {
+                glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_color), triangle_color, GL_STATIC_DRAW);
+                glVertexAttribPointer(AMC_ATTRIBUTE_COLOR, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+                glEnableVertexAttribArray(AMC_ATTRIBUTE_COLOR);
+            }
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+    }
+    glBindVertexArray(0); // Unbind the VAO
 
     //Depth related code
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
+
+    // From hear onwards openGL code starts, Tell openGL to choose the color to clear the screen
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // Warm up resize
     RECT rect;
@@ -457,17 +522,26 @@ void resize(int width, int height){
         height = 1;
     
     glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+
 }
 
 void display(void){
     //code
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Use the shader program object
     glUseProgram(shaderProgramObject);
-    {
-        // Draw a triangle with the shader program glDrawArrays
-    
-    }
+
+    // Bind the VAO
+    glBindVertexArray(vao);
+
+    // Draw the triangle
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    // Unbind the VAO
+    glBindVertexArray(0);
+
+    // Unuse the shader program object
     glUseProgram(0);
 
     // Swap the buffers
@@ -488,6 +562,21 @@ void uninitialize(void){
     if(gbFullScreen == TRUE){
         toggleFullScreen();
         gbFullScreen = FALSE;
+    }
+
+    if(vbo_color){
+        glDeleteBuffers(1, &vbo_color);
+        vbo_color = 0;
+    }
+
+    if(vbo_position){
+        glDeleteBuffers(1, &vbo_position);
+        vbo_position = 0;
+    }
+
+    if(vao){
+        glDeleteVertexArrays(1, &vao);
+        vao = 0;
     }
 
     /* 

@@ -523,28 +523,25 @@ void display(void){
 
     // Use the shader program object
     glUseProgram(shaderProgramObject);
+    {
+        // Transformations
+        mat4 modelViewMatrix = mat4::identity();
+        mat4 modelViewProjectionMatrix = mat4::identity();
 
-    // Draw a triangle with the shader program glDrawArrays
+        modelViewProjectionMatrix = orthographicProjectionMatrix * modelViewMatrix;
 
-    // Transformations
-    mat4 modelViewMatrix = mat4::identity();
-    mat4 modelViewProjectionMatrix = mat4::identity();
+        // Pass the model view projection matrix to the shader
+        glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
 
-    modelViewProjectionMatrix = orthographicProjectionMatrix * modelViewMatrix;
+        // Bind the VAO
+        glBindVertexArray(vao);
 
-    // Pass the model view projection matrix to the shader
-    glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+        // Draw the triangle
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
-    // Bind the VAO
-    glBindVertexArray(vao);
-
-    // Draw the triangle
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
-    // Unbind the VAO
-    glBindVertexArray(0);
-
-    // Unuse the shader program object
+        // Unbind the VAO
+        glBindVertexArray(0);
+    }
     glUseProgram(0);
 
     // Swap the buffers
