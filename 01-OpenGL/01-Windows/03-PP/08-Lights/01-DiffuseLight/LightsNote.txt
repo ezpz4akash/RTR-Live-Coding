@@ -1,0 +1,17 @@
+1) Calculate the eye coordinates by multiplying position vector and model view matrix
+2) Calculate the normal matrix, which is the inverse transpose of the upper left 3x3 of the model view matrix
+3) Calculate transformed normals by multiplying normal vector with above normal matrix
+4) Calculate light source vector by subtracting eye coordinates from light position
+5) Finally calculate the diffuse light by this equation
+    L = Ld * Kd * (S.N) 
+    Where L is final diffuse light to be calculated
+    Ld is color of diffuse light
+    Kd is color of diffused material
+    S is light source vector
+    N is normal vector
+    . is dot product
+
+Out of above things, we are going to send 3 things to shaders : 
+    1) Ld
+    2) Kd
+    3) light position
