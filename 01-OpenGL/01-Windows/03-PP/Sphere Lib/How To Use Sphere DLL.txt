@@ -1,0 +1,87 @@
+Assuming On Windows You Are All Doing 64 Bit Win32 Application :
+================================================================
+01) Extract The Archive And Get The 3 Files : Sphere.h, Sphere.lib And Sphere.dll
+
+02) Copy Sphere.dll To Windows\System32 Directory.
+
+03) Copy Sphere.h And Sphere.lib To Your Project's Directory 
+    ( Not 'Debug' Directory )
+
+04) Include Sphere.h :
+
+    #include "Sphere.h"
+
+05) Link Sphere.lib :
+
+    #pragma comment(lib,"Sphere.lib")
+
+06) Declare Following Variables Globally :
+
+    float sphere_vertices[1146];
+    float sphere_normals[1146];
+    float sphere_textures[764];
+    unsigned short sphere_elements[2280];
+
+07) Then In initialize(), Where We Usually Do Vertices Declarations, 
+    Call Following Functions :
+
+    getSphereVertexData(sphere_vertices, sphere_normals, sphere_textures, sphere_elements);
+    gNumVertices = getNumberOfSphereVertices();
+    gNumElements = getNumberOfSphereElements();
+
+08) Now Use These Arrays To Create Your VBO :
+    i.e. VBO For Position, VBO For Normals, VBO For Elements.
+
+    // vao
+    glGenVertexArrays(1, &gVao_sphere);
+    glBindVertexArray(gVao_sphere);
+
+    // position vbo
+    glGenBuffers(1, &gVbo_sphere_position);
+    glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_position);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_vertices), sphere_vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(VDG_ATTRIBUTE_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+    glEnableVertexAttribArray(VDG_ATTRIBUTE_VERTEX);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // normal vbo
+    glGenBuffers(1, &gVbo_sphere_normal);
+    glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_normal);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_normals), sphere_normals, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(VDG_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+    glEnableVertexAttribArray(VDG_ATTRIBUTE_NORMAL);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // element vbo
+    glGenBuffers(1, &gVbo_sphere_element);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(sphere_elements), sphere_elements, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    // unbind vao
+    glBindVertexArray(0);
+
+
+09) In display(), Use Following Calls To Display The Sphere :
+
+    // Provided You Already Had Done Matrices Related Task Up Till Here
+
+    // *** bind vao ***
+    glBindVertexArray(gVao_sphere);
+
+    // *** draw, either by glDrawTriangles() or glDrawArrays() or glDrawElements()
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+    glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+
+    // *** unbind vao ***
+    glBindVertexArray(0);
+
+    // Do Usual Stuff Here Onwards
+
+10) In uninitialize(), Do Usual Cleanup Of VAO And VBO.
