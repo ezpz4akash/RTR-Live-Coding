@@ -52,29 +52,30 @@ enum {
     AMC_ATTRIBUTE_NORMAL,
 };
 
-GLuint vao_cube = 0;
-GLuint vbo_position_cube = 0;
-GLuint vbo_normal_cube = 0;
+GLuint vao_pyramid = 0;
+GLuint vbo_position_pyramid = 0;
+GLuint vbo_normal_pyramid = 0;
 
 GLuint modelViewMatrixUniform = 0;
 GLuint projectionMatrixUniform = 0;
+
+mat4 perspectiveProjectionMatrix;
 
 GLuint ldUniform = 0;               // Light Diffuse
 GLuint kdUniform = 0;               // Material Diffuse
 GLuint lightPositionUniform = 0;    // Light Position
 GLuint lKeyPressedUniform = 0;      // Light Key Pressed
 
-mat4 perspectiveProjectionMatrix;
-
-/* Rotation angle variables */
-GLfloat angleCube = 0.0f;
 
 GLfloat lightDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
 GLfloat materialDiffuse[] = {0.5f, 0.5f, 0.5f, 1.0f};
-GLfloat lightPosition[] = {0.0f, 0.0f, 2.0f, 1.0f};
+GLfloat lightPosition[] = {0.0f, 0.0f, 5.0f, 1.0f};
 
-BOOL bAnimation = FALSE; // Animation On/Off
 BOOL bLight = FALSE; // Light On/Off
+BOOL bAnimate = FALSE; // Animation On/Off
+
+/* Rotation angle variables */
+GLfloat anglePyramid = 0.0f;
 
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
@@ -123,7 +124,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     // Create Window
     //hWnd = CreateWindow(szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - Lights - DiffusedLight"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
+    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - Lights - DiffuseLightPyramid"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
     ghWnd = hWnd;
 
     // Show Windows
@@ -167,7 +168,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
                 display();
 
                 /* Update */
-                if(bAnimation)
+                if(bAnimate)
                     update();
             }
         }
@@ -238,7 +239,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
 
                 case 'A':
                 case 'a':
-                    bAnimation = !bAnimation;  
+                    bAnimate = !bAnimate;
                 break;
             }
         break;
@@ -485,6 +486,7 @@ int initialize(void){
     }
 
     // Get the required uniform locations from the shader program object
+    // Get the required uniform locations from the shader program object
     modelViewMatrixUniform = glGetUniformLocation(shaderProgramObject, "uModelViewMatrix");
     projectionMatrixUniform = glGetUniformLocation(shaderProgramObject, "uProjectionMatrix");
     ldUniform = glGetUniformLocation(shaderProgramObject, "uLd");
@@ -493,99 +495,76 @@ int initialize(void){
     lKeyPressedUniform = glGetUniformLocation(shaderProgramObject, "uLKeyPressed");
 
     // Provide vertex position, color, texture coordinates, normals, etc. to the shader program object
-    
-    // Cube
-    {
-        const GLfloat cube_position[] = {
-            // front
-            1.0f,  1.0f,  1.0f, // top-right of front
-            -1.0f,  1.0f,  1.0f, // top-left of front
-            -1.0f, -1.0f,  1.0f, // bottom-left of front
-            1.0f, -1.0f,  1.0f, // bottom-right of front
 
+    // pyramid
+    {
+        const GLfloat pyramid_position[] = {
+            // front
+            0.0f,  1.0f,  0.0f, // front-top
+            -1.0f, -1.0f,  1.0f, // front-left
+            1.0f, -1.0f,  1.0f, // front-right
+            
             // right
-            1.0f,  1.0f, -1.0f, // top-right of right
-            1.0f,  1.0f,  1.0f, // top-left of right
-            1.0f, -1.0f,  1.0f, // bottom-left of right
-            1.0f, -1.0f, -1.0f, // bottom-right of right
+            0.0f,  1.0f,  0.0f, // right-top
+            1.0f, -1.0f,  1.0f, // right-left
+            1.0f, -1.0f, -1.0f, // right-right
 
             // back
-            1.0f,  1.0f, -1.0f, // top-right of back
-            -1.0f,  1.0f, -1.0f, // top-left of back
-            -1.0f, -1.0f, -1.0f, // bottom-left of back
-            1.0f, -1.0f, -1.0f, // bottom-right of back
+            0.0f,  1.0f,  0.0f, // back-top
+            1.0f, -1.0f, -1.0f, // back-left
+            -1.0f, -1.0f, -1.0f, // back-right
 
             // left
-            -1.0f,  1.0f,  1.0f, // top-right of left
-            -1.0f,  1.0f, -1.0f, // top-left of left
-            -1.0f, -1.0f, -1.0f, // bottom-left of left
-            -1.0f, -1.0f,  1.0f, // bottom-right of left
-
-            // top
-            1.0f,  1.0f, -1.0f, // top-right of top
-            -1.0f,  1.0f, -1.0f, // top-left of top
-            -1.0f,  1.0f,  1.0f, // bottom-left of top
-            1.0f,  1.0f,  1.0f, // bottom-right of top
-
-            // bottom
-            1.0f, -1.0f,  1.0f, // top-right of bottom
-            -1.0f, -1.0f,  1.0f, // top-left of bottom
-            -1.0f, -1.0f, -1.0f, // bottom-left of bottom
-            1.0f, -1.0f, -1.0f, // bottom-right of bottom
-        };
-        const GLfloat cube_normal[] = {
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f
+            0.0f,  1.0f,  0.0f, // left-top
+            -1.0f, -1.0f, -1.0f, // left-left
+            -1.0f, -1.0f,  1.0f, // left-right
         };
 
-        glGenVertexArrays(1, &vao_cube);
-        glBindVertexArray(vao_cube);
+        GLfloat pyramid_normal[] = {
+            // front
+            0.000000f, 0.447214f,  0.894427f, // front-top
+            0.000000f, 0.447214f,  0.894427f, // front-left
+            0.000000f, 0.447214f,  0.894427f, // front-right
+                                    
+            // right			    
+            0.894427f, 0.447214f,  0.000000f, // right-top
+            0.894427f, 0.447214f,  0.000000f, // right-left
+            0.894427f, 0.447214f,  0.000000f, // right-right
+
+            // back
+            0.000000f, 0.447214f, -0.894427f, // back-top
+            0.000000f, 0.447214f, -0.894427f, // back-left
+            0.000000f, 0.447214f, -0.894427f, // back-right
+
+            // left
+            -0.894427f, 0.447214f,  0.000000f, // left-top
+            -0.894427f, 0.447214f,  0.000000f, // left-left
+            -0.894427f, 0.447214f,  0.000000f, // left-right
+        };
+
+        // Create Vertex Array Object (VAO) for array of vertex attributes
+        // vao is an array object that stores the state of vertex attributes
+        glGenVertexArrays(1, &vao_pyramid);
+        glBindVertexArray(vao_pyramid);
         {
             // Position VBO
             {
-                glGenBuffers(1, &vbo_position_cube);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_position_cube);
+                glGenBuffers(1, &vbo_position_pyramid);
+                glBindBuffer(GL_ARRAY_BUFFER, vbo_position_pyramid);
                 {
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_position), cube_position, GL_STATIC_DRAW);
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(pyramid_position), pyramid_position, GL_STATIC_DRAW);
                     glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
                     glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
                 }
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
             }
 
-            // Color VBO
+            // Normal VBO
             {
-                glGenBuffers(1, &vbo_normal_cube);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_normal_cube);
+                glGenBuffers(1, &vbo_normal_pyramid);
+                glBindBuffer(GL_ARRAY_BUFFER, vbo_normal_pyramid);
                 {
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_normal), cube_normal, GL_STATIC_DRAW);
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(pyramid_normal), pyramid_normal, GL_STATIC_DRAW);
                     glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
                     glEnableVertexAttribArray(AMC_ATTRIBUTE_NORMAL);
                 }
@@ -655,27 +634,21 @@ void display(void){
     {
         // Transformations
         mat4 modelViewMatrix = mat4::identity();
+        mat4 modelViewProjectionMatrix = mat4::identity();
         mat4 translationMatrix = mat4::identity();
         mat4 rotationMatrix = mat4::identity();
         mat4 scaleMatrix = mat4::identity();
         {
             translationMatrix = mat4::identity();
             rotationMatrix = mat4::identity();
-            scaleMatrix = mat4::identity();
 
             // Prepare transformation matrices
             translationMatrix = vmath::translate(0.0f, 0.0f, -6.0f);
-            
-            rotationMatrix = vmath::rotate(angleCube, 1.0f, 0.0f, 0.0f);
-            rotationMatrix = rotationMatrix * vmath::rotate(angleCube, 0.0f, 1.0f, 0.0f);
-            rotationMatrix = rotationMatrix * vmath::rotate(angleCube, 0.0f, 0.0f, 1.0f);
-
-            scaleMatrix = vmath::scale(0.75f, 0.75f, 0.75f);
+            rotationMatrix = vmath::rotate(anglePyramid, 0.0f, 1.0f, 0.0f);
 
             // Modeview matrix is the combination of all transformations by multiplying all the necessary transformation matrices
-            modelViewMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+            modelViewMatrix = translationMatrix * rotationMatrix;
 
-            // Pass the model view projection matrix to the shader
             glUniformMatrix4fv(modelViewMatrixUniform, 1, GL_FALSE, modelViewMatrix);
             glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, perspectiveProjectionMatrix);
             glUniform3f(ldUniform, lightDiffuse[0], lightDiffuse[1], lightDiffuse[2]);
@@ -683,16 +656,11 @@ void display(void){
             glUniform4fv(lightPositionUniform, 1, lightPosition);
             glUniform1i(lKeyPressedUniform, bLight ? 1 : 0);
 
-            // Bind the VAO
-            glBindVertexArray(vao_cube);
+            // Bind the VAO for pyramid
+            glBindVertexArray(vao_pyramid);
             {
-                // Draw the Cube
-                glDrawArrays(GL_TRIANGLE_FAN, 0, 4); // front face
-                glDrawArrays(GL_TRIANGLE_FAN, 4, 4); // right face
-                glDrawArrays(GL_TRIANGLE_FAN, 8, 4); // back face
-                glDrawArrays(GL_TRIANGLE_FAN, 12, 4); // left face
-                glDrawArrays(GL_TRIANGLE_FAN, 16, 4); // top face
-                glDrawArrays(GL_TRIANGLE_FAN, 20, 4); // bottom face
+                // Draw the pyramid
+                glDrawArrays(GL_TRIANGLES, 0, 12);
             }
             glBindVertexArray(0);
         }
@@ -705,7 +673,7 @@ void display(void){
 
 void update(void){
     //code
-    angleCube = angleCube - 0.5f;
+    anglePyramid = anglePyramid + 0.05f;
 }
 
 void uninitialize(void){
@@ -720,19 +688,14 @@ void uninitialize(void){
         gbFullScreen = FALSE;
     }
 
-    if(vbo_normal_cube){
-        glDeleteBuffers(1, &vbo_normal_cube);
-        vbo_normal_cube = 0;
+    if(vbo_position_pyramid){
+        glDeleteBuffers(1, &vbo_position_pyramid);
+        vbo_position_pyramid = 0;
     }
 
-    if(vbo_position_cube){
-        glDeleteBuffers(1, &vbo_position_cube);
-        vbo_position_cube = 0;
-    }
-
-    if(vao_cube){
-        glDeleteVertexArrays(1, &vao_cube);
-        vao_cube = 0;
+    if(vao_pyramid){
+        glDeleteVertexArrays(1, &vao_pyramid);
+        vao_pyramid = 0;
     }
 
     /* 

@@ -1,0 +1,12 @@
+In PVPF, the shader code is split into two parts: one for per-vertex lighting and another for per-fragment lighting. 
+The toggle allows switching between these two modes, which is useful for comparing the effects of different lighting techniques in OpenGL.
+
+Since the overall uniforms remain same, the uniform names are kept consistent across both shader programs.
+This allows for a seamless transition between the two modes without needing to change the uniform names in the application code.
+The shader program object for per-vertex lighting is `pv_shaderProgramObject`, and for per-fragment lighting is `pf_shaderProgramObject`.
+
+Keys : 
+    - Escape for fullscreen toggle
+    - F for fragment lighting
+    - V for vertex lighting
+    - Q for exit
