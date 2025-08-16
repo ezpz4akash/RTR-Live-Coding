@@ -61,23 +61,39 @@ GLuint gVbo_sphere_position = 0;
 GLuint gVbo_sphere_normal = 0;
 GLuint gVbo_sphere_element = 0;
 
-GLuint modelMatrixUniform = 0;
-GLuint viewMatrixUniform = 0;
-GLuint projectionMatrixUniform = 0;
-
 mat4 perspectiveProjectionMatrix;
 
-GLuint laUniform = 0;               // Light Ambient
-GLuint ldUniform = 0;               // Light Diffuse
-GLuint lsUniform = 0;               // Light Specular
-GLuint lightPositionUniform = 0;    // Light Position
+GLuint pv_modelMatrixUniform = 0;
+GLuint pv_viewMatrixUniform = 0;
+GLuint pv_projectionMatrixUniform = 0;
 
-GLuint kaUniform = 0;               // Material Ambient
-GLuint ksUniform = 0;               // Material Specular
-GLuint kdUniform = 0;               // Material Diffuse
-GLuint materialShininessUniform = 0; // Material Shininess
+GLuint pv_laUniform = 0;               // Light Ambient
+GLuint pv_ldUniform = 0;               // Light Diffuse
+GLuint pv_lsUniform = 0;               // Light Specular
+GLuint pv_lightPositionUniform = 0;    // Light Position
 
-GLuint lKeyPressedUniform = 0;      // Light Key Pressed
+GLuint pv_kaUniform = 0;               // Material Ambient
+GLuint pv_ksUniform = 0;               // Material Specular
+GLuint pv_kdUniform = 0;               // Material Diffuse
+GLuint pv_materialShininessUniform = 0; // Material Shininess
+
+GLuint pv_lKeyPressedUniform = 0;      // Light Key Pressed
+
+GLuint pf_modelMatrixUniform = 0;
+GLuint pf_viewMatrixUniform = 0;
+GLuint pf_projectionMatrixUniform = 0;
+
+GLuint pf_laUniform = 0;               // Light Ambient
+GLuint pf_ldUniform = 0;               // Light Diffuse
+GLuint pf_lsUniform = 0;               // Light Specular
+GLuint pf_lightPositionUniform = 0;    // Light Position
+
+GLuint pf_kaUniform = 0;               // Material Ambient
+GLuint pf_ksUniform = 0;               // Material Specular
+GLuint pf_kdUniform = 0;               // Material Diffuse
+GLuint pf_materialShininessUniform = 0; // Material Shininess
+
+GLuint pf_lKeyPressedUniform = 0;      // Light Key Pressed
 
 GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
 GLfloat lightDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -522,18 +538,18 @@ int initialize(void){
     }
     
     // Get the required uniform locations from the shader program object
-    modelMatrixUniform = glGetUniformLocation(pv_shaderProgramObject, "uModelMatrix");
-    viewMatrixUniform = glGetUniformLocation(pv_shaderProgramObject, "uViewMatrix");
-    projectionMatrixUniform = glGetUniformLocation(pv_shaderProgramObject, "uProjectionMatrix");
-    laUniform = glGetUniformLocation(pv_shaderProgramObject, "uLa");
-    ldUniform = glGetUniformLocation(pv_shaderProgramObject, "uLd");
-    lsUniform = glGetUniformLocation(pv_shaderProgramObject, "uLs");
-    kaUniform = glGetUniformLocation(pv_shaderProgramObject, "uKa");
-    kdUniform = glGetUniformLocation(pv_shaderProgramObject, "uKd");
-    ksUniform = glGetUniformLocation(pv_shaderProgramObject, "uKs");
-    materialShininessUniform = glGetUniformLocation(pv_shaderProgramObject, "uMaterialShininess");
-    lightPositionUniform = glGetUniformLocation(pv_shaderProgramObject, "uLightPosition");
-    lKeyPressedUniform = glGetUniformLocation(pv_shaderProgramObject, "uLKeyPressed");
+    pv_modelMatrixUniform = glGetUniformLocation(pv_shaderProgramObject, "uModelMatrix");
+    pv_viewMatrixUniform = glGetUniformLocation(pv_shaderProgramObject, "uViewMatrix");
+    pv_projectionMatrixUniform = glGetUniformLocation(pv_shaderProgramObject, "uProjectionMatrix");
+    pv_laUniform = glGetUniformLocation(pv_shaderProgramObject, "uLa");
+    pv_ldUniform = glGetUniformLocation(pv_shaderProgramObject, "uLd");
+    pv_lsUniform = glGetUniformLocation(pv_shaderProgramObject, "uLs");
+    pv_kaUniform = glGetUniformLocation(pv_shaderProgramObject, "uKa");
+    pv_kdUniform = glGetUniformLocation(pv_shaderProgramObject, "uKd");
+    pv_ksUniform = glGetUniformLocation(pv_shaderProgramObject, "uKs");
+    pv_materialShininessUniform = glGetUniformLocation(pv_shaderProgramObject, "uMaterialShininess");
+    pv_lightPositionUniform = glGetUniformLocation(pv_shaderProgramObject, "uLightPosition");
+    pv_lKeyPressedUniform = glGetUniformLocation(pv_shaderProgramObject, "uLKeyPressed");
 
     /* 
         1. Write the shader source code
@@ -682,18 +698,18 @@ int initialize(void){
     }
     
     // Get the required uniform locations from the shader program object
-    modelMatrixUniform = glGetUniformLocation(pf_shaderProgramObject, "uModelMatrix");
-    viewMatrixUniform = glGetUniformLocation(pf_shaderProgramObject, "uViewMatrix");
-    projectionMatrixUniform = glGetUniformLocation(pf_shaderProgramObject, "uProjectionMatrix");
-    laUniform = glGetUniformLocation(pf_shaderProgramObject, "uLa");
-    ldUniform = glGetUniformLocation(pf_shaderProgramObject, "uLd");
-    lsUniform = glGetUniformLocation(pf_shaderProgramObject, "uLs");
-    kaUniform = glGetUniformLocation(pf_shaderProgramObject, "uKa");
-    kdUniform = glGetUniformLocation(pf_shaderProgramObject, "uKd");
-    ksUniform = glGetUniformLocation(pf_shaderProgramObject, "uKs");
-    materialShininessUniform = glGetUniformLocation(pf_shaderProgramObject, "uMaterialShininess");
-    lightPositionUniform = glGetUniformLocation(pf_shaderProgramObject, "uLightPosition");
-    lKeyPressedUniform = glGetUniformLocation(pf_shaderProgramObject, "uLKeyPressed");
+    pf_modelMatrixUniform = glGetUniformLocation(pf_shaderProgramObject, "uModelMatrix");
+    pf_viewMatrixUniform = glGetUniformLocation(pf_shaderProgramObject, "uViewMatrix");
+    pf_projectionMatrixUniform = glGetUniformLocation(pf_shaderProgramObject, "uProjectionMatrix");
+    pf_laUniform = glGetUniformLocation(pf_shaderProgramObject, "uLa");
+    pf_ldUniform = glGetUniformLocation(pf_shaderProgramObject, "uLd");
+    pf_lsUniform = glGetUniformLocation(pf_shaderProgramObject, "uLs");
+    pf_kaUniform = glGetUniformLocation(pf_shaderProgramObject, "uKa");
+    pf_kdUniform = glGetUniformLocation(pf_shaderProgramObject, "uKd");
+    pf_ksUniform = glGetUniformLocation(pf_shaderProgramObject, "uKs");
+    pf_materialShininessUniform = glGetUniformLocation(pf_shaderProgramObject, "uMaterialShininess");
+    pf_lightPositionUniform = glGetUniformLocation(pf_shaderProgramObject, "uLightPosition");
+    pf_lKeyPressedUniform = glGetUniformLocation(pf_shaderProgramObject, "uLKeyPressed");
 
     // Provide vertex position, color, texture coordinates, normals, etc. to the shader program object
     getSphereVertexData(sphere_vertices, sphere_normals, sphere_textures, sphere_elements);
@@ -821,19 +837,36 @@ void display(void){
             // Modeview matrix is the combination of all transformations by multiplying all the necessary transformation matrices
             modelMatrix = translationMatrix;
 
-            glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, modelMatrix);
-            glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, viewMatrix);
-            glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, perspectiveProjectionMatrix);
+            if(perVertexperFragmentToggle){
+                glUniformMatrix4fv(pf_modelMatrixUniform, 1, GL_FALSE, modelMatrix);
+                glUniformMatrix4fv(pf_viewMatrixUniform, 1, GL_FALSE, viewMatrix);
+                glUniformMatrix4fv(pf_projectionMatrixUniform, 1, GL_FALSE, perspectiveProjectionMatrix);
 
-            glUniform3f(laUniform, lightAmbient[0], lightAmbient[1], lightAmbient[2]);
-            glUniform3f(ldUniform, lightDiffuse[0], lightDiffuse[1], lightDiffuse[2]);
-            glUniform3f(lsUniform, lightSpecular[0], lightSpecular[1], lightSpecular[2]);
-            glUniform3f(kaUniform, materialAmbient[0], materialAmbient[1], materialAmbient[2]);
-            glUniform3f(kdUniform, materialDiffuse[0], materialDiffuse[1], materialDiffuse[2]);
-            glUniform3f(ksUniform, materialSpecular[0], materialSpecular[1], materialSpecular[2]);
-            glUniform1f(materialShininessUniform, materialShininess);
-            glUniform4fv(lightPositionUniform, 1, lightPosition);
-            glUniform1i(lKeyPressedUniform, bLight ? 1 : 0);
+                glUniform3f(pf_laUniform, lightAmbient[0], lightAmbient[1], lightAmbient[2]);
+                glUniform3f(pf_ldUniform, lightDiffuse[0], lightDiffuse[1], lightDiffuse[2]);
+                glUniform3f(pf_lsUniform, lightSpecular[0], lightSpecular[1], lightSpecular[2]);
+                glUniform3f(pf_kaUniform, materialAmbient[0], materialAmbient[1], materialAmbient[2]);
+                glUniform3f(pf_kdUniform, materialDiffuse[0], materialDiffuse[1], materialDiffuse[2]);
+                glUniform3f(pf_ksUniform, materialSpecular[0], materialSpecular[1], materialSpecular[2]);
+                glUniform1f(pf_materialShininessUniform, materialShininess);
+                glUniform4fv(pf_lightPositionUniform, 1, lightPosition);
+                glUniform1i(pf_lKeyPressedUniform, bLight ? 1 : 0);
+            }
+            else{
+                glUniformMatrix4fv(pv_modelMatrixUniform, 1, GL_FALSE, modelMatrix);
+                glUniformMatrix4fv(pv_viewMatrixUniform, 1, GL_FALSE, viewMatrix);
+                glUniformMatrix4fv(pv_projectionMatrixUniform, 1, GL_FALSE, perspectiveProjectionMatrix);
+
+                glUniform3f(pv_laUniform, lightAmbient[0], lightAmbient[1], lightAmbient[2]);
+                glUniform3f(pv_ldUniform, lightDiffuse[0], lightDiffuse[1], lightDiffuse[2]);
+                glUniform3f(pv_lsUniform, lightSpecular[0], lightSpecular[1], lightSpecular[2]);
+                glUniform3f(pv_kaUniform, materialAmbient[0], materialAmbient[1], materialAmbient[2]);
+                glUniform3f(pv_kdUniform, materialDiffuse[0], materialDiffuse[1], materialDiffuse[2]);
+                glUniform3f(pv_ksUniform, materialSpecular[0], materialSpecular[1], materialSpecular[2]);
+                glUniform1f(pv_materialShininessUniform, materialShininess);
+                glUniform4fv(pv_lightPositionUniform, 1, lightPosition);
+                glUniform1i(pv_lKeyPressedUniform, bLight ? 1 : 0);
+            }
         }
 
         glBindVertexArray(gVao_sphere);

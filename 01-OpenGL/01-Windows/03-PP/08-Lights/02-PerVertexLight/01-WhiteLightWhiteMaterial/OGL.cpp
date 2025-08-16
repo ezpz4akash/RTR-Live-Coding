@@ -13,9 +13,12 @@
 #include "vmath.h"
 using namespace vmath;
 
+#include "Sphere.h"
+
 //OpenGL related libraries
 #pragma comment(lib, "glew32.lib")      // GLEW
 #pragma comment(lib, "opengl32.lib")    // CoreGL
+#pragma comment(lib, "Sphere.lib")    // Sphere
 
 // Macros
 #define WIN_WIDTH 800
@@ -52,33 +55,48 @@ enum {
     AMC_ATTRIBUTE_NORMAL,
 };
 
-GLuint vao_cube = 0;
-GLuint vbo_position_cube = 0;
-GLuint vbo_normal_cube = 0;
+GLuint gVao_sphere = 0;
+GLuint gVbo_sphere_position = 0;
+GLuint gVbo_sphere_normal = 0;
+GLuint gVbo_sphere_element = 0;
 
-GLuint modelViewMatrixUniform = 0;
+GLuint modelMatrixUniform = 0;
+GLuint viewMatrixUniform = 0;
 GLuint projectionMatrixUniform = 0;
-
-GLuint ldUniform = 0;               // Light Diffuse
-GLuint kdUniform = 0;               // Material Diffuse
-GLuint lsUniform = 0;               // Light Diffuse
-GLuint ksUniform = 0;               // Material Diffuse
-GLuint lightPositionUniform = 0;    // Light Position
-GLuint lKeyPressedUniform = 0;      // Light Key Pressed
 
 mat4 perspectiveProjectionMatrix;
 
-/* Rotation angle variables */
-GLfloat angleCube = 0.0f;
+GLuint laUniform = 0;               // Light Ambient
+GLuint ldUniform = 0;               // Light Diffuse
+GLuint lsUniform = 0;               // Light Specular
+GLuint lightPositionUniform = 0;    // Light Position
 
-GLfloat lightDiffuse[] = {1.0f, 0.0f, 0.0f, 1.0f};
-GLfloat materialDiffuse[] = {0.5f, 0.5f, 0.5f, 1.0f};
+GLuint kaUniform = 0;               // Material Ambient
+GLuint ksUniform = 0;               // Material Specular
+GLuint kdUniform = 0;               // Material Diffuse
+GLuint materialShininessUniform = 0; // Material Shininess
+
+GLuint lKeyPressedUniform = 0;      // Light Key Pressed
+
+GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
+GLfloat lightDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
 GLfloat lightSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-GLfloat materialSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-GLfloat lightPosition[] = {0.0f, 0.0f, 2.0f, 1.0f};
+GLfloat lightPosition[] = {100.0f, 100.0f, 100.0f, 1.0f};
 
-BOOL bAnimation = FALSE; // Animation On/Off
+GLfloat materialAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
+GLfloat materialDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+GLfloat materialSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+GLfloat materialShininess = 50.0f;
+
 BOOL bLight = FALSE; // Light On/Off
+
+/* Sphere related variables */
+float sphere_vertices[1146];
+float sphere_normals[1146];
+float sphere_textures[764];
+unsigned short sphere_elements[2280];
+unsigned int gNumVertices = 0;
+unsigned int gNumElements = 0;
 
 // Entry Point Functions
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int iCmdShow){
@@ -127,7 +145,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     // Create Window
     //hWnd = CreateWindow(szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - Lights - SpecularLightPerFragment"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
+    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - Lights - PerVertexLight - WhiteLightWhiteMaterial"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
     ghWnd = hWnd;
 
     // Show Windows
@@ -171,8 +189,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
                 display();
 
                 /* Update */
-                if(bAnimation)
-                    update();
+                update();
             }
         }
     }
@@ -238,11 +255,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam){
                 case 'L':
                 case 'l':
                     bLight = !bLight;
-                break;
-
-                case 'A':
-                case 'a':
-                    bAnimation = !bAnimation;  
                 break;
             }
         break;
@@ -370,19 +382,40 @@ int initialize(void){
         "#version 460 core\n" \
         "in vec4 aPosition;\n" \
         "in vec3 aNormal;\n" \
-        "out vec4 eyeCoordinates;\n" \
-        "out vec3 transformedNormal;\n" \
-        "out vec3 lightSource;\n" \
-        "uniform mat4 uModelViewMatrix;\n" \
+        "uniform mat4 uModelMatrix;\n" \
+        "uniform mat4 uViewMatrix;\n" \
         "uniform mat4 uProjectionMatrix;\n"\
+        "uniform vec3 uLa;\n" \
+        "uniform vec3 uLd;\n" \
+        "uniform vec3 uLs;\n" \
         "uniform vec4 uLightPosition;\n" \
+        "uniform vec3 uKa;\n" \
+        "uniform vec3 uKd;\n" \
+        "uniform vec3 uKs;\n" \
+        "uniform float uMaterialShininess;\n" \
+        "uniform int  uLKeyPressed;\n" \
+        "out vec4 out_phong_ads_Light;\n" \
         "void main(void)\n" \
         "{\n" \
-        "   eyeCoordinates = uModelViewMatrix * aPosition;\n" \
-        "   mat3 normalMatrix = mat3(transpose(inverse(uModelViewMatrix)));\n" \
-        "   transformedNormal = (normalMatrix * aNormal);\n" \
-        "   lightSource = (vec3(uLightPosition) - eyeCoordinates.xyz);\n" \
-        "   gl_Position = uProjectionMatrix * uModelViewMatrix * aPosition;\n" \
+        "   if(uLKeyPressed == 1)\n" \
+        "   {\n" \
+        "       vec4 eyeCoordinates = uViewMatrix * uModelMatrix * aPosition;\n" \
+        "       mat3 normalMatrix = mat3(transpose(inverse(uViewMatrix * uModelMatrix)));\n" \
+        "       vec3 transformedNormal = normalize(normalMatrix * aNormal);\n" \
+        "       vec3 lightSource = normalize(vec3(uLightPosition) - eyeCoordinates.xyz);\n" \
+        "       float tnDotLd = max(dot(lightSource, transformedNormal), 0.0);\n" \
+        "       vec3 reflectedVector = reflect(-lightSource, transformedNormal);\n" \
+        "       vec3 viewerVector = normalize(-eyeCoordinates.xyz);\n" \
+        "       vec3 ambient = uLa * uKa;\n" \
+        "       vec3 diffuse = uLd * uKd * tnDotLd;\n" \
+        "       vec3 specular = uLs * uKs * pow(max(dot(reflectedVector, viewerVector), 0.0), uMaterialShininess);\n" \
+        "       out_phong_ads_Light = vec4(ambient + diffuse + specular, 1.0);\n" \
+        "   }\n" \
+        "   else\n" \
+        "   {\n" \
+        "       out_phong_ads_Light = vec4(1.0, 1.0, 1.0, 1.0);\n" \
+        "   }\n" \
+        "   gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aPosition;\n" \
         "}\n";
     glShaderSource(vertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
     glCompileShader(vertexShaderObject);
@@ -415,32 +448,11 @@ int initialize(void){
     GLuint fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
     const GLchar *fragmentShaderSourceCode = 
         "#version 460 core\n" \
-        "flat in vec4 eyeCoordinates;\n" \
-        "flat in vec3 transformedNormal;\n" \
-        "flat in vec3 lightSource;\n" \
-        "uniform vec3 uLd;\n" \
-        "uniform vec3 uKd;\n" \
-        "uniform vec3 uLs;\n" \
-        "uniform vec3 uKs;\n" \
-        "uniform int  uLKeyPressed;\n" \
+        "in vec4 out_phong_ads_Light;\n" \
         "out vec4 FragColor;\n" \
         "void main(void)\n" \
         "{\n" \
-        "   vec3 normalizedTransformNormal = normalize(transformedNormal);\n" \
-        "   vec3 normalizedLightSource = normalize(lightSource);\n" \
-        "   if(uLKeyPressed == 1)\n" \
-        "   {\n" \
-        "       float tnDotLd = max(dot(normalizedLightSource, normalizedTransformNormal), 0.0);\n" \
-        "       vec3 reflectedLight = normalize(reflect(-normalizedLightSource, normalizedTransformNormal));\n" \
-        "       vec3 viewVector = normalize(-eyeCoordinates.xyz);\n" \
-        "       float rDotv = max(dot(reflectedLight, viewVector), 0.0);\n" \
-        "       vec4 specularLight = vec4(uLs * uKs * pow(rDotv, 50.0), 1.0);\n" \
-        "       FragColor = vec4(uLd * uKd * tnDotLd, 1.0) + specularLight;\n" \
-        "   }\n" \
-        "   else\n" \
-        "   {\n" \
-        "       FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n" \
-        "   }\n" \
+        "FragColor = out_phong_ads_Light;\n" \
         "}\n";
     glShaderSource(fragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
     glCompileShader(fragmentShaderObject);  
@@ -477,7 +489,6 @@ int initialize(void){
 
     // Bind the vertex attribute at a certain index in shader to same index in host program
     glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_POSITION, "aPosition");
-    glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_NORMAL, "aNormal");
 
     // Link the shader program and check for errors
     glLinkProgram(shaderProgramObject);
@@ -498,119 +509,73 @@ int initialize(void){
         }
         return -10;
     }
-
+    
     // Get the required uniform locations from the shader program object
-    modelViewMatrixUniform = glGetUniformLocation(shaderProgramObject, "uModelViewMatrix");
+    modelMatrixUniform = glGetUniformLocation(shaderProgramObject, "uModelMatrix");
+    viewMatrixUniform = glGetUniformLocation(shaderProgramObject, "uViewMatrix");
     projectionMatrixUniform = glGetUniformLocation(shaderProgramObject, "uProjectionMatrix");
+    laUniform = glGetUniformLocation(shaderProgramObject, "uLa");
     ldUniform = glGetUniformLocation(shaderProgramObject, "uLd");
-    kdUniform = glGetUniformLocation(shaderProgramObject, "uKd");
     lsUniform = glGetUniformLocation(shaderProgramObject, "uLs");
+    kaUniform = glGetUniformLocation(shaderProgramObject, "uKa");
+    kdUniform = glGetUniformLocation(shaderProgramObject, "uKd");
     ksUniform = glGetUniformLocation(shaderProgramObject, "uKs");
+    materialShininessUniform = glGetUniformLocation(shaderProgramObject, "uMaterialShininess");
     lightPositionUniform = glGetUniformLocation(shaderProgramObject, "uLightPosition");
     lKeyPressedUniform = glGetUniformLocation(shaderProgramObject, "uLKeyPressed");
 
     // Provide vertex position, color, texture coordinates, normals, etc. to the shader program object
-    
-    // Cube
-    {
-        const GLfloat cube_position[] = {
-            // front
-            1.0f,  1.0f,  1.0f, // top-right of front
-            -1.0f,  1.0f,  1.0f, // top-left of front
-            -1.0f, -1.0f,  1.0f, // bottom-left of front
-            1.0f, -1.0f,  1.0f, // bottom-right of front
+    getSphereVertexData(sphere_vertices, sphere_normals, sphere_textures, sphere_elements);
+    gNumVertices = getNumberOfSphereVertices();
+    gNumElements = getNumberOfSphereElements();
 
-            // right
-            1.0f,  1.0f, -1.0f, // top-right of right
-            1.0f,  1.0f,  1.0f, // top-left of right
-            1.0f, -1.0f,  1.0f, // bottom-left of right
-            1.0f, -1.0f, -1.0f, // bottom-right of right
+    fprintf(gpFile, "Number of Sphere Vertices: %d\n", gNumVertices);
+    fprintf(gpFile, "Number of Sphere Elements: %d\n", gNumElements);
 
-            // back
-            1.0f,  1.0f, -1.0f, // top-right of back
-            -1.0f,  1.0f, -1.0f, // top-left of back
-            -1.0f, -1.0f, -1.0f, // bottom-left of back
-            1.0f, -1.0f, -1.0f, // bottom-right of back
-
-            // left
-            -1.0f,  1.0f,  1.0f, // top-right of left
-            -1.0f,  1.0f, -1.0f, // top-left of left
-            -1.0f, -1.0f, -1.0f, // bottom-left of left
-            -1.0f, -1.0f,  1.0f, // bottom-right of left
-
-            // top
-            1.0f,  1.0f, -1.0f, // top-right of top
-            -1.0f,  1.0f, -1.0f, // top-left of top
-            -1.0f,  1.0f,  1.0f, // bottom-left of top
-            1.0f,  1.0f,  1.0f, // bottom-right of top
-
-            // bottom
-            1.0f, -1.0f,  1.0f, // top-right of bottom
-            -1.0f, -1.0f,  1.0f, // top-left of bottom
-            -1.0f, -1.0f, -1.0f, // bottom-left of bottom
-            1.0f, -1.0f, -1.0f, // bottom-right of bottom
-        };
-        const GLfloat cube_normal[] = {
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f
-        };
-
-        glGenVertexArrays(1, &vao_cube);
-        glBindVertexArray(vao_cube);
-        {
-            // Position VBO
-            {
-                glGenBuffers(1, &vbo_position_cube);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_position_cube);
-                {
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_position), cube_position, GL_STATIC_DRAW);
-                    glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-                    glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
-                }
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-            }
-
-            // Color VBO
-            {
-                glGenBuffers(1, &vbo_normal_cube);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_normal_cube);
-                {
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_normal), cube_normal, GL_STATIC_DRAW);
-                    glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-                    glEnableVertexAttribArray(AMC_ATTRIBUTE_NORMAL);
-                }
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-            }
-        }
-        glBindVertexArray(0); // Unbind the VAO
+    for(int i = 0; i < gNumVertices; i++){
+        fprintf(gpFile, "Sphere Vertex %d: Position: (%f, %f, %f), Normal: (%f, %f, %f)\n", 
+                i, 
+                sphere_vertices[i * 3], sphere_vertices[i * 3 + 1], sphere_vertices[i * 3 + 2],
+                sphere_normals[i * 3], sphere_normals[i * 3 + 1], sphere_normals[i * 3 + 2]);
     }
+
+    glGenVertexArrays(1, &gVao_sphere);
+    glBindVertexArray(gVao_sphere);
+    {
+        // Position VBO
+        glGenBuffers(1, &gVbo_sphere_position);
+        glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_position);
+        {
+            glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_vertices), sphere_vertices, GL_STATIC_DRAW);
+            glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    {
+        // Normal VBO
+        glGenBuffers(1, &gVbo_sphere_normal);
+        glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_normal);
+        {
+            glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_normals), sphere_normals, GL_STATIC_DRAW);
+            glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(AMC_ATTRIBUTE_NORMAL);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    {
+        // Indices VBO
+        glGenBuffers(1, &gVbo_sphere_element);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+        {
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(sphere_elements), sphere_elements, GL_STATIC_DRAW);
+        }
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    glBindVertexArray(0); // Unbind the VAO
 
     //Depth related code
     glClearDepth(1.0f);
@@ -619,8 +584,6 @@ int initialize(void){
 
     // From hear onwards openGL code starts, Tell openGL to choose the color to clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-    perspectiveProjectionMatrix = mat4::identity();
 
     // Warm up resize
     RECT rect;
@@ -671,50 +634,38 @@ void display(void){
     glUseProgram(shaderProgramObject);
     {
         // Transformations
-        mat4 modelViewMatrix = mat4::identity();
-        mat4 translationMatrix = mat4::identity();
-        mat4 rotationMatrix = mat4::identity();
-        mat4 scaleMatrix = mat4::identity();
+        mat4 modelMatrix = mat4::identity();
+        mat4 viewMatrix = mat4::identity();
         {
-            translationMatrix = mat4::identity();
-            rotationMatrix = mat4::identity();
-            scaleMatrix = mat4::identity();
+            mat4 translationMatrix = mat4::identity();
 
             // Prepare transformation matrices
-            translationMatrix = vmath::translate(0.0f, 0.0f, -6.0f);
-            
-            rotationMatrix = vmath::rotate(angleCube, 1.0f, 0.0f, 0.0f);
-            rotationMatrix = rotationMatrix * vmath::rotate(angleCube, 0.0f, 1.0f, 0.0f);
-            rotationMatrix = rotationMatrix * vmath::rotate(angleCube, 0.0f, 0.0f, 1.0f);
-
-            scaleMatrix = vmath::scale(0.75f, 0.75f, 0.75f);
+            translationMatrix = vmath::translate(0.0f, 0.0f, -2.0f);
 
             // Modeview matrix is the combination of all transformations by multiplying all the necessary transformation matrices
-            modelViewMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+            modelMatrix = translationMatrix;
 
-            // Pass the model view projection matrix to the shader
-            glUniformMatrix4fv(modelViewMatrixUniform, 1, GL_FALSE, modelViewMatrix);
+            glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, modelMatrix);
+            glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, viewMatrix);
             glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, perspectiveProjectionMatrix);
+
+            glUniform3f(laUniform, lightAmbient[0], lightAmbient[1], lightAmbient[2]);
             glUniform3f(ldUniform, lightDiffuse[0], lightDiffuse[1], lightDiffuse[2]);
-            glUniform3f(kdUniform, materialDiffuse[0], materialDiffuse[1], materialDiffuse[2]);
             glUniform3f(lsUniform, lightSpecular[0], lightSpecular[1], lightSpecular[2]);
+            glUniform3f(kaUniform, materialAmbient[0], materialAmbient[1], materialAmbient[2]);
+            glUniform3f(kdUniform, materialDiffuse[0], materialDiffuse[1], materialDiffuse[2]);
             glUniform3f(ksUniform, materialSpecular[0], materialSpecular[1], materialSpecular[2]);
+            glUniform1f(materialShininessUniform, materialShininess);
             glUniform4fv(lightPositionUniform, 1, lightPosition);
             glUniform1i(lKeyPressedUniform, bLight ? 1 : 0);
-
-            // Bind the VAO
-            glBindVertexArray(vao_cube);
-            {
-                // Draw the Cube
-                glDrawArrays(GL_TRIANGLE_FAN, 0, 4); // front face
-                glDrawArrays(GL_TRIANGLE_FAN, 4, 4); // right face
-                glDrawArrays(GL_TRIANGLE_FAN, 8, 4); // back face
-                glDrawArrays(GL_TRIANGLE_FAN, 12, 4); // left face
-                glDrawArrays(GL_TRIANGLE_FAN, 16, 4); // top face
-                glDrawArrays(GL_TRIANGLE_FAN, 20, 4); // bottom face
-            }
-            glBindVertexArray(0);
         }
+
+        glBindVertexArray(gVao_sphere);
+        {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+            glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+        }
+        glBindVertexArray(0);
     }
     glUseProgram(0);
 
@@ -724,7 +675,6 @@ void display(void){
 
 void update(void){
     //code
-    angleCube = angleCube - 0.5f;
 }
 
 void uninitialize(void){
@@ -739,19 +689,19 @@ void uninitialize(void){
         gbFullScreen = FALSE;
     }
 
-    if(vbo_normal_cube){
-        glDeleteBuffers(1, &vbo_normal_cube);
-        vbo_normal_cube = 0;
+    // Free vbo and vao
+    if(gVbo_sphere_position){
+        glDeleteBuffers(1, &gVbo_sphere_position);
+        gVbo_sphere_position = 0;
+    }
+    if(gVbo_sphere_normal){
+        glDeleteBuffers(1, &gVbo_sphere_normal);
+        gVbo_sphere_normal = 0;
     }
 
-    if(vbo_position_cube){
-        glDeleteBuffers(1, &vbo_position_cube);
-        vbo_position_cube = 0;
-    }
-
-    if(vao_cube){
-        glDeleteVertexArrays(1, &vao_cube);
-        vao_cube = 0;
+    if(gVao_sphere){
+        glDeleteVertexArrays(1, &gVao_sphere);
+        gVao_sphere = 0;
     }
 
     /* 
