@@ -64,7 +64,7 @@ int main(void){
     char keys[26]; // Although we need only zeroth index, conventionally the array size = number of alphabets
 
     int frameBufferAtrributes[] = {
-                                    GLX_DOUBLEBUFFER,
+                                    GLX_DOUBLEBUFFER, True,
                                     GLX_RGBA,
                                     GLX_RED_SIZE, 8,
                                     GLX_GREEN_SIZE, 8,
