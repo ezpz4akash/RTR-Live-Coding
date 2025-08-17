@@ -1,0 +1,10 @@
+How to prepare linux FFP XWindows Program for PP : 
+    1. Add Programmable Pipeline related Frame Buffer attributes into FrameBuffer attributes array.
+    2. Accordingly find FBConfigs supporting these FrameBuffer attributes.
+    3. From above multiple FBConfigs, find that one which has :
+        a) Matching visualInfo
+        b) Sample buffers to store samples
+        c) More than 0 samples
+        We will call this FBConfig as best FB config
+    4. From this best FBConfigs, create VisualInfo
+    5. From this VisualInfo and the best FBConfig, create the final glxContext and as usual make it current
