@@ -1011,8 +1011,10 @@ void display(void){
 
 void update(void){
     //code
-    for(int i = 0; i < NO_OF_LIGHTS; i++){
-        lights[i].lightAngle = lights[i].lightAngle + 1.0f;
+    if(bLight){
+        for(int i = 0; i < NO_OF_LIGHTS; i++){
+            lights[i].lightAngle = lights[i].lightAngle + 1.0f;
+        }
     }
 }
 
