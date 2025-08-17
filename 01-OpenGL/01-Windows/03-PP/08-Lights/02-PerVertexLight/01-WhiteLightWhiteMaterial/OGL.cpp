@@ -489,6 +489,7 @@ int initialize(void){
 
     // Bind the vertex attribute at a certain index in shader to same index in host program
     glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_POSITION, "aPosition");
+    glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_NORMAL, "aNormal");
 
     // Link the shader program and check for errors
     glLinkProgram(shaderProgramObject);
