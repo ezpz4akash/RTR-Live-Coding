@@ -9,12 +9,8 @@
 #include <X11/XKBlib.h>
 
 // OpenGL related header files
-#include <GL/glew.h> 
 #include <GL/gl.h>
 #include <GL/glx.h>
-
-#include "vmath.h"
-using namespace vmath;
 
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
@@ -37,11 +33,6 @@ GLXContext glxContext = NULL;
 /* Variable related to File I/O */
 char gszLogFileName[] = "Log.txt";
 FILE *gpFile = NULL;
-
-// PP related variables
-enum {
-    AMC_ATTRIBUTE_POSITION = 0
-};
 
 int main(void){
     // Function declarations
@@ -425,9 +416,6 @@ void resize(int width, int height){
 
     // Set to identity matrix
     glLoadIdentity();
-
-    // To Perspective projection
-    
 
     // Set matrix to model view mode
     glMatrixMode(GL_MODELVIEW);
