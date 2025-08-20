@@ -1036,6 +1036,28 @@ void uninitialize(void){
         pv_shaderProgramObject = 0;
     }
 
+    if(pf_shaderProgramObject){
+        glUseProgram(pf_shaderProgramObject);
+        GLint numShaders;
+        glGetProgramiv(pf_shaderProgramObject, GL_ATTACHED_SHADERS, &numShaders);
+        if(numShaders > 0){
+            GLuint *pShaders = (GLuint *)malloc(numShaders * sizeof(GLuint));
+            if(pShaders){
+                glGetAttachedShaders(pf_shaderProgramObject, numShaders, NULL, pShaders);
+                for(GLint i = 0; i < numShaders; i++){
+                    glDetachShader(pf_shaderProgramObject, pShaders[i]);
+                    glDeleteShader(pShaders[i]);
+                    pShaders[i] = 0;
+                }
+                free(pShaders);
+                pShaders = NULL;
+            }
+        }
+        glUseProgram(0);
+        glDeleteProgram(pf_shaderProgramObject);
+        pf_shaderProgramObject = 0;
+    }
+
     // Make HDC as current context by releasing rendering context as current context
     if(wglGetCurrentContext() == ghrc){
         wglMakeCurrent(NULL, NULL);
