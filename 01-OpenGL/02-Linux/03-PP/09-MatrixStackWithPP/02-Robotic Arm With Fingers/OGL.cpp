@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <stack>
 
 //Xlib header files
 #include <X11/Xlib.h>
@@ -16,7 +17,7 @@
 #include "vmath.h"
 using namespace vmath;
 
-#include <SOIL/SOIL.h>
+#include "Sphere.h"
 
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
@@ -45,24 +46,36 @@ GLuint shaderProgramObject = 0;
 
 enum {
     AMC_ATTRIBUTE_POSITION = 0,
-    AMC_ATTRIBUTE_TEXCOORD
+    AMC_ATTRIBUTE_NORMAL,
+    AMC_ATTRIBUTE_COLOR,
 };
 
-GLuint vao_pyramid = 0;
-GLuint vbo_position_pyramid = 0;
-GLuint vbo_texcoord_pyramid = 0;
+GLuint gVao_sphere = 0;
+GLuint gVbo_sphere_position = 0;
+GLuint gVbo_sphere_normal = 0;
+GLuint gVbo_sphere_element = 0;
 
 GLuint mvpMatrixUniform = 0;
 
 mat4 perspectiveProjectionMatrix;
 
-/* For Texture */
-GLuint textureStone;
-GLuint textureKundali;
-GLuint textureSamplerUniform;
+/* Sphere related variables */
+float sphere_vertices[1146];
+float sphere_normals[1146];
+float sphere_textures[764];
+unsigned short sphere_elements[2280];
+unsigned int gNumVertices = 0;
+unsigned int gNumElements = 0;
 
-/* Rotation angle variables */
-GLfloat anglePyramid = 0.0f;
+std::stack<mat4> transformationMatrixStack;
+int shoulder        = 0;
+int elbow           = 0;
+int wrist           = 0;
+int finger1    = 0;
+int finger2    = 0;
+int finger3    = 0;
+int finger4    = 0;
+int finger5    = 0;
 
 int main(void){
     // Function declarations
@@ -220,7 +233,7 @@ int main(void){
     XSetWMProtocols(gpDisplay, window, &windowManagerDeleteAtom, 1);
 
     // Set window title
-    XStoreName(gpDisplay, window, "Akash Musale - RTR6 - Texture - Pyramid");
+    XStoreName(gpDisplay, window, "Akash Musale - RTR6 - MatrixStackPP - RoboticArmWithFingers");
 
     // Map the window to screen to show it
     XMapWindow(gpDisplay, window);
@@ -288,6 +301,50 @@ int main(void){
                     case 'f':
                         gbFullScreen = !gbFullScreen;
                         toggleFullScreen();
+                    break;
+
+                    case 'S':
+                    shoulder = (shoulder + 3) % 360;
+                    break;
+
+                    case 's':
+                        shoulder = (shoulder - 3) % 360;
+                    break;
+
+                    case 'E':
+                        elbow = (elbow + 3) % 360;
+                    break;
+
+                    case 'e':
+                        elbow = (elbow - 3) % 360;
+                    break;
+
+                    case 'W':
+                        wrist = (wrist + 3) % 360;
+                    break;
+
+                    case 'w':
+                        wrist = (wrist - 3) % 360;
+                    break;
+
+                    case '1':
+                        finger1 = (finger1 + 3) % 360;
+                    break;
+
+                    case '2':
+                        finger2 = (finger2 + 3) % 360;
+                    break;
+
+                    case '3':
+                        finger3 = (finger3 + 3) % 360;
+                    break;
+
+                    case '4':
+                        finger4 = (finger4 + 3) % 360;
+                    break;
+
+                    case '5':
+                        finger5 = (finger5 + 3) % 360;
                     break;
                 }
             break;
@@ -360,7 +417,6 @@ void toggleFullScreen(void){
 
 int  initialize(void){
     void printGLInfo(void);
-    Bool loadGLTexture(GLuint* texture, const char* path);
 
     GLenum glewResult;
 
@@ -432,16 +488,18 @@ int  initialize(void){
     const GLchar *vertexShaderSourceCode = 
         "#version 460 core\n" \
         "in vec4 aPosition;\n" \
-        "in vec2 aTexCoord;\n" \
-        "out vec2 out_texCoord;\n" \
+        "in vec4 aNormal;\n" \
+        "in vec4 aColor;\n" \
+        "out vec4 out_color;\n" \
         "uniform mat4 uMVPMatrix;\n" \
         "void main(void)\n" \
         "{\n" \
         "gl_Position = uMVPMatrix * aPosition;\n" \
-        "out_texCoord = aTexCoord;\n" \
+        "out_color = aColor;\n" \
         "}\n";
     glShaderSource(vertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
     glCompileShader(vertexShaderObject);
+    
     GLint iInfoLogLength = 0;
     GLint iStatus = 0;
     GLchar *szInfoLog = NULL;
@@ -471,12 +529,11 @@ int  initialize(void){
     GLuint fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
     const GLchar *fragmentShaderSourceCode = 
         "#version 460 core\n" \
+        "in vec4 out_color;\n" \
         "out vec4 FragColor;\n" \
-        "in vec2 out_texCoord;\n" \
-        "uniform sampler2D uTextureSampler;\n" \
         "void main(void)\n" \
         "{\n" \
-        "FragColor = texture(uTextureSampler, out_texCoord);\n" \
+        "FragColor = out_color;\n" \
         "}\n";
     glShaderSource(fragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
     glCompileShader(fragmentShaderObject);  
@@ -513,7 +570,8 @@ int  initialize(void){
 
     // Bind the vertex attribute at a certain index in shader to same index in host program
     glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_POSITION, "aPosition");
-    glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_TEXCOORD, "aTexCoord");
+    glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_NORMAL, "aNormal");
+    glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_COLOR, "aColor");
 
     // Link the shader program and check for errors
     glLinkProgram(shaderProgramObject);
@@ -534,89 +592,62 @@ int  initialize(void){
         }
         return -10;
     }
-
+    
     // Get the required uniform locations from the shader program object
     mvpMatrixUniform = glGetUniformLocation(shaderProgramObject, "uMVPMatrix");
-    textureSamplerUniform = glGetUniformLocation(shaderProgramObject, "uTextureSampler");
 
     // Provide vertex position, color, texture coordinates, normals, etc. to the shader program object
+    getSphereVertexData(sphere_vertices, sphere_normals, sphere_textures, sphere_elements);
+    gNumVertices = getNumberOfSphereVertices();
+    gNumElements = getNumberOfSphereElements();
 
-    // pyramid
-    {
-        const GLfloat pyramid_position[] = {
-            // front
-            0.0f,  1.0f,  0.0f, // front-top
-            -1.0f, -1.0f,  1.0f, // front-left
-            1.0f, -1.0f,  1.0f, // front-right
-            
-            // right
-            0.0f,  1.0f,  0.0f, // right-top
-            1.0f, -1.0f,  1.0f, // right-left
-            1.0f, -1.0f, -1.0f, // right-right
+    fprintf(gpFile, "Number of Sphere Vertices: %d\n", gNumVertices);
+    fprintf(gpFile, "Number of Sphere Elements: %d\n", gNumElements);
 
-            // back
-            0.0f,  1.0f,  0.0f, // back-top
-            1.0f, -1.0f, -1.0f, // back-left
-            -1.0f, -1.0f, -1.0f, // back-right
-
-            // left
-            0.0f,  1.0f,  0.0f, // left-top
-            -1.0f, -1.0f, -1.0f, // left-left
-            -1.0f, -1.0f,  1.0f, // left-right
-        };
-        const GLfloat pyramid_texcoord[] = {
-            // front
-            0.5, 1.0, // front-top
-            0.0, 0.0, // front-left
-            1.0, 0.0, // front-right
-
-            // right
-            0.5, 1.0, // right-top
-            1.0, 0.0, // right-left
-            0.0, 0.0, // right-right
-
-            // back
-            0.5, 1.0, // back-top
-            0.0, 0.0, // back-left
-            1.0, 0.0, // back-right
-
-            // left
-            0.5, 1.0, // left-top
-            1.0, 0.0, // left-left
-            0.0, 0.0, // left-right
-        };
-
-        // Create Vertex Array Object (VAO) for array of vertex attributes
-        // vao is an array object that stores the state of vertex attributes
-        glGenVertexArrays(1, &vao_pyramid);
-        glBindVertexArray(vao_pyramid);
-        {
-            // Position VBO
-            {
-                glGenBuffers(1, &vbo_position_pyramid);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_position_pyramid);
-                {
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(pyramid_position), pyramid_position, GL_STATIC_DRAW);
-                    glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-                    glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
-                }
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-            }
-
-            // TexCoord VBO
-            {
-                glGenBuffers(1, &vbo_texcoord_pyramid);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_texcoord_pyramid);
-                {
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(pyramid_texcoord), pyramid_texcoord, GL_STATIC_DRAW);
-                    glVertexAttribPointer(AMC_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-                    glEnableVertexAttribArray(AMC_ATTRIBUTE_TEXCOORD);
-                }
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-            }
-        }
-        glBindVertexArray(0); // Unbind the VAO
+    for(int i = 0; i < gNumVertices; i++){
+        fprintf(gpFile, "Sphere Vertex %d: Position: (%f, %f, %f), Normal: (%f, %f, %f)\n", 
+                i, 
+                sphere_vertices[i * 3], sphere_vertices[i * 3 + 1], sphere_vertices[i * 3 + 2],
+                sphere_normals[i * 3], sphere_normals[i * 3 + 1], sphere_normals[i * 3 + 2]);
     }
+
+    glGenVertexArrays(1, &gVao_sphere);
+    glBindVertexArray(gVao_sphere);
+    {
+        // Position VBO
+        glGenBuffers(1, &gVbo_sphere_position);
+        glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_position);
+        {
+            glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_vertices), sphere_vertices, GL_STATIC_DRAW);
+            glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    {
+        // Normal VBO
+        glGenBuffers(1, &gVbo_sphere_normal);
+        glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_normal);
+        {
+            glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_normals), sphere_normals, GL_STATIC_DRAW);
+            glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(AMC_ATTRIBUTE_NORMAL);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    {
+        // Indices VBO
+        glGenBuffers(1, &gVbo_sphere_element);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+        {
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(sphere_elements), sphere_elements, GL_STATIC_DRAW);
+        }
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    glBindVertexArray(0); // Unbind the VAO
 
     //Depth related code
     glClearDepth(1.0f);
@@ -625,11 +656,6 @@ int  initialize(void){
 
     // From hear onwards openGL code starts, Tell openGL to choose the color to clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-    /* Load Textures */
-    if(!loadGLTexture(&textureStone, "Stone.bmp")){
-        fprintf(gpFile, "loadGLTexture Failed to Load Stone Texture\n");
-    }
 
     perspectiveProjectionMatrix = mat4::identity();
 
@@ -646,52 +672,6 @@ void printGLInfo(void){
     fprintf(gpFile, "OpenGL Renderer : %s\n", glGetString(GL_RENDERER));
     fprintf(gpFile, "OpenGL Version : %s\n", glGetString(GL_VERSION));
     fprintf(gpFile, "******************\n");
-}
-
-Bool loadGLTexture(GLuint* texture, const char* path){
-    int width, height;
-    unsigned char* imageData = SOIL_load_image(path, &width, &height, NULL, SOIL_LOAD_RGB);
-    
-    if (imageData == NULL){
-        fprintf(gpFile, "Failed to load image: %s\n", SOIL_last_result());
-        return False;
-    }
-
-    int rowSize = width * 3; // 3 bytes for RGB
-    unsigned char* tempRow = (unsigned char*)malloc(rowSize);
-    if (!tempRow) {
-        fprintf(gpFile, "Memory allocation failed for tempRow\n");
-        SOIL_free_image_data(imageData);
-        return False;
-    }
-
-    for (int y = 0; y < height / 2; ++y) {
-        unsigned char* rowTop = imageData + y * rowSize;
-        unsigned char* rowBottom = imageData + (height - y - 1) * rowSize;
-
-        memcpy(tempRow, rowTop, rowSize);
-        memcpy(rowTop, rowBottom, rowSize);
-        memcpy(rowBottom, tempRow, rowSize);
-    }
-
-    free(tempRow);
-
-    // Generate OpenGL texture
-    glGenTextures(1, texture);
-    glBindTexture(GL_TEXTURE_2D, *texture);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    //gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-    SOIL_free_image_data(imageData);
-
-    return True;
 }
 
 void resize(int width, int height){
@@ -716,37 +696,254 @@ void display(void){
         mat4 translationMatrix = mat4::identity();
         mat4 rotationMatrix = mat4::identity();
         mat4 scaleMatrix = mat4::identity();
+
+        translationMatrix = vmath::translate(0.0f, 0.0f, -12.0f);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        modelViewMatrix = translationMatrix;
+
+        transformationMatrixStack.push(modelViewMatrix);
         {
-            translationMatrix = mat4::identity();
-            rotationMatrix = mat4::identity();
-
-            // Prepare transformation matrices
-            translationMatrix = vmath::translate(0.0f, 0.0f, -6.0f);
-            rotationMatrix = vmath::rotate(anglePyramid, 0.0f, 1.0f, 0.0f);
-
-            // Modeview matrix is the combination of all transformations by multiplying all the necessary transformation matrices
-            modelViewMatrix = translationMatrix * rotationMatrix;
-
-            // Prepare final model view projection matrix as a combination of perspective projection matrix and model view matrix and send it to the shader
-            modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
-
-            // Pass the model view projection matrix to the shader
-            glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
-
-            // Bind the texture
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, textureStone);
-            glUniform1i(textureSamplerUniform, 0); // Set the texture sampler to use
-
-            // Bind the VAO for pyramid
-            glBindVertexArray(vao_pyramid);
+            rotationMatrix = vmath::rotate((GLfloat)shoulder, 0.0f, 0.0f, 1.0f);
+            translationMatrix = vmath::translate(1.0f, 0.0f, 0.0f);
+            modelViewMatrix = modelViewMatrix * translationMatrix * rotationMatrix;
+            transformationMatrixStack.push(modelViewMatrix);
             {
-                // Draw the pyramid
-                glDrawArrays(GL_TRIANGLES, 0, 12);
-                glBindTexture(GL_TEXTURE_2D, 0); // Unbind the texture
+                scaleMatrix = vmath::scale(2.1f, 0.6f, 1.0f);
+                modelViewMatrix = modelViewMatrix * scaleMatrix;
+
+                glVertexAttrib4f(AMC_ATTRIBUTE_COLOR, 0.5f, 0.35f, 0.05f, 1.0f);
+
+                modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
+                glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+
+                glBindVertexArray(gVao_sphere);
+                {
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+                    glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+                }
+                glBindVertexArray(0);
             }
-            glBindVertexArray(0);
+            modelViewMatrix = transformationMatrixStack.top();
+            transformationMatrixStack.pop();
+
+            translationMatrix = vmath::translate(1.0f, 0.0f, 0.0f);
+            rotationMatrix = vmath::rotate((GLfloat)elbow, 0.0f, 0.0f, 1.0f);
+            modelViewMatrix = modelViewMatrix * translationMatrix * rotationMatrix;
+            translationMatrix = vmath::translate(1.0f, 0.0f, 0.0f);
+            modelViewMatrix = modelViewMatrix * translationMatrix;
+
+            //Forearm
+            transformationMatrixStack.push(modelViewMatrix);
+            {
+                scaleMatrix = vmath::scale(2.1f, 0.6f, 1.0f);
+                modelViewMatrix = modelViewMatrix * scaleMatrix;
+
+                glVertexAttrib4f(AMC_ATTRIBUTE_COLOR, 0.5f, 0.35f, 0.05f, 1.0f);
+
+                modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
+                glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+
+                glBindVertexArray(gVao_sphere);
+                {
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+                    glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+                }
+            }
+            modelViewMatrix = transformationMatrixStack.top();
+            transformationMatrixStack.pop();
+
+            translationMatrix = vmath::translate(1.0f, 0.0f, 0.0f);
+            rotationMatrix = vmath::rotate((GLfloat)wrist, 0.0f, 0.0f, 1.0f);
+            modelViewMatrix = modelViewMatrix * translationMatrix * rotationMatrix;
+            translationMatrix = vmath::translate(0.5f, 0.0f, 0.0f);
+            modelViewMatrix = modelViewMatrix * translationMatrix;
+            transformationMatrixStack.push(modelViewMatrix);
+            {
+                scaleMatrix = vmath::scale(1.0f, 0.4f, 1.0f);
+                modelViewMatrix = modelViewMatrix * scaleMatrix;
+                
+                glVertexAttrib4f(AMC_ATTRIBUTE_COLOR, 0.5f, 0.35f, 0.05f, 1.0f);
+
+                modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
+                glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+
+                glBindVertexArray(gVao_sphere);
+                {
+                    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+                    glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+                }
+            }
+            modelViewMatrix = transformationMatrixStack.top();
+            transformationMatrixStack.pop();
+
+            //Fingers 1
+            transformationMatrixStack.push(modelViewMatrix);
+            {
+                rotationMatrix = vmath::rotate(45.0f, 0.0f, 1.0f, 0.0f);
+                translationMatrix = vmath::translate(0.5f, 0.0f, 0.0f);
+                modelViewMatrix = modelViewMatrix * rotationMatrix * translationMatrix;
+
+                rotationMatrix = vmath::rotate((GLfloat)finger1, 0.0f, 0.0f, 1.0f);
+                translationMatrix = vmath::translate(0.3f, 0.0f, 0.0f);
+                modelViewMatrix = modelViewMatrix * rotationMatrix * translationMatrix;
+
+                transformationMatrixStack.push(modelViewMatrix);
+                {
+                    scaleMatrix = vmath::scale(0.5f, 0.01f, 0.1f);
+                    modelViewMatrix = modelViewMatrix * scaleMatrix;
+
+                    glVertexAttrib4f(AMC_ATTRIBUTE_COLOR, 0.5f, 0.35f, 0.05f, 1.0f);
+
+                    modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
+                    glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+
+                    glBindVertexArray(gVao_sphere);
+                    {
+                        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+                        glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+                    }
+                }
+                modelViewMatrix = transformationMatrixStack.top();
+                transformationMatrixStack.pop();
+            }
+            modelViewMatrix = transformationMatrixStack.top();
+            transformationMatrixStack.pop();
+
+
+            //Fingers 2
+            transformationMatrixStack.push(modelViewMatrix);
+            {
+                rotationMatrix = vmath::rotate(30.0f, 0.0f, 1.0f, 0.0f);
+                translationMatrix = vmath::translate(0.5f, 0.0f, 0.0f);
+                modelViewMatrix = modelViewMatrix * rotationMatrix * translationMatrix;
+
+                rotationMatrix = vmath::rotate((GLfloat)finger2, 0.0f, 0.0f, 1.0f);
+                translationMatrix = vmath::translate(0.3f, 0.0f, 0.0f);
+                modelViewMatrix = modelViewMatrix * rotationMatrix * translationMatrix;
+
+                transformationMatrixStack.push(modelViewMatrix);
+                {
+                    scaleMatrix = vmath::scale(0.5f, 0.01f, 0.1f);
+                    modelViewMatrix = modelViewMatrix * scaleMatrix;
+
+                    glVertexAttrib4f(AMC_ATTRIBUTE_COLOR, 0.5f, 0.35f, 0.05f, 1.0f);
+
+                    modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
+                    glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+
+                    glBindVertexArray(gVao_sphere);
+                    {
+                        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+                        glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+                    }
+                }
+                modelViewMatrix = transformationMatrixStack.top();
+                transformationMatrixStack.pop();
+            }
+            modelViewMatrix = transformationMatrixStack.top();
+            transformationMatrixStack.pop();
+
+            //Fingers 3
+            transformationMatrixStack.push(modelViewMatrix);
+            {
+                translationMatrix = vmath::translate(0.5f, 0.0f, 0.0f);
+                modelViewMatrix = modelViewMatrix * translationMatrix;
+
+                rotationMatrix = vmath::rotate((GLfloat)finger3, 0.0f, 0.0f, 1.0f);
+                translationMatrix = vmath::translate(0.3f, 0.0f, 0.0f);
+                modelViewMatrix = modelViewMatrix * rotationMatrix * translationMatrix;
+
+                transformationMatrixStack.push(modelViewMatrix);
+                {
+                    scaleMatrix = vmath::scale(0.5f, 0.01f, 0.1f);
+                    modelViewMatrix = modelViewMatrix * scaleMatrix;
+
+                    glVertexAttrib4f(AMC_ATTRIBUTE_COLOR, 0.5f, 0.35f, 0.05f, 1.0f);
+
+                    modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
+                    glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+
+                    glBindVertexArray(gVao_sphere);
+                    {
+                        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+                        glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+                    }
+                }
+                modelViewMatrix = transformationMatrixStack.top();
+                transformationMatrixStack.pop();
+            }
+            modelViewMatrix = transformationMatrixStack.top();
+            transformationMatrixStack.pop();
+
+            //Fingers 4
+            transformationMatrixStack.push(modelViewMatrix);
+            {
+                rotationMatrix = vmath::rotate(-30.0f, 0.0f, 1.0f, 0.0f);
+                translationMatrix = vmath::translate(0.5f, 0.0f, 0.0f);
+                modelViewMatrix = modelViewMatrix * rotationMatrix * translationMatrix;
+
+                rotationMatrix = vmath::rotate((GLfloat)finger4, 0.0f, 0.0f, 1.0f);
+                translationMatrix = vmath::translate(0.3f, 0.0f, 0.0f);
+                modelViewMatrix = modelViewMatrix * rotationMatrix * translationMatrix;
+
+                transformationMatrixStack.push(modelViewMatrix);
+                {
+                    scaleMatrix = vmath::scale(0.5f, 0.01f, 0.1f);
+                    modelViewMatrix = modelViewMatrix * scaleMatrix;
+
+                    glVertexAttrib4f(AMC_ATTRIBUTE_COLOR, 0.5f, 0.35f, 0.05f, 1.0f);
+
+                    modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
+                    glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+
+                    glBindVertexArray(gVao_sphere);
+                    {
+                        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+                        glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+                    }
+                }
+                modelViewMatrix = transformationMatrixStack.top();
+                transformationMatrixStack.pop();
+            }
+            modelViewMatrix = transformationMatrixStack.top();
+            transformationMatrixStack.pop();
+
+            //Fingers 5
+            transformationMatrixStack.push(modelViewMatrix);
+            {
+                rotationMatrix = vmath::rotate(-45.0f, 0.0f, 1.0f, 0.0f);
+                translationMatrix = vmath::translate(0.5f, 0.0f, 0.0f);
+                modelViewMatrix = modelViewMatrix * rotationMatrix * translationMatrix;
+
+                rotationMatrix = vmath::rotate((GLfloat)finger5, 0.0f, 0.0f, 1.0f);
+                translationMatrix = vmath::translate(0.3f, 0.0f, 0.0f);
+                modelViewMatrix = modelViewMatrix * rotationMatrix * translationMatrix;
+
+                transformationMatrixStack.push(modelViewMatrix);
+                {
+                    scaleMatrix = vmath::scale(0.5f, 0.01f, 0.1f);
+                    modelViewMatrix = modelViewMatrix * scaleMatrix;
+
+                    glVertexAttrib4f(AMC_ATTRIBUTE_COLOR, 0.5f, 0.35f, 0.05f, 1.0f);
+
+                    modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
+                    glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+
+                    glBindVertexArray(gVao_sphere);
+                    {
+                        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+                        glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+                    }
+                }
+                modelViewMatrix = transformationMatrixStack.top();
+                transformationMatrixStack.pop();
+            }
+            modelViewMatrix = transformationMatrixStack.top();
+            transformationMatrixStack.pop();
         }
+        modelViewMatrix = transformationMatrixStack.top();
+        transformationMatrixStack.pop();
     }
     glUseProgram(0);
 
@@ -756,7 +953,7 @@ void display(void){
 
 void update(void){
     //code
-    anglePyramid = anglePyramid + 1.0f;
+    
 }   
 
 void uninitialize(void){
@@ -768,31 +965,19 @@ void uninitialize(void){
     }
 
     // Free vbo and vao
-    if(textureKundali){
-        glDeleteTextures(1, &textureKundali);
-        textureKundali = 0;
+    if(gVbo_sphere_position){
+        glDeleteBuffers(1, &gVbo_sphere_position);
+        gVbo_sphere_position = 0;
+    }
+    if(gVbo_sphere_normal){
+        glDeleteBuffers(1, &gVbo_sphere_normal);
+        gVbo_sphere_normal = 0;
     }
 
-    if(textureStone){
-        glDeleteTextures(1, &textureStone);
-        textureStone = 0;
+    if(gVao_sphere){
+        glDeleteVertexArrays(1, &gVao_sphere);
+        gVao_sphere = 0;
     }
-
-    if(vbo_texcoord_pyramid){
-        glDeleteBuffers(1, &vbo_texcoord_pyramid);
-        vbo_texcoord_pyramid = 0;
-    }
-
-    if(vbo_position_pyramid){
-        glDeleteBuffers(1, &vbo_position_pyramid);
-        vbo_position_pyramid = 0;
-    }
-
-    if(vao_pyramid){
-        glDeleteVertexArrays(1, &vao_pyramid);
-        vao_pyramid = 0;
-    }
-
     /* 
         Steps to detach and delete shader objects and shader program object generically:
         1. Check if shader program object is not NULL

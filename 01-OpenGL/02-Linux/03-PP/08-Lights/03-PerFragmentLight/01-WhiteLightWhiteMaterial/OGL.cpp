@@ -16,7 +16,7 @@
 #include "vmath.h"
 using namespace vmath;
 
-#include <SOIL/SOIL.h>
+#include "Sphere.h"
 
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
@@ -45,24 +45,51 @@ GLuint shaderProgramObject = 0;
 
 enum {
     AMC_ATTRIBUTE_POSITION = 0,
-    AMC_ATTRIBUTE_TEXCOORD
+    AMC_ATTRIBUTE_NORMAL,
 };
 
-GLuint vao_pyramid = 0;
-GLuint vbo_position_pyramid = 0;
-GLuint vbo_texcoord_pyramid = 0;
+GLuint gVao_sphere = 0;
+GLuint gVbo_sphere_position = 0;
+GLuint gVbo_sphere_normal = 0;
+GLuint gVbo_sphere_element = 0;
 
-GLuint mvpMatrixUniform = 0;
+GLuint modelMatrixUniform = 0;
+GLuint viewMatrixUniform = 0;
+GLuint projectionMatrixUniform = 0;
 
 mat4 perspectiveProjectionMatrix;
 
-/* For Texture */
-GLuint textureStone;
-GLuint textureKundali;
-GLuint textureSamplerUniform;
+GLuint laUniform = 0;               // Light Ambient
+GLuint ldUniform = 0;               // Light Diffuse
+GLuint lsUniform = 0;               // Light Specular
+GLuint lightPositionUniform = 0;    // Light Position
 
-/* Rotation angle variables */
-GLfloat anglePyramid = 0.0f;
+GLuint kaUniform = 0;               // Material Ambient
+GLuint ksUniform = 0;               // Material Specular
+GLuint kdUniform = 0;               // Material Diffuse
+GLuint materialShininessUniform = 0; // Material Shininess
+
+GLuint lKeyPressedUniform = 0;      // Light Key Pressed
+
+GLfloat lightAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
+GLfloat lightDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+GLfloat lightSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+GLfloat lightPosition[] = {100.0f, 100.0f, 100.0f, 1.0f};
+
+GLfloat materialAmbient[] = {0.0f, 0.0f, 0.0f, 1.0f};
+GLfloat materialDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+GLfloat materialSpecular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+GLfloat materialShininess = 50.0f;
+
+Bool bLight = False; // Light On/Off
+
+/* Sphere related variables */
+float sphere_vertices[1146];
+float sphere_normals[1146];
+float sphere_textures[764];
+unsigned short sphere_elements[2280];
+unsigned int gNumVertices = 0;
+unsigned int gNumElements = 0;
 
 int main(void){
     // Function declarations
@@ -220,7 +247,7 @@ int main(void){
     XSetWMProtocols(gpDisplay, window, &windowManagerDeleteAtom, 1);
 
     // Set window title
-    XStoreName(gpDisplay, window, "Akash Musale - RTR6 - Texture - Pyramid");
+    XStoreName(gpDisplay, window, "Akash Musale - RTR6 - Lights - PerFragmentLight - WhiteLightWhiteMaterial");
 
     // Map the window to screen to show it
     XMapWindow(gpDisplay, window);
@@ -288,6 +315,11 @@ int main(void){
                     case 'f':
                         gbFullScreen = !gbFullScreen;
                         toggleFullScreen();
+                    break;
+
+                    case 'L':
+                    case 'l':
+                        bLight = !bLight;
                     break;
                 }
             break;
@@ -360,7 +392,6 @@ void toggleFullScreen(void){
 
 int  initialize(void){
     void printGLInfo(void);
-    Bool loadGLTexture(GLuint* texture, const char* path);
 
     GLenum glewResult;
 
@@ -432,13 +463,21 @@ int  initialize(void){
     const GLchar *vertexShaderSourceCode = 
         "#version 460 core\n" \
         "in vec4 aPosition;\n" \
-        "in vec2 aTexCoord;\n" \
-        "out vec2 out_texCoord;\n" \
-        "uniform mat4 uMVPMatrix;\n" \
+        "in vec3 aNormal;\n" \
+        "out vec4 eyeCoordinates;\n" \
+        "out vec3 transformedNormal;\n" \
+        "out vec3 lightSource;\n" \
+        "uniform mat4 uModelMatrix;\n" \
+        "uniform mat4 uViewMatrix;\n" \
+        "uniform mat4 uProjectionMatrix;\n"\
+        "uniform vec4 uLightPosition;\n" \
         "void main(void)\n" \
         "{\n" \
-        "gl_Position = uMVPMatrix * aPosition;\n" \
-        "out_texCoord = aTexCoord;\n" \
+        "   mat3 normalMatrix = mat3(transpose(inverse(uViewMatrix * uModelMatrix)));\n" \
+        "   transformedNormal = (normalMatrix * aNormal);\n" \
+        "   eyeCoordinates = uViewMatrix * uModelMatrix * aPosition;\n" \
+        "   lightSource = (vec3(uLightPosition) - eyeCoordinates.xyz);\n" \
+        "   gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aPosition;\n" \
         "}\n";
     glShaderSource(vertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
     glCompileShader(vertexShaderObject);
@@ -471,12 +510,37 @@ int  initialize(void){
     GLuint fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
     const GLchar *fragmentShaderSourceCode = 
         "#version 460 core\n" \
+        "in vec3 transformedNormal;\n" \
+        "in vec4 eyeCoordinates;\n" \
+        "in vec3 lightSource;\n" \
+        "uniform vec3 uLa;\n" \
+        "uniform vec3 uLd;\n" \
+        "uniform vec3 uLs;\n" \
+        "uniform vec3 uKa;\n" \
+        "uniform vec3 uKd;\n" \
+        "uniform vec3 uKs;\n" \
+        "uniform float uMaterialShininess;\n" \
+        "uniform int  uLKeyPressed;\n" \
         "out vec4 FragColor;\n" \
-        "in vec2 out_texCoord;\n" \
-        "uniform sampler2D uTextureSampler;\n" \
         "void main(void)\n" \
         "{\n" \
-        "FragColor = texture(uTextureSampler, out_texCoord);\n" \
+        "   vec3 normalizedTransformNormal = normalize(transformedNormal);\n" \
+        "   vec3 normalizedLightSource = normalize(lightSource);\n" \
+        "   vec3 normalizedViewerVector = normalize(eyeCoordinates.xyz);\n" \
+        "   if(uLKeyPressed == 1)\n" \
+        "   {\n" \
+        "       float tnDotLd = max(dot(normalizedLightSource, normalizedTransformNormal), 0.0);\n" \
+        "       vec3 reflectedVector = reflect(-normalizedLightSource, normalizedTransformNormal);\n" \
+        "       vec3 viewerVector = (-normalizedViewerVector.xyz);\n" \
+        "       vec3 ambient = uLa * uKa;\n" \
+        "       vec3 diffuse = uLd * uKd * tnDotLd;\n" \
+        "       vec3 specular = uLs * uKs * pow(max(dot(reflectedVector, viewerVector), 0.0), uMaterialShininess);\n" \
+        "       FragColor = vec4(ambient + diffuse + specular, 1.0);\n" \
+        "   }\n" \
+        "   else\n" \
+        "   {\n" \
+        "       FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n" \
+        "   }\n" \
         "}\n";
     glShaderSource(fragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
     glCompileShader(fragmentShaderObject);  
@@ -513,7 +577,7 @@ int  initialize(void){
 
     // Bind the vertex attribute at a certain index in shader to same index in host program
     glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_POSITION, "aPosition");
-    glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_TEXCOORD, "aTexCoord");
+    glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_NORMAL, "aNormal");
 
     // Link the shader program and check for errors
     glLinkProgram(shaderProgramObject);
@@ -534,89 +598,73 @@ int  initialize(void){
         }
         return -10;
     }
-
+    
     // Get the required uniform locations from the shader program object
-    mvpMatrixUniform = glGetUniformLocation(shaderProgramObject, "uMVPMatrix");
-    textureSamplerUniform = glGetUniformLocation(shaderProgramObject, "uTextureSampler");
+    modelMatrixUniform = glGetUniformLocation(shaderProgramObject, "uModelMatrix");
+    viewMatrixUniform = glGetUniformLocation(shaderProgramObject, "uViewMatrix");
+    projectionMatrixUniform = glGetUniformLocation(shaderProgramObject, "uProjectionMatrix");
+    laUniform = glGetUniformLocation(shaderProgramObject, "uLa");
+    ldUniform = glGetUniformLocation(shaderProgramObject, "uLd");
+    lsUniform = glGetUniformLocation(shaderProgramObject, "uLs");
+    kaUniform = glGetUniformLocation(shaderProgramObject, "uKa");
+    kdUniform = glGetUniformLocation(shaderProgramObject, "uKd");
+    ksUniform = glGetUniformLocation(shaderProgramObject, "uKs");
+    materialShininessUniform = glGetUniformLocation(shaderProgramObject, "uMaterialShininess");
+    lightPositionUniform = glGetUniformLocation(shaderProgramObject, "uLightPosition");
+    lKeyPressedUniform = glGetUniformLocation(shaderProgramObject, "uLKeyPressed");
 
     // Provide vertex position, color, texture coordinates, normals, etc. to the shader program object
+    getSphereVertexData(sphere_vertices, sphere_normals, sphere_textures, sphere_elements);
+    gNumVertices = getNumberOfSphereVertices();
+    gNumElements = getNumberOfSphereElements();
 
-    // pyramid
-    {
-        const GLfloat pyramid_position[] = {
-            // front
-            0.0f,  1.0f,  0.0f, // front-top
-            -1.0f, -1.0f,  1.0f, // front-left
-            1.0f, -1.0f,  1.0f, // front-right
-            
-            // right
-            0.0f,  1.0f,  0.0f, // right-top
-            1.0f, -1.0f,  1.0f, // right-left
-            1.0f, -1.0f, -1.0f, // right-right
+    fprintf(gpFile, "Number of Sphere Vertices: %d\n", gNumVertices);
+    fprintf(gpFile, "Number of Sphere Elements: %d\n", gNumElements);
 
-            // back
-            0.0f,  1.0f,  0.0f, // back-top
-            1.0f, -1.0f, -1.0f, // back-left
-            -1.0f, -1.0f, -1.0f, // back-right
-
-            // left
-            0.0f,  1.0f,  0.0f, // left-top
-            -1.0f, -1.0f, -1.0f, // left-left
-            -1.0f, -1.0f,  1.0f, // left-right
-        };
-        const GLfloat pyramid_texcoord[] = {
-            // front
-            0.5, 1.0, // front-top
-            0.0, 0.0, // front-left
-            1.0, 0.0, // front-right
-
-            // right
-            0.5, 1.0, // right-top
-            1.0, 0.0, // right-left
-            0.0, 0.0, // right-right
-
-            // back
-            0.5, 1.0, // back-top
-            0.0, 0.0, // back-left
-            1.0, 0.0, // back-right
-
-            // left
-            0.5, 1.0, // left-top
-            1.0, 0.0, // left-left
-            0.0, 0.0, // left-right
-        };
-
-        // Create Vertex Array Object (VAO) for array of vertex attributes
-        // vao is an array object that stores the state of vertex attributes
-        glGenVertexArrays(1, &vao_pyramid);
-        glBindVertexArray(vao_pyramid);
-        {
-            // Position VBO
-            {
-                glGenBuffers(1, &vbo_position_pyramid);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_position_pyramid);
-                {
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(pyramid_position), pyramid_position, GL_STATIC_DRAW);
-                    glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-                    glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
-                }
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-            }
-
-            // TexCoord VBO
-            {
-                glGenBuffers(1, &vbo_texcoord_pyramid);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_texcoord_pyramid);
-                {
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(pyramid_texcoord), pyramid_texcoord, GL_STATIC_DRAW);
-                    glVertexAttribPointer(AMC_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-                    glEnableVertexAttribArray(AMC_ATTRIBUTE_TEXCOORD);
-                }
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-            }
-        }
-        glBindVertexArray(0); // Unbind the VAO
+    for(int i = 0; i < gNumVertices; i++){
+        fprintf(gpFile, "Sphere Vertex %d: Position: (%f, %f, %f), Normal: (%f, %f, %f)\n", 
+                i, 
+                sphere_vertices[i * 3], sphere_vertices[i * 3 + 1], sphere_vertices[i * 3 + 2],
+                sphere_normals[i * 3], sphere_normals[i * 3 + 1], sphere_normals[i * 3 + 2]);
     }
+
+    glGenVertexArrays(1, &gVao_sphere);
+    glBindVertexArray(gVao_sphere);
+    {
+        // Position VBO
+        glGenBuffers(1, &gVbo_sphere_position);
+        glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_position);
+        {
+            glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_vertices), sphere_vertices, GL_STATIC_DRAW);
+            glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    {
+        // Normal VBO
+        glGenBuffers(1, &gVbo_sphere_normal);
+        glBindBuffer(GL_ARRAY_BUFFER, gVbo_sphere_normal);
+        {
+            glBufferData(GL_ARRAY_BUFFER, sizeof(sphere_normals), sphere_normals, GL_STATIC_DRAW);
+            glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(AMC_ATTRIBUTE_NORMAL);
+        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    {
+        // Indices VBO
+        glGenBuffers(1, &gVbo_sphere_element);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+        {
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(sphere_elements), sphere_elements, GL_STATIC_DRAW);
+        }
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    glBindVertexArray(0); // Unbind the VAO
 
     //Depth related code
     glClearDepth(1.0f);
@@ -625,11 +673,6 @@ int  initialize(void){
 
     // From hear onwards openGL code starts, Tell openGL to choose the color to clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-    /* Load Textures */
-    if(!loadGLTexture(&textureStone, "Stone.bmp")){
-        fprintf(gpFile, "loadGLTexture Failed to Load Stone Texture\n");
-    }
 
     perspectiveProjectionMatrix = mat4::identity();
 
@@ -646,52 +689,6 @@ void printGLInfo(void){
     fprintf(gpFile, "OpenGL Renderer : %s\n", glGetString(GL_RENDERER));
     fprintf(gpFile, "OpenGL Version : %s\n", glGetString(GL_VERSION));
     fprintf(gpFile, "******************\n");
-}
-
-Bool loadGLTexture(GLuint* texture, const char* path){
-    int width, height;
-    unsigned char* imageData = SOIL_load_image(path, &width, &height, NULL, SOIL_LOAD_RGB);
-    
-    if (imageData == NULL){
-        fprintf(gpFile, "Failed to load image: %s\n", SOIL_last_result());
-        return False;
-    }
-
-    int rowSize = width * 3; // 3 bytes for RGB
-    unsigned char* tempRow = (unsigned char*)malloc(rowSize);
-    if (!tempRow) {
-        fprintf(gpFile, "Memory allocation failed for tempRow\n");
-        SOIL_free_image_data(imageData);
-        return False;
-    }
-
-    for (int y = 0; y < height / 2; ++y) {
-        unsigned char* rowTop = imageData + y * rowSize;
-        unsigned char* rowBottom = imageData + (height - y - 1) * rowSize;
-
-        memcpy(tempRow, rowTop, rowSize);
-        memcpy(rowTop, rowBottom, rowSize);
-        memcpy(rowBottom, tempRow, rowSize);
-    }
-
-    free(tempRow);
-
-    // Generate OpenGL texture
-    glGenTextures(1, texture);
-    glBindTexture(GL_TEXTURE_2D, *texture);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    //gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-    SOIL_free_image_data(imageData);
-
-    return True;
 }
 
 void resize(int width, int height){
@@ -711,42 +708,38 @@ void display(void){
     glUseProgram(shaderProgramObject);
     {
         // Transformations
-        mat4 modelViewMatrix = mat4::identity();
-        mat4 modelViewProjectionMatrix = mat4::identity();
-        mat4 translationMatrix = mat4::identity();
-        mat4 rotationMatrix = mat4::identity();
-        mat4 scaleMatrix = mat4::identity();
+        mat4 modelMatrix = mat4::identity();
+        mat4 viewMatrix = mat4::identity();
         {
-            translationMatrix = mat4::identity();
-            rotationMatrix = mat4::identity();
+            mat4 translationMatrix = mat4::identity();
 
             // Prepare transformation matrices
-            translationMatrix = vmath::translate(0.0f, 0.0f, -6.0f);
-            rotationMatrix = vmath::rotate(anglePyramid, 0.0f, 1.0f, 0.0f);
+            translationMatrix = vmath::translate(0.0f, 0.0f, -2.0f);
 
             // Modeview matrix is the combination of all transformations by multiplying all the necessary transformation matrices
-            modelViewMatrix = translationMatrix * rotationMatrix;
+            modelMatrix = translationMatrix;
 
-            // Prepare final model view projection matrix as a combination of perspective projection matrix and model view matrix and send it to the shader
-            modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
+            glUniformMatrix4fv(modelMatrixUniform, 1, GL_FALSE, modelMatrix);
+            glUniformMatrix4fv(viewMatrixUniform, 1, GL_FALSE, viewMatrix);
+            glUniformMatrix4fv(projectionMatrixUniform, 1, GL_FALSE, perspectiveProjectionMatrix);
 
-            // Pass the model view projection matrix to the shader
-            glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
-
-            // Bind the texture
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, textureStone);
-            glUniform1i(textureSamplerUniform, 0); // Set the texture sampler to use
-
-            // Bind the VAO for pyramid
-            glBindVertexArray(vao_pyramid);
-            {
-                // Draw the pyramid
-                glDrawArrays(GL_TRIANGLES, 0, 12);
-                glBindTexture(GL_TEXTURE_2D, 0); // Unbind the texture
-            }
-            glBindVertexArray(0);
+            glUniform3f(laUniform, lightAmbient[0], lightAmbient[1], lightAmbient[2]);
+            glUniform3f(ldUniform, lightDiffuse[0], lightDiffuse[1], lightDiffuse[2]);
+            glUniform3f(lsUniform, lightSpecular[0], lightSpecular[1], lightSpecular[2]);
+            glUniform3f(kaUniform, materialAmbient[0], materialAmbient[1], materialAmbient[2]);
+            glUniform3f(kdUniform, materialDiffuse[0], materialDiffuse[1], materialDiffuse[2]);
+            glUniform3f(ksUniform, materialSpecular[0], materialSpecular[1], materialSpecular[2]);
+            glUniform1f(materialShininessUniform, materialShininess);
+            glUniform4fv(lightPositionUniform, 1, lightPosition);
+            glUniform1i(lKeyPressedUniform, bLight ? 1 : 0);
         }
+
+        glBindVertexArray(gVao_sphere);
+        {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gVbo_sphere_element);
+            glDrawElements(GL_TRIANGLES, gNumElements, GL_UNSIGNED_SHORT, 0);
+        }
+        glBindVertexArray(0);
     }
     glUseProgram(0);
 
@@ -756,7 +749,7 @@ void display(void){
 
 void update(void){
     //code
-    anglePyramid = anglePyramid + 1.0f;
+    
 }   
 
 void uninitialize(void){
@@ -768,31 +761,19 @@ void uninitialize(void){
     }
 
     // Free vbo and vao
-    if(textureKundali){
-        glDeleteTextures(1, &textureKundali);
-        textureKundali = 0;
+    if(gVbo_sphere_position){
+        glDeleteBuffers(1, &gVbo_sphere_position);
+        gVbo_sphere_position = 0;
+    }
+    if(gVbo_sphere_normal){
+        glDeleteBuffers(1, &gVbo_sphere_normal);
+        gVbo_sphere_normal = 0;
     }
 
-    if(textureStone){
-        glDeleteTextures(1, &textureStone);
-        textureStone = 0;
+    if(gVao_sphere){
+        glDeleteVertexArrays(1, &gVao_sphere);
+        gVao_sphere = 0;
     }
-
-    if(vbo_texcoord_pyramid){
-        glDeleteBuffers(1, &vbo_texcoord_pyramid);
-        vbo_texcoord_pyramid = 0;
-    }
-
-    if(vbo_position_pyramid){
-        glDeleteBuffers(1, &vbo_position_pyramid);
-        vbo_position_pyramid = 0;
-    }
-
-    if(vao_pyramid){
-        glDeleteVertexArrays(1, &vao_pyramid);
-        vao_pyramid = 0;
-    }
-
     /* 
         Steps to detach and delete shader objects and shader program object generically:
         1. Check if shader program object is not NULL
