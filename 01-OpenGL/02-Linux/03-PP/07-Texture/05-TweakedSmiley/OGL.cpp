@@ -16,6 +16,8 @@
 #include "vmath.h"
 using namespace vmath;
 
+#include <SOIL/SOIL.h>
+
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
 
@@ -38,19 +40,28 @@ GLXContext glxContext = NULL;
 char gszLogFileName[] = "Log.txt";
 FILE *gpFile = NULL;
 
-// PP related variables
+// Shader related variables
 GLuint shaderProgramObject = 0;
 
 enum {
-    AMC_ATTRIBUTE_POSITION = 0
+    AMC_ATTRIBUTE_POSITION = 0,
+    AMC_ATTRIBUTE_TEXCOORD
 };
 
 GLuint vao = 0;
 GLuint vbo_position = 0;
+GLuint vbo_texcoord = 0;
 
 GLuint mvpMatrixUniform = 0;
+GLuint keyPressedUniform = 0;
 
-mat4 orthographicProjectionMatrix;
+mat4 perspectiveProjectionMatrix;
+
+/* For Texture */
+GLuint textureSmiley;
+GLuint textureSamplerUniform;
+
+int keyPressed = -1;
 
 int main(void){
     // Function declarations
@@ -208,7 +219,7 @@ int main(void){
     XSetWMProtocols(gpDisplay, window, &windowManagerDeleteAtom, 1);
 
     // Set window title
-    XStoreName(gpDisplay, window, "Akash Musale - RTR6 - Ortho");
+    XStoreName(gpDisplay, window, "Akash Musale - RTR6 - Texture - TweakedSmiley");
 
     // Map the window to screen to show it
     XMapWindow(gpDisplay, window);
@@ -276,6 +287,26 @@ int main(void){
                     case 'f':
                         gbFullScreen = !gbFullScreen;
                         toggleFullScreen();
+                    break;
+
+                    case '1':
+                        keyPressed = 1;
+                    break;
+
+                    case '2':
+                        keyPressed = 2;
+                    break;
+
+                    case '3':
+                        keyPressed = 3;
+                    break;
+
+                    case '4':
+                        keyPressed = 4;
+                    break;
+
+                    default:
+                    keyPressed = -1;
                     break;
                 }
             break;
@@ -348,6 +379,9 @@ void toggleFullScreen(void){
 
 int  initialize(void){
     void printGLInfo(void);
+    Bool loadGLTexture(GLuint* texture, const char* path);
+
+    GLenum glewResult;
 
     //Get function pointer for glXCreateContextAttribsARB
     glXCreateContextAttribsARB = 
@@ -395,21 +429,15 @@ int  initialize(void){
     glXMakeCurrent(gpDisplay, window, glxContext);
     */
 
-    printGLInfo();
-
-    //Depth related code
-    glShadeModel(GL_SMOOTH);
-    glClearDepth(1.0f);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-
     // Initialize GLEW
-    GLenum glewResult = glewInit();
+    glewResult = glewInit();
     if(glewResult != GLEW_OK){
         fprintf(gpFile, "glewInit failed: %s\n", glewGetErrorString(glewResult));
         return -6;
     }
+    
+    // print openGL info
+    printGLInfo();
 
     // Vertex Shader
     /* 
@@ -423,10 +451,13 @@ int  initialize(void){
     const GLchar *vertexShaderSourceCode = 
         "#version 460 core\n" \
         "in vec4 aPosition;\n" \
+        "in vec2 aTexCoord;\n" \
+        "out vec2 out_texCoord;\n" \
         "uniform mat4 uMVPMatrix;\n" \
         "void main(void)\n" \
         "{\n" \
         "gl_Position = uMVPMatrix * aPosition;\n" \
+        "out_texCoord = aTexCoord;\n" \
         "}\n";
     glShaderSource(vertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
     glCompileShader(vertexShaderObject);
@@ -460,9 +491,15 @@ int  initialize(void){
     const GLchar *fragmentShaderSourceCode = 
         "#version 460 core\n" \
         "out vec4 FragColor;\n" \
+        "in vec2 out_texCoord;\n" \
+        "uniform int uKeyPress;\n" \
+        "uniform sampler2D uTextureSampler;\n" \
         "void main(void)\n" \
         "{\n" \
-        "FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n" \
+        "if(uKeyPress != -1)\n" \
+        "FragColor = texture(uTextureSampler, out_texCoord);\n" \
+        "else\n" \
+        "FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n" \
         "}\n";
     glShaderSource(fragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
     glCompileShader(fragmentShaderObject);  
@@ -499,6 +536,7 @@ int  initialize(void){
 
     // Bind the vertex attribute at a certain index in shader to same index in host program
     glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_POSITION, "aPosition");
+    glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_TEXCOORD, "aTexCoord");
 
     // Link the shader program and check for errors
     glLinkProgram(shaderProgramObject);
@@ -519,43 +557,69 @@ int  initialize(void){
         }
         return -10;
     }
-    
+
     // Get the required uniform locations from the shader program object
     mvpMatrixUniform = glGetUniformLocation(shaderProgramObject, "uMVPMatrix");
+    textureSamplerUniform = glGetUniformLocation(shaderProgramObject, "uTextureSampler");
+    keyPressedUniform = glGetUniformLocation(shaderProgramObject, "uKeyPress");
 
     // Provide vertex position, color, texture coordinates, normals, etc. to the shader program object
 
-    const GLfloat triangle_position[] = {
-        0.0f,   50.0f,   0.0f,
-        -50.0f,  -50.0f,  0.0f,
-        50.0f,   -50.0f,  0.0f
-    };
-
-    // Create Vertex Array Object (VAO) for array of vertex attributes
-    // vao is an array object that stores the state of vertex attributes
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
+    // Rectangle
     {
-        // Position VBO
-        glGenBuffers(1, &vbo_position);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo_position);
+        const GLfloat rectangle_position[] = {
+            1.0f, 1.0f, 0.0f,
+            -1.0f, 1.0f, 0.0f,
+            -1.0f, -1.0f, 0.0f,
+            1.0f, -1.0f, 0.0f
+        };
+
+        // Create Vertex Array Object (VAO) for array of vertex attributes
+        // vao is an array object that stores the state of vertex attributes
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
         {
-            glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_position), triangle_position, GL_STATIC_DRAW);
-            glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-            glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
+            // Position VBO
+            {
+                glGenBuffers(1, &vbo_position);
+                glBindBuffer(GL_ARRAY_BUFFER, vbo_position);
+                {
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle_position), rectangle_position, GL_STATIC_DRAW);
+                    glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+                    glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
+                }
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            }
+
+            // TexCoord VBO
+            {
+                glGenBuffers(1, &vbo_texcoord);
+                glBindBuffer(GL_ARRAY_BUFFER, vbo_texcoord);
+                {
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 2, NULL, GL_DYNAMIC_DRAW);
+                    glVertexAttribPointer(AMC_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+                    glEnableVertexAttribArray(AMC_ATTRIBUTE_TEXCOORD);
+                }
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            }
         }
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0); // Unbind the VAO
     }
-    glBindVertexArray(0); // Unbind the VAO
 
     //Depth related code
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+    // From hear onwards openGL code starts, Tell openGL to choose the color to clear the screen
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    orthographicProjectionMatrix = mat4::identity();
+    /* Load Textures */
+    if(!loadGLTexture(&textureSmiley, "Smiley.bmp")){
+        fprintf(gpFile, "loadGLTexture Failed to Load Smiley Texture\n");
+    }
+
+    perspectiveProjectionMatrix = mat4::identity();
 
     return 0;
 }
@@ -572,18 +636,59 @@ void printGLInfo(void){
     fprintf(gpFile, "******************\n");
 }
 
+Bool loadGLTexture(GLuint* texture, const char* path){
+    int width, height;
+    unsigned char* imageData = SOIL_load_image(path, &width, &height, NULL, SOIL_LOAD_RGB);
+    
+    if (imageData == NULL){
+        fprintf(gpFile, "Failed to load image: %s\n", SOIL_last_result());
+        return False;
+    }
+
+    int rowSize = width * 3; // 3 bytes for RGB
+    unsigned char* tempRow = (unsigned char*)malloc(rowSize);
+    if (!tempRow) {
+        fprintf(gpFile, "Memory allocation failed for tempRow\n");
+        SOIL_free_image_data(imageData);
+        return False;
+    }
+
+    for (int y = 0; y < height / 2; ++y) {
+        unsigned char* rowTop = imageData + y * rowSize;
+        unsigned char* rowBottom = imageData + (height - y - 1) * rowSize;
+
+        memcpy(tempRow, rowTop, rowSize);
+        memcpy(rowTop, rowBottom, rowSize);
+        memcpy(rowBottom, tempRow, rowSize);
+    }
+
+    free(tempRow);
+
+    // Generate OpenGL texture
+    glGenTextures(1, texture);
+    glBindTexture(GL_TEXTURE_2D, *texture);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR_EXT, GL_UNSIGNED_BYTE, imageData);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    //gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    SOIL_free_image_data(imageData);
+
+    return True;
+}
+
 void resize(int width, int height){
     if(height <= 0)
         height = 1;
     
     glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 
-    if(width <= height){
-        orthographicProjectionMatrix = vmath::ortho(-100.0f, 100.0f, (-100.0f * ((GLfloat)height / (GLfloat)width)), (100.0f * ((GLfloat)height / (GLfloat)width)), -100.0f, 100.0f);
-    }
-    else{
-        orthographicProjectionMatrix = vmath::ortho((-100.0f * ((GLfloat)width / (GLfloat)height)), (100.0f * ((GLfloat)width / (GLfloat)height)), -100.0f, 100.0f, -100.0f, 100.0f);
-    }
+    perspectiveProjectionMatrix = vmath::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
 }
 
 void display(void){
@@ -596,20 +701,84 @@ void display(void){
         // Transformations
         mat4 modelViewMatrix = mat4::identity();
         mat4 modelViewProjectionMatrix = mat4::identity();
+        mat4 translationMatrix = mat4::identity();
+        {
+            // Prepare transformation matrices
+            translationMatrix = vmath::translate(0.0f, 0.0f, -3.0f);
 
-        modelViewProjectionMatrix = orthographicProjectionMatrix * modelViewMatrix;
+            // Modeview matrix is the combination of all transformations by multiplying all the necessary transformation matrices
+            modelViewMatrix = translationMatrix;
 
-        // Pass the model view projection matrix to the shader
-        glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+            // Prepare final model view projection matrix as a combination of perspective projection matrix and model view matrix and send it to the shader
+            modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
 
-        // Bind the VAO
-        glBindVertexArray(vao);
+            // Pass the model view projection matrix to the shader
+            glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
 
-        // Draw the triangle
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+            // Bind the texture
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, textureSmiley);
+            glUniform1i(textureSamplerUniform, 0); // Set the texture sampler to use
 
-        // Unbind the VAO
-        glBindVertexArray(0);
+            // Bind the VAO for Rectangle
+            glBindVertexArray(vao);
+            {
+                GLfloat rectangle_texcoord[8];
+
+                if(keyPressed == 1){
+                    glEnable(GL_TEXTURE_2D);
+                    glBindTexture(GL_TEXTURE_2D, textureSmiley);
+                    glUniform1i(keyPressedUniform, keyPressed);
+                    rectangle_texcoord[0] = 0.5f; rectangle_texcoord[1] = 0.5f;
+                    rectangle_texcoord[2] = 0.0f; rectangle_texcoord[3] = 0.5f;
+                    rectangle_texcoord[4] = 0.0f; rectangle_texcoord[5] = 0.0f;
+                    rectangle_texcoord[6] = 0.5f; rectangle_texcoord[7] = 0.0f;
+                }
+                else if(keyPressed == 2){
+                    glEnable(GL_TEXTURE_2D);
+                    glBindTexture(GL_TEXTURE_2D, textureSmiley);
+                    glUniform1i(keyPressedUniform, keyPressed);
+                    rectangle_texcoord[0] = 1.0f; rectangle_texcoord[1] = 1.0f;
+                    rectangle_texcoord[2] = 0.0f; rectangle_texcoord[3] = 1.0f;
+                    rectangle_texcoord[4] = 0.0f; rectangle_texcoord[5] = 0.0f;
+                    rectangle_texcoord[6] = 1.0f; rectangle_texcoord[7] = 0.0f;
+                }
+                else if(keyPressed == 3){
+                    glEnable(GL_TEXTURE_2D);
+                    glBindTexture(GL_TEXTURE_2D, textureSmiley);
+                    glUniform1i(keyPressedUniform, keyPressed);
+                    rectangle_texcoord[0] = 2.0f; rectangle_texcoord[1] = 2.0f;
+                    rectangle_texcoord[2] = 0.0f; rectangle_texcoord[3] = 2.0f;
+                    rectangle_texcoord[4] = 0.0f; rectangle_texcoord[5] = 0.0f;
+                    rectangle_texcoord[6] = 2.0f; rectangle_texcoord[7] = 0.0f;
+                    
+                }
+                else if(keyPressed == 4){
+                    glEnable(GL_TEXTURE_2D);
+                    glBindTexture(GL_TEXTURE_2D, textureSmiley);
+                    glUniform1i(keyPressedUniform, keyPressed);
+                    rectangle_texcoord[0] = 0.5f; rectangle_texcoord[1] = 0.5f;
+                    rectangle_texcoord[2] = 0.5f; rectangle_texcoord[3] = 0.5f;
+                    rectangle_texcoord[4] = 0.5f; rectangle_texcoord[5] = 0.5f;
+                    rectangle_texcoord[6] = 0.5f; rectangle_texcoord[7] = 0.5f;
+                }
+                else{
+                    glDisable(GL_TEXTURE_2D);
+                    glUniform1i(keyPressedUniform, keyPressed);
+                }
+
+                glBindBuffer(GL_ARRAY_BUFFER, vbo_texcoord);
+                {
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(rectangle_texcoord), rectangle_texcoord, GL_DYNAMIC_DRAW);
+                }
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+                // Draw the Rectangle
+                glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+                glBindTexture(GL_TEXTURE_2D, 0); // Unbind the texture
+            }
+            glBindVertexArray(0);
+        }
     }
     glUseProgram(0);
 
@@ -619,7 +788,6 @@ void display(void){
 
 void update(void){
     //code
-    
 }   
 
 void uninitialize(void){
@@ -631,6 +799,16 @@ void uninitialize(void){
     }
 
     // Free vbo and vao
+    if(textureSmiley){
+        glDeleteTextures(1, &textureSmiley);
+        textureSmiley = 0;
+    }
+
+    if(vbo_texcoord){
+        glDeleteBuffers(1, &vbo_texcoord);
+        vbo_texcoord = 0;
+    }
+
     if(vbo_position){
         glDeleteBuffers(1, &vbo_position);
         vbo_position = 0;

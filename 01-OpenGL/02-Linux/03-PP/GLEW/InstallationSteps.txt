@@ -1,0 +1,6 @@
+1) cd to the glew folder
+2) make
+3) sudo make install
+4) Check installation directory: /usr/lib64/ or /usr/local/lib64/
+5) If you need to link against GLEW, add -lGLEW to your compilation command.
+6) If you encounter issues, ensure that the GLEW header files are in /usr/include/ or /usr/local/include/ and the library files are in /usr/lib64/ or /usr/local/lib64/.

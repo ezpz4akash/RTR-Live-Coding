@@ -9,8 +9,12 @@
 #include <X11/XKBlib.h>
 
 // OpenGL related header files
+#include <GL/glew.h> 
 #include <GL/gl.h>
 #include <GL/glx.h>
+
+#include "vmath.h"
+using namespace vmath;
 
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
@@ -33,6 +37,25 @@ GLXContext glxContext = NULL;
 /* Variable related to File I/O */
 char gszLogFileName[] = "Log.txt";
 FILE *gpFile = NULL;
+
+// Shader related variables
+GLuint shaderProgramObject = 0;
+
+enum {
+    AMC_ATTRIBUTE_POSITION = 0,
+    AMC_ATTRIBUTE_COLOR,
+};
+
+GLuint vao_triangle = 0;
+GLuint vbo_position_triangle = 0;
+GLuint vbo_color_triangle = 0;
+
+GLuint mvpMatrixUniform = 0;
+
+mat4 perspectiveProjectionMatrix;
+
+/* Rotation angle variables */
+GLfloat angleTriangle = 0.0f;
 
 int main(void){
     // Function declarations
@@ -190,7 +213,7 @@ int main(void){
     XSetWMProtocols(gpDisplay, window, &windowManagerDeleteAtom, 1);
 
     // Set window title
-    XStoreName(gpDisplay, window, "Akash Musale - RTR6 - Blue Screen With Depth Buffer");
+    XStoreName(gpDisplay, window, "Akash Musale - RTR6 - 2DRotation - Colored - Triangle");
 
     // Map the window to screen to show it
     XMapWindow(gpDisplay, window);
@@ -331,6 +354,8 @@ void toggleFullScreen(void){
 int  initialize(void){
     void printGLInfo(void);
 
+    GLenum glewResult;
+
     //Get function pointer for glXCreateContextAttribsARB
     glXCreateContextAttribsARB = 
         (glXCreateContextAttribsARBProc)glXGetProcAddressARB((const GLubyte*)"glXCreateContextAttribsARB");
@@ -377,16 +402,191 @@ int  initialize(void){
     glXMakeCurrent(gpDisplay, window, glxContext);
     */
 
+    // Initialize GLEW
+    glewResult = glewInit();
+    if(glewResult != GLEW_OK){
+        fprintf(gpFile, "glewInit failed: %s\n", glewGetErrorString(glewResult));
+        return -6;
+    }
+    
+    // print openGL info
     printGLInfo();
 
+    // Vertex Shader
+    /* 
+        1. Write the shader source code
+        2. Create a shader object
+        3. Give the shader source code to the shader object
+        4. Compile the shader
+        5. Check for compilation errors
+    */
+    GLuint vertexShaderObject = glCreateShader(GL_VERTEX_SHADER);
+    const GLchar *vertexShaderSourceCode = 
+        "#version 460 core\n" \
+        "in vec4 aPosition;\n" \
+        "in vec4 aColor;\n" \
+        "out vec4 out_color;\n" \
+        "uniform mat4 uMVPMatrix;\n" \
+        "void main(void)\n" \
+        "{\n" \
+        "gl_Position = uMVPMatrix * aPosition;\n" \
+        "out_color = aColor;\n" \
+        "}\n";
+    glShaderSource(vertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
+    glCompileShader(vertexShaderObject);
+    GLint iInfoLogLength = 0;
+    GLint iStatus = 0;
+    GLchar *szInfoLog = NULL;
+    glGetShaderiv(vertexShaderObject, GL_COMPILE_STATUS, &iStatus);
+    if(iStatus == GL_FALSE){
+        glGetShaderiv(vertexShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+        if(iInfoLogLength > 0){
+            szInfoLog = (GLchar *)malloc(iInfoLogLength * sizeof(GLchar));
+            if(szInfoLog != NULL){
+                glGetShaderInfoLog(vertexShaderObject, iInfoLogLength, NULL, szInfoLog);
+                fprintf(gpFile, "Vertex Shader Compilation Log: %s\n", szInfoLog);
+                free(szInfoLog);
+                szInfoLog = NULL;
+            }
+        }
+        return -7;
+    }
+
+    // Fragment Shader
+    /* 
+        1. Write the shader source code
+        2. Create a shader object
+        3. Give the shader source code to the shader object
+        4. Compile the shader
+        5. Check for compilation errors
+    */
+    GLuint fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
+    const GLchar *fragmentShaderSourceCode = 
+        "#version 460 core\n" \
+        "out vec4 FragColor;\n" \
+        "in vec4 out_color;\n" \
+        "void main(void)\n" \
+        "{\n" \
+        "FragColor = out_color;\n" \
+        "}\n";
+    glShaderSource(fragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
+    glCompileShader(fragmentShaderObject);  
+    iInfoLogLength = 0;
+    iStatus = 0;
+    szInfoLog = NULL;
+    glGetShaderiv(fragmentShaderObject, GL_COMPILE_STATUS, &iStatus);
+    if(iStatus == GL_FALSE){
+        glGetShaderiv(fragmentShaderObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+        if(iInfoLogLength > 0){
+            szInfoLog = (GLchar *)malloc(iInfoLogLength * sizeof(GLchar));
+            if(szInfoLog != NULL){
+                glGetShaderInfoLog(fragmentShaderObject, iInfoLogLength, NULL, szInfoLog);
+                fprintf(gpFile, "Fragment Shader Compilation Log: %s\n", szInfoLog);
+                free(szInfoLog);
+                szInfoLog = NULL;
+            }
+        }
+        return -8;
+    }
+
+    // Shader Program Object
+    shaderProgramObject = glCreateProgram();
+    if(shaderProgramObject == 0){
+        fprintf(gpFile, "glCreateProgram failed\n");
+        return -9;
+    }
+
+    // Attach vertex shader to the shader program object
+    glAttachShader(shaderProgramObject, vertexShaderObject);
+
+    // Attach fragment shader to the shader program object
+    glAttachShader(shaderProgramObject, fragmentShaderObject);
+
+    // Bind the vertex attribute at a certain index in shader to same index in host program
+    glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_POSITION, "aPosition");
+    glBindAttribLocation(shaderProgramObject, AMC_ATTRIBUTE_COLOR, "aColor");
+
+    // Link the shader program and check for errors
+    glLinkProgram(shaderProgramObject);
+    iInfoLogLength = 0;
+    iStatus = 0;
+    szInfoLog = NULL;
+    glGetProgramiv(shaderProgramObject, GL_LINK_STATUS, &iStatus);
+    if(iStatus == GL_FALSE){
+        glGetProgramiv(shaderProgramObject, GL_INFO_LOG_LENGTH, &iInfoLogLength);
+        if(iInfoLogLength > 0){
+            szInfoLog = (GLchar *)malloc(iInfoLogLength * sizeof(GLchar));
+            if(szInfoLog != NULL){
+                glGetProgramInfoLog(shaderProgramObject, iInfoLogLength, NULL, szInfoLog);
+                fprintf(gpFile, "Shader Program Linking Log: %s\n", szInfoLog);
+                free(szInfoLog);
+                szInfoLog = NULL;
+            }
+        }
+        return -10;
+    }
+
+    // Get the required uniform locations from the shader program object
+    mvpMatrixUniform = glGetUniformLocation(shaderProgramObject, "uMVPMatrix");
+
+    // Provide vertex position, color, texture coordinates, normals, etc. to the shader program object
+
+    // Triangle
+    {
+        const GLfloat triangle_position[] = {
+            0.0f,   1.0f,   0.0f,
+            -1.0f,  -1.0f,  0.0f,
+            1.0f,   -1.0f,  0.0f
+        };
+
+        const GLfloat triangle_color[] = {
+            1.0f,   0.0f,   0.0f,
+            0.0f,  1.0f,  0.0f,
+            0.0f,   0.0f,  1.0f
+        };
+
+        // Create Vertex Array Object (VAO) for array of vertex attributes
+        // vao is an array object that stores the state of vertex attributes
+        glGenVertexArrays(1, &vao_triangle);
+        glBindVertexArray(vao_triangle);
+        {
+            // Position VBO
+            {
+                glGenBuffers(1, &vbo_position_triangle);
+                glBindBuffer(GL_ARRAY_BUFFER, vbo_position_triangle);
+                {
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_position), triangle_position, GL_STATIC_DRAW);
+                    glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+                    glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
+                }
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            }
+
+            // Color VBO
+            {
+                glGenBuffers(1, &vbo_color_triangle);
+                glBindBuffer(GL_ARRAY_BUFFER, vbo_color_triangle);
+                {
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_color), triangle_color, GL_STATIC_DRAW);
+                    glVertexAttribPointer(AMC_ATTRIBUTE_COLOR, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+                    glEnableVertexAttribArray(AMC_ATTRIBUTE_COLOR);
+                }
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            }
+        }
+        glBindVertexArray(0); // Unbind the VAO
+    }
+    
+
     //Depth related code
-    glShadeModel(GL_SMOOTH);
     glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+    // From hear onwards openGL code starts, Tell openGL to choose the color to clear the screen
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    perspectiveProjectionMatrix = mat4::identity();
 
     return 0;
 }
@@ -409,27 +609,48 @@ void resize(int width, int height){
     
     glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 
-    /* Set projection mode */
-
-    // Set matrix projection mode
-    glMatrixMode(GL_PROJECTION);
-
-    // Set to identity matrix
-    glLoadIdentity();
-
-    // Set matrix to model view mode
-    glMatrixMode(GL_MODELVIEW);
-
-    // Set to identity matrix
-    glLoadIdentity();
+    perspectiveProjectionMatrix = vmath::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
 }
 
 void display(void){
     //code
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Set matrix to model view mode
-    glMatrixMode(GL_MODELVIEW);
+    // Use the shader program object
+    glUseProgram(shaderProgramObject);
+    {
+        // Transformations
+        mat4 modelViewMatrix = mat4::identity();
+        mat4 modelViewProjectionMatrix = mat4::identity();
+        mat4 translationMatrix = mat4::identity();
+        mat4 rotationMatrix = mat4::identity();
+        {
+            translationMatrix = mat4::identity();
+            rotationMatrix = mat4::identity();
+
+            // Prepare transformation matrices
+            translationMatrix = vmath::translate(-0.0f, 0.0f, -5.0f);
+            rotationMatrix = vmath::rotate(angleTriangle, 0.0f, 1.0f, 0.0f);
+
+            // Modeview matrix is the combination of all transformations by multiplying all the necessary transformation matrices
+            modelViewMatrix = translationMatrix * rotationMatrix;
+
+            // Prepare final model view projection matrix as a combination of perspective projection matrix and model view matrix and send it to the shader
+            modelViewProjectionMatrix = perspectiveProjectionMatrix * modelViewMatrix;
+
+            // Pass the model view projection matrix to the shader
+            glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, modelViewProjectionMatrix);
+
+            // Bind the VAO for triangle
+            glBindVertexArray(vao_triangle);
+            {
+                // Draw the triangle
+                glDrawArrays(GL_TRIANGLES, 0, 3);
+            }
+            glBindVertexArray(0);
+        }
+    }
+    glUseProgram(0);
 
     // Swap the buffers
     glXSwapBuffers(gpDisplay, window);
@@ -437,7 +658,7 @@ void display(void){
 
 void update(void){
     //code
-    
+    angleTriangle = angleTriangle + 1.0f;
 }   
 
 void uninitialize(void){
@@ -446,6 +667,57 @@ void uninitialize(void){
         fprintf(gpFile, "Program Terminated Successfully!\n");
         fclose(gpFile);
         gpFile = NULL;
+    }
+
+    // Free vbo and vao
+    if(vbo_color_triangle){
+        glDeleteBuffers(1, &vbo_color_triangle);
+        vbo_color_triangle = 0;
+    }
+
+    if(vbo_position_triangle){
+        glDeleteBuffers(1, &vbo_position_triangle);
+        vbo_position_triangle = 0;
+    }
+
+    if(vao_triangle){
+        glDeleteVertexArrays(1, &vao_triangle);
+        vao_triangle = 0;
+    }
+
+    /* 
+        Steps to detach and delete shader objects and shader program object generically:
+        1. Check if shader program object is not NULL
+        2. Get number of attached shaders using glGetProgramiv with GL_ATTACHED_SHADERS
+        3. If number of attached shaders is greater than 0, allocate memory for an array of GLuints
+        4. Use glGetAttachedShaders to get the attached shaders into the array
+        5. Loop through the array, detach each shader using glDetachShader and delete it using glDeleteShader
+        6. Free the allocated memory for the array
+        7. Use glUseProgram(0) to unbind the shader program
+        8. Finally, delete the shader program object using glDeleteProgram
+    */
+
+    // Detach Delete the shader objects and delete the shader program object
+    if(shaderProgramObject){
+        glUseProgram(shaderProgramObject);
+        GLint numShaders;
+        glGetProgramiv(shaderProgramObject, GL_ATTACHED_SHADERS, &numShaders);
+        if(numShaders > 0){
+            GLuint *pShaders = (GLuint *)malloc(numShaders * sizeof(GLuint));
+            if(pShaders){
+                glGetAttachedShaders(shaderProgramObject, numShaders, NULL, pShaders);
+                for(GLint i = 0; i < numShaders; i++){
+                    glDetachShader(shaderProgramObject, pShaders[i]);
+                    glDeleteShader(pShaders[i]);
+                    pShaders[i] = 0;
+                }
+                free(pShaders);
+                pShaders = NULL;
+            }
+        }
+        glUseProgram(0);
+        glDeleteProgram(shaderProgramObject);
+        shaderProgramObject = 0;
     }
 
     GLXContext currentContext = glXGetCurrentContext();
