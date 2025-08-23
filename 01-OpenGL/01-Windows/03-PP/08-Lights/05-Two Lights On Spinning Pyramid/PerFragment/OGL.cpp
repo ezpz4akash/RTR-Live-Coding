@@ -141,7 +141,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     // Create Window
     //hWnd = CreateWindow(szAppName, TEXT("RTR 6 - Akash Musale"), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, NULL, NULL, hInstance, NULL);
-    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - Lights - TwoLightsOnSpinningPyramid"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
+    hWnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale - Lights - TwoLightsOnSpinningPyramidPerFragment"), WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, (screenWidth - WIN_WIDTH) / 2, (screenHeight  - WIN_HEIGHT) / 2, WIN_WIDTH, WIN_HEIGHT, NULL, NULL, hInstance, NULL);
     ghWnd = hWnd;
 
     // Show Windows
@@ -384,49 +384,22 @@ int initialize(void){
         "#version 460 core\n" \
         "in vec4 aPosition;\n" \
         "in vec3 aNormal;\n" \
+        "out vec4 eyeCoordinates;\n" \
+        "out vec3 transformedNormal;\n" \
+        "out vec3 lightSource[2];\n" \
         "uniform mat4 uModelMatrix;\n" \
         "uniform mat4 uViewMatrix;\n" \
         "uniform mat4 uProjectionMatrix;\n"\
-        "uniform vec3 uLa[2];\n" \
-        "uniform vec3 uLd[2];\n" \
-        "uniform vec3 uLs[2];\n" \
         "uniform vec4 uLightPosition[2];\n" \
-        "uniform vec3 uKa;\n" \
-        "uniform vec3 uKd;\n" \
-        "uniform vec3 uKs;\n" \
-        "uniform float uMaterialShininess;\n" \
-        "uniform int  uLKeyPressed;\n" \
-        "out vec4 out_phong_ads_Light;\n" \
         "void main(void)\n" \
         "{\n" \
-        "   if(uLKeyPressed == 1)\n" \
+        "   mat3 normalMatrix = mat3(transpose(inverse(uViewMatrix * uModelMatrix)));\n" \
+        "   transformedNormal = (normalMatrix * aNormal);\n" \
+        "   eyeCoordinates = uViewMatrix * uModelMatrix * aPosition;\n" \
+        "   for(int i = 0; i < 2; i++)\n" \
         "   {\n" \
-        "       vec4 eyeCoordinates = uViewMatrix * uModelMatrix * aPosition;\n" \
-        "       mat3 normalMatrix = mat3(transpose(inverse(uViewMatrix * uModelMatrix)));\n" \
-        "       vec3 transformedNormal = normalize(normalMatrix * aNormal);\n" \
-        "       vec3 viewerVector = normalize(-eyeCoordinates.xyz);\n" \
-        "       vec3 lightSource[2];\n" \
-        "       float tnDotLd[2];\n" \
-        "       vec3 reflectedVector[2];\n" \
-        "       vec3 ambient[2];\n" \
-        "       vec3 diffuse[2];\n" \
-        "       vec3 specular[2];\n" \
-        "       out_phong_ads_Light = vec4(0.0, 0.0, 0.0, 1.0);\n" \
-        "       for(int i = 0; i < 2; i++)\n" \
-        "       {\n" \
-        "           lightSource[i] = normalize(vec3(uLightPosition[i]) - eyeCoordinates.xyz);\n" \
-        "           tnDotLd[i] = max(dot(lightSource[i], transformedNormal), 0.0);\n" \
-        "           reflectedVector[i] = reflect(-lightSource[i], transformedNormal);\n" \
-        "           ambient[i] = uLa[i] * uKa;\n" \
-        "           diffuse[i] = uLd[i] * uKd * tnDotLd[i];\n" \
-        "           specular[i] = uLs[i] * uKs * pow(max(dot(reflectedVector[i], viewerVector), 0.0), uMaterialShininess);\n" \
-        "           out_phong_ads_Light = out_phong_ads_Light + vec4(ambient[i] + diffuse[i] + specular[i], 1.0);\n" \
-        "       }\n" \
-        "   }\n" \
-        "   else\n" \
-        "   {\n" \
-        "       out_phong_ads_Light = vec4(1.0, 1.0, 1.0, 1.0);\n" \
-        "   }\n" \
+        "       lightSource[i] = (vec3(uLightPosition[i]) - eyeCoordinates.xyz);\n" \
+        "   }\n"\
         "   gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aPosition;\n" \
         "}\n";
     glShaderSource(vertexShaderObject, 1, (const GLchar **)&vertexShaderSourceCode, NULL);
@@ -460,11 +433,49 @@ int initialize(void){
     GLuint fragmentShaderObject = glCreateShader(GL_FRAGMENT_SHADER);
     const GLchar *fragmentShaderSourceCode = 
         "#version 460 core\n" \
-        "in vec4 out_phong_ads_Light;\n" \
+        "in vec3 transformedNormal;\n" \
+        "in vec4 eyeCoordinates;\n" \
+        "in vec3 lightSource[2];\n" \
+        "uniform vec3 uLa[2];\n" \
+        "uniform vec3 uLd[2];\n" \
+        "uniform vec3 uLs[2];\n" \
+        "uniform vec3 uKa;\n" \
+        "uniform vec3 uKd;\n" \
+        "uniform vec3 uKs;\n" \
+        "uniform float uMaterialShininess;\n" \
+        "uniform int  uLKeyPressed;\n" \
+        "vec4 out_phong_ads_Light;\n" \
         "out vec4 FragColor;\n" \
         "void main(void)\n" \
         "{\n" \
-        "FragColor = out_phong_ads_Light;\n" \
+        "   out_phong_ads_Light = vec4(0.0, 0.0, 0.0, 1.0);\n"\
+        "   vec3 normalizedLightSource[3];\n" \
+        "   vec3 normalizedTransformNormal = normalize(transformedNormal);\n" \
+        "   vec3 normalizedViewerVector = normalize(eyeCoordinates.xyz);\n" \
+        "   if(uLKeyPressed == 1)\n" \
+        "   {\n" \
+        "       float tnDotLd[2];\n" \
+        "       vec3 reflectedVector[2];\n" \
+        "       vec3 viewerVector = (-normalizedViewerVector.xyz);\n" \
+        "       vec3 ambient[2];\n" \
+        "       vec3 diffuse[2];\n" \
+        "       vec3 specular[2];\n" \
+        "       for(int i = 0; i < 2; i++)\n" \
+        "       {\n" \
+        "           normalizedLightSource[i] = normalize(lightSource[i]);\n" \
+        "           tnDotLd[i] = max(dot(normalizedLightSource[i], normalizedTransformNormal), 0.0);\n" \
+        "           reflectedVector[i] = reflect(-normalizedLightSource[i], normalizedTransformNormal);\n" \
+        "           ambient[i] = uLa[i] * uKa;\n" \
+        "           diffuse[i] = uLd[i] * uKd * tnDotLd[i];\n" \
+        "           specular[i] = uLs[i] * uKs * pow(max(dot(reflectedVector[i], viewerVector), 0.0), uMaterialShininess);\n" \
+        "           out_phong_ads_Light = out_phong_ads_Light + vec4(ambient[i] + diffuse[i] + specular[i], 1.0);\n" \
+        "       }\n" \
+        "       FragColor = out_phong_ads_Light;\n" \
+        "   }\n" \
+        "   else\n" \
+        "   {\n" \
+        "       FragColor = vec4(1.0, 1.0, 1.0, 1.0);\n" \
+        "   }\n" \
         "}\n";
     glShaderSource(fragmentShaderObject, 1, (const GLchar **)&fragmentShaderSourceCode, NULL);
     glCompileShader(fragmentShaderObject);  
