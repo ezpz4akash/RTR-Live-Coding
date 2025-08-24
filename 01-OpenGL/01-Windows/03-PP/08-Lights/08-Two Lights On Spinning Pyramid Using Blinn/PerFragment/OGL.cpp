@@ -467,7 +467,7 @@ int initialize(void){
         "           halfVector[i] = normalize(lightSource[i] + viewerVector[i]) / length(lightSource[i] + viewerVector[i]);\n" \
         "           ambient[i] = uLa[i] * uKa;\n" \
         "           diffuse[i] = uLd[i] * uKd * tnDotLd[i];\n" \
-        "           specular[i] = uLs[i] * uKs * pow(max(dot(halfVector[i], viewerVector), 0.0), uMaterialShininess);\n" \
+        "           specular[i] = uLs[i] * uKs * pow(max(dot(halfVector[i], transformedNormal), 0.0), uMaterialShininess);\n" \
         "           out_phong_ads_Light_blinn = out_phong_ads_Light_blinn + vec4(ambient[i] + diffuse[i] + specular[i], 1.0);\n" \
         "       }\n" \
         "       FragColor = out_phong_ads_Light_blinn;\n" \
