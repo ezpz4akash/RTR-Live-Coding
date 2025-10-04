@@ -41,6 +41,35 @@
                 "panel": "shared"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "Clean .gradle Folders",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "Get-ChildItem -Path . -Recurse -Directory -Filter .gradle | ForEach-Object { Remove-Item -Recurse -Force -LiteralPath $_.FullName }"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Clean All",
+            "dependsOn": [
+                "Clean Debug Files",
+                "Clean .gradle Folders"
+            ],
+            "dependsOrder": "sequence"
         }
     ],
     "version": "2.0.0"
