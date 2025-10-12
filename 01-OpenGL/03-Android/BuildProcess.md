@@ -10,3 +10,7 @@
         ~ -r means replace if already present with same app id
     > adb install -r app/build/outputs/apk/debug/app-debug.apk
         ~ Install wia Wifi Debugging
+
+# Log Print
+    > adb logcat | findstr /i AKM:
+    > adb logcat | grep /i AKM:
