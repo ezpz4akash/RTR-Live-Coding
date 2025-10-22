@@ -105,7 +105,7 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
     private int onSingleTap = 0;
 
     private boolean bLightSphere = true;
-    private boolean perVertexperFragmentToggleSphere = false;
+    private boolean perVertexperFragmentToggleSphere = true;
 
     private float lightAmbientSphere[]  = {1.0f, 1.0f, 1.0f, 1.0f};
     private float lightDiffuseSphere[]  = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -733,7 +733,7 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
             "uniform float uMaterialShininess;\n" + 
             "uniform int  uLKeyPressed;\n" + 
             "out vec4 FragColor;\n" + 
-            "out vec4 out_phong_ads_Light;\n" + 
+            "vec4 out_phong_ads_Light;\n" + 
             "void main(void)\n" + 
             "{\n" + 
             "   out_phong_ads_Light = vec4(0.0, 0.0, 0.0, 1.0);\n" + 

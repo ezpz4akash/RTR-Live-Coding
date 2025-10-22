@@ -77,7 +77,7 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
     private int pfSingleTapUniform = 0;
 
     private boolean bLight = false;
-    private boolean perVertexperFragmentToggle = false;
+    private boolean perVertexperFragmentToggle = true;
 
     private float lightAmbient[] = new float[] {1.0f, 1.0f, 1.0f, 1.0f};
     private float lightDiffuse[] = new float[] {1.0f, 1.0f, 1.0f, 1.0f};
