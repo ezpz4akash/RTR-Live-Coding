@@ -54,11 +54,15 @@ enum {
     AMC_ATTRIBUTE_NORMAL,
 };
 
-GLuint vao_cube = 0;
+/* 
 GLuint vbo_position_cube = 0;
 GLuint vbo_color_cube = 0;
 GLuint vbo_texcoord_cube = 0;
-GLuint vbo_normal_cube = 0;
+GLuint vbo_normal_cube = 0; 
+*/
+
+GLuint vao_cube = 0;
+GLuint vbo = 0;
 
 GLuint modelMatrixUniform = 0;
 GLuint viewMatrixUniform = 0;
@@ -547,196 +551,67 @@ int initialize(void){
     
     // Cube
     {
-        const GLfloat cube_position[] = {
+        const GLfloat cube_PCNT[] =
+        {
             // front
-            1.0f,  1.0f,  1.0f, // top-right of front
-            -1.0f,  1.0f,  1.0f, // top-left of front
-            -1.0f, -1.0f,  1.0f, // bottom-left of front
-            1.0f, -1.0f,  1.0f, // bottom-right of front
-
-            // right
-            1.0f,  1.0f, -1.0f, // top-right of right
-            1.0f,  1.0f,  1.0f, // top-left of right
-            1.0f, -1.0f,  1.0f, // bottom-left of right
-            1.0f, -1.0f, -1.0f, // bottom-right of right
-
-            // back
-            1.0f,  1.0f, -1.0f, // top-right of back
-            -1.0f,  1.0f, -1.0f, // top-left of back
-            -1.0f, -1.0f, -1.0f, // bottom-left of back
-            1.0f, -1.0f, -1.0f, // bottom-right of back
-
-            // left
-            -1.0f,  1.0f,  1.0f, // top-right of left
-            -1.0f,  1.0f, -1.0f, // top-left of left
-            -1.0f, -1.0f, -1.0f, // bottom-left of left
-            -1.0f, -1.0f,  1.0f, // bottom-right of left
-
-            // top
-            1.0f,  1.0f, -1.0f, // top-right of top
-            -1.0f,  1.0f, -1.0f, // top-left of top
-            -1.0f,  1.0f,  1.0f, // bottom-left of top
-            1.0f,  1.0f,  1.0f, // bottom-right of top
-
-            // bottom
-            1.0f, -1.0f,  1.0f, // top-right of bottom
-            -1.0f, -1.0f,  1.0f, // top-left of bottom
-            -1.0f, -1.0f, -1.0f, // bottom-left of bottom
-            1.0f, -1.0f, -1.0f, // bottom-right of bottom
-        };
-        const GLfloat cube_color[] = {
-            // front
-            1.0f, 0.0f, 0.0f, // top-right of front
-            1.0f, 0.0f, 0.0f, // top-left of front
-            1.0f, 0.0f, 0.0f, // bottom-left of front
-            1.0f, 0.0f, 0.0f, // bottom-right of front
-
-            // right
-            0.0f, 0.0f, 1.0f, // top-right of right
-            0.0f, 0.0f, 1.0f, // top-left of right
-            0.0f, 0.0f, 1.0f, // bottom-left of right
-            0.0f, 0.0f, 1.0f, // bottom-right of right
-
-            // back
-            1.0f, 1.0f, 0.0f, // top-right of back
-            1.0f, 1.0f, 0.0f, // top-left of back
-            1.0f, 1.0f, 0.0f, // bottom-left of back
-            1.0f, 1.0f, 0.0f, // bottom-right of back
-
-            // left
-            1.0f, 0.0f, 1.0f, // top-right of left
-            1.0f, 0.0f, 1.0f, // top-left of left
-            1.0f, 0.0f, 1.0f, // bottom-left of left
-            1.0f, 0.0f, 1.0f, // bottom-right of left
-
-            // top
-            0.0f, 1.0f, 0.0f, // top-right of top
-            0.0f, 1.0f, 0.0f, // top-left of top
-            0.0f, 1.0f, 0.0f, // bottom-left of top
-            0.0f, 1.0f, 0.0f, // bottom-right of top
-
-            // bottom
-            1.0f, 0.5f, 0.0f, // top-right of bottom
-            1.0f, 0.5f, 0.0f, // top-left of bottom
-            1.0f, 0.5f, 0.0f, // bottom-left of bottom
-            1.0f, 0.5f, 0.0f, // bottom-right of bottom
-        };
-        const GLfloat cube_texcoord[] = {
-            // front
-            1.0f, 1.0f, // top-right of front
-            0.0f, 1.0f, // top-left of front
-            0.0f, 0.0f, // bottom-left of front
-            1.0f, 0.0f, // bottom-right of front
-
-            // right
-            1.0f, 1.0f, // top-right of right
-            0.0f, 1.0f, // top-left of right
-            0.0f, 0.0f, // bottom-left of right
-            1.0f, 0.0f, // bottom-right of right
-
-            // back
-            1.0f, 1.0f, // top-right of back
-            0.0f, 1.0f, // top-left of back
-            0.0f, 0.0f, // bottom-left of back
-            1.0f, 0.0f, // bottom-right of back
-
-            // left
-            1.0f, 1.0f, // top-right of left
-            0.0f, 1.0f, // top-left of left
-            0.0f, 0.0f, // bottom-left of left
-            1.0f, 0.0f, // bottom-right of left
-
-            // top
-            1.0f, 1.0f, // top-right of top
-            0.0f, 1.0f, // top-left of top
-            0.0f, 0.0f, // bottom-left of top
-            1.0f, 0.0f, // bottom-right of top
-
-            // bottom
-            1.0f, 1.0f, // top-right of bottom
-            0.0f, 1.0f, // top-left of bottom
-            0.0f, 0.0f, // bottom-left of bottom
-            1.0f, 0.0f, // bottom-right of bottom
-        };
-        const GLfloat cube_normal[] = {
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f,
-
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f,
-
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-            0.0f, 0.0f, -1.0f,
-
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-            -1.0f, 0.0f, 0.0f,
-
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f,
-
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f,
-            0.0f, -1.0f, 0.0f
+            // position				// color			 // normals				// texcoords
+            1.0f,  1.0f,  1.0f,	1.0f, 0.0f, 0.0f,	 0.0f,  0.0f,  1.0f,	1.0f, 1.0f,
+            -1.0f,  1.0f,  1.0f,	1.0f, 0.0f, 0.0f,	 0.0f,  0.0f,  1.0f,	0.0f, 1.0f,
+            -1.0f, -1.0f,  1.0f,	1.0f, 0.0f, 0.0f,	 0.0f,  0.0f,  1.0f,	0.0f, 0.0f,
+            1.0f, -1.0f,  1.0f,	1.0f, 0.0f, 0.0f,	 0.0f,  0.0f,  1.0f,	1.0f, 0.0f,
+            // right			 
+            // position				// color			 // normals				// texcoords
+            1.0f,  1.0f, -1.0f,	0.0f, 0.0f, 1.0f,	 1.0f,  0.0f,  0.0f,	1.0f, 1.0f,
+            1.0f,  1.0f,  1.0f,	0.0f, 0.0f, 1.0f,	 1.0f,  0.0f,  0.0f,	0.0f, 1.0f,
+            1.0f, -1.0f,  1.0f,	0.0f, 0.0f, 1.0f,	 1.0f,  0.0f,  0.0f,	0.0f, 0.0f,
+            1.0f, -1.0f, -1.0f,	0.0f, 0.0f, 1.0f,	 1.0f,  0.0f,  0.0f,	1.0f, 0.0f,
+            // back				 
+            // position				// color			 // normals				// texcoords
+            1.0f,  1.0f, -1.0f,	1.0f, 1.0f, 0.0f,	 0.0f,  0.0f, -1.0f,	1.0f, 1.0f,
+            -1.0f,  1.0f, -1.0f,	1.0f, 1.0f, 0.0f,	 0.0f,  0.0f, -1.0f,	0.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,	1.0f, 1.0f, 0.0f,	 0.0f,  0.0f, -1.0f,	0.0f, 0.0f,
+            1.0f, -1.0f, -1.0f,	1.0f, 1.0f, 0.0f,	 0.0f,  0.0f, -1.0f,	1.0f, 0.0f,
+            // left				 
+            // position				// color			 // normals				// texcoords
+            -1.0f,  1.0f,  1.0f,	1.0f, 0.0f, 1.0f,	-1.0f,  0.0f,  0.0f,	1.0f, 1.0f,
+            -1.0f,  1.0f, -1.0f,	1.0f, 0.0f, 1.0f,	-1.0f,  0.0f,  0.0f,	0.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,	1.0f, 0.0f, 1.0f,	-1.0f,  0.0f,  0.0f,	0.0f, 0.0f,
+            -1.0f, -1.0f,  1.0f,	1.0f, 0.0f, 1.0f,	-1.0f,  0.0f,  0.0f,	1.0f, 0.0f,
+            // top				 
+            // position				// color			 // normals				// texcoords
+            1.0f,  1.0f, -1.0f,	0.0f, 1.0f, 0.0f,	 0.0f,  1.0f,  0.0f,	1.0f, 1.0f,
+            -1.0f,  1.0f, -1.0f,	0.0f, 1.0f, 0.0f,	 0.0f,  1.0f,  0.0f,	0.0f, 1.0f,
+            -1.0f,  1.0f,  1.0f,	0.0f, 1.0f, 0.0f,	 0.0f,  1.0f,  0.0f,	0.0f, 0.0f,
+            1.0f,  1.0f,  1.0f,	0.0f, 1.0f, 0.0f,	 0.0f,  1.0f,  0.0f,	1.0f, 0.0f,
+            // bottom			 
+            // position				// color			 // normals				// texcoords
+            1.0f, -1.0f,  1.0f,	1.0f, 0.5f, 0.0f,	 0.0f, -1.0f,  0.0f,	1.0f, 1.0f,
+            -1.0f, -1.0f,  1.0f,	1.0f, 0.5f, 0.0f,	 0.0f, -1.0f,  0.0f,	0.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,	1.0f, 0.5f, 0.0f,	 0.0f, -1.0f,  0.0f,	0.0f, 0.0f,
+            1.0f, -1.0f, -1.0f,	1.0f, 0.5f, 0.0f,	 0.0f, -1.0f,  0.0f,	1.0f, 0.0f,
         };
 
         glGenVertexArrays(1, &vao_cube);
         glBindVertexArray(vao_cube);
         {
-            // Position VBO
+            // Common VBO for P,C,N,T
             {
-                glGenBuffers(1, &vbo_position_cube);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_position_cube);
+                glGenBuffers(1, &vbo);
+                glBindBuffer(GL_ARRAY_BUFFER, vbo);
                 {
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_position), cube_position, GL_STATIC_DRAW);
-                    glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+                    //24 * 11 * 4
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_PCNT), cube_PCNT, GL_STATIC_DRAW);
+                    glVertexAttribPointer(AMC_ATTRIBUTE_POSITION, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(0 * sizeof(float)));
                     glEnableVertexAttribArray(AMC_ATTRIBUTE_POSITION);
-                }
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-            }
 
-            // Color VBO
-            {
-                glGenBuffers(1, &vbo_color_cube);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_color_cube);
-                {
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_color), cube_color, GL_STATIC_DRAW);
-                    glVertexAttribPointer(AMC_ATTRIBUTE_COLOR, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+                    glVertexAttribPointer(AMC_ATTRIBUTE_COLOR, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(3 * sizeof(float)));
                     glEnableVertexAttribArray(AMC_ATTRIBUTE_COLOR);
-                }
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-            }
 
-            // TexCoord VBO
-            {
-                glGenBuffers(1, &vbo_texcoord_cube);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_texcoord_cube);
-                {
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_texcoord), cube_texcoord, GL_STATIC_DRAW);
-                    glVertexAttribPointer(AMC_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-                    glEnableVertexAttribArray(AMC_ATTRIBUTE_TEXCOORD);
-                }
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-            }
-
-            // Normal VBO
-            {
-                glGenBuffers(1, &vbo_normal_cube);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo_normal_cube);
-                {
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_normal), cube_normal, GL_STATIC_DRAW);
-                    glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+                    glVertexAttribPointer(AMC_ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(6 * sizeof(float)));
                     glEnableVertexAttribArray(AMC_ATTRIBUTE_NORMAL);
+
+                    glVertexAttribPointer(AMC_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 11 * sizeof(float), (void*)(9 * sizeof(float)));
+                    glEnableVertexAttribArray(AMC_ATTRIBUTE_TEXCOORD);
                 }
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
             }
@@ -927,24 +802,9 @@ void uninitialize(void){
         gbFullScreen = FALSE;
     }
 
-    if(vbo_normal_cube){
-        glDeleteBuffers(1, &vbo_normal_cube);
-        vbo_normal_cube = 0;
-    }
-
-    if(vbo_texcoord_cube){
-        glDeleteBuffers(1, &vbo_texcoord_cube);
-        vbo_texcoord_cube = 0;
-    }
-
-    if(vbo_color_cube){
-        glDeleteBuffers(1, &vbo_color_cube);
-        vbo_color_cube = 0;
-    }
-
-    if(vbo_position_cube){
-        glDeleteBuffers(1, &vbo_position_cube);
-        vbo_position_cube = 0;
+    if(vbo){
+        glDeleteBuffers(1, &vbo);
+        vbo = 0;
     }
 
     if(vao_cube){
