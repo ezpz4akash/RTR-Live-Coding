@@ -1,0 +1,4 @@
+#include "OGL.h"
+
+MIDORIA_ICON ICON "midoria.ico"
+IDBITMAP_MARBLE BITMAP "marble.bmp"
