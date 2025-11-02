@@ -230,7 +230,7 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
             "uniform vec3 uKs;\n" + 
             "uniform float uMaterialShininess;\n" + 
             "uniform int  uLKeyPressed;\n" + 
-            "vec4 out_phong_ads_Light;\n" + 
+            "out vec4 out_phong_ads_Light;\n" + 
             "void main(void)\n" + 
             "{\n" + 
             "   out_phong_ads_Light = vec4(0.0, 0.0, 0.0, 1.0);\n" + 
