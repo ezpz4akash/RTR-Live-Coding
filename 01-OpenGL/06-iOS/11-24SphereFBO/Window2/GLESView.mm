@@ -2,7 +2,7 @@
 //  GLESView.mm
 //  Window2 - FBO with Sphere (Three Moving Lights) on Rotating Cube
 //
-//  Created by user947254 on 1/18/26.
+//  Created by Akash Musale on 1/18/26.
 //
 
 #import <OpenGLES/ES3/gl.h>
