@@ -1,41 +1,62 @@
 // Win32 headers
 #include <Windows.h>
-#include <stdio.h>          // For File IO
-#include <stdlib.h>         // For exit()
-#include <math.h>           // for ceil
+#include <stdio.h>  // For File IO
+#include <stdlib.h> // For exit()
+#include <math.h>   // for ceil
 #include "D3D.h"
 
 // D3D 11 related header
 #include <dxgi.h>
-#include <d3d11.h>  
+#include <d3d11.h>
 #include <d3dcompiler.h>
 
 // for D3D11 Math
-#pragma warning(disable:4838)
+#pragma warning(disable : 4838)
 #include "XNAMath/xnamath.h"
 
-// dxgi - direct x graphics interface 
-#pragma comment(lib, "dxgi.lib")        
+// dxgi - direct x graphics interface
+#pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
 // Macros
-#define WIN_WIDTH       800
-#define WIN_HEIGHT      600
+#define WIN_WIDTH 800
+#define WIN_HEIGHT 600
 
 // global function declarations
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+struct WindowPlacementConfig
+{
+    int x;
+    int y;
+    int width;
+    int height;
+};
+
+static WindowPlacementConfig getCenteredWindowPlacement(int width, int height)
+{
+    WindowPlacementConfig placement;
+    const int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    const int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+    placement.width = width;
+    placement.height = height;
+    placement.x = (screenWidth - width) / 2;
+    placement.y = (screenHeight - height) / 2;
+
+    return placement;
+}
 
 // global variable declarations
 // variable related to FullScreen
 BOOL gbFullScreen = FALSE;
 HWND ghwnd = NULL;
-DWORD dwStyle;                  // Local static asala tri chalel
+DWORD dwStyle; // Local static asala tri chalel
 WINDOWPLACEMENT wpPrev;
 
 // variable related to FileIO
 char gszLogFileName[] = "Log.txt";
-FILE* gpFile = NULL;
+FILE *gpFile = NULL;
 
 // Active window related variable
 BOOL gbActiveWindow = FALSE;
@@ -50,7 +71,7 @@ IDXGISwapChain *gpIDXGISwapChain = NULL;
 ID3D11Device *gpID3D11Device = NULL;
 ID3D11DeviceContext *gpID3D11DeviceContext = NULL;
 ID3D11RenderTargetView *gpID3D11RenderTargetView = NULL;
-float clearColor[4];       // RGBA   
+float clearColor[4]; // RGBA
 
 ID3D11VertexShader *gpID3D11VertexShader = NULL;
 ID3D11PixelShader *gpID3D11PixelShader = NULL;
@@ -58,30 +79,29 @@ ID3D11Buffer *gpID3D11Buffer_PositionBuffer = NULL;
 // ID3D11Buffer *gpID3D11Buffer_ConstantBuffer = NULL;
 ID3D11InputLayout *gpID3D11InputLayout = NULL;
 
-ID3D11Buffer *gpID3D11Buffer_ConstantBuffer_HullShader = NULL;          // GL_TESS_CONTROL_SHADER
-ID3D11Buffer *gpID3D11Buffer_ConstantBuffer_DomainShader = NULL;        // GL_TESS_EVALUATION_SHADER
+ID3D11Buffer *gpID3D11Buffer_ConstantBuffer_HullShader = NULL;   // GL_TESS_CONTROL_SHADER
+ID3D11Buffer *gpID3D11Buffer_ConstantBuffer_DomainShader = NULL; // GL_TESS_EVALUATION_SHADER
 ID3D11Buffer *gpID3D11Buffer_ConstantBuffer_PixelShader = NULL;
 
 ID3D11HullShader *gpID3D11HullShader = NULL;
 ID3D11DomainShader *gpID3D11DomainShader = NULL;
 
-
 struct CBUFFER_HULL_SHADER
 {
-    XMVECTOR Hull_constant_Function_Params; 
-}; 
+    XMVECTOR Hull_constant_Function_Params;
+};
 
 struct CBUFFER_DOMIAN_SHADER
 {
     XMMATRIX worldViewProjectionMatrix;
-}; 
+};
 
 struct CBUFFER_PIXEL_SHADER
 {
     XMVECTOR LineColor;
-}; 
+};
 
-unsigned int uiNumberOfLineSegment = 1; 
+unsigned int uiNumberOfLineSegment = 1;
 
 XMMATRIX perspectiveProjectionMatrix;
 
@@ -93,7 +113,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     void display(void);
     void update(void);
     void uninitialize(void);
-    
+
     // variable declarations
     WNDCLASSEX wndclass;
     HWND hwnd;
@@ -103,27 +123,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     HRESULT hr = S_OK;
 
-    // Window center related variable
-    int windowWidth;
-    int windowHeight;
-    int xPosWindow;
-    int yPosWindow;
-    int screenWidth;
-    int screenHeight;
-    
+    // Window placement is calculated once so WinMain stays focused on setup flow.
+    WindowPlacementConfig windowPlacement = getCenteredWindowPlacement(WIN_WIDTH, WIN_HEIGHT);
+
     // code
 
     // create log file
     gpFile = fopen(szLogFileName, "a+");
     // file open modes
-    // r = read 
-    // w = write 
-    // a = append 
+    // r = read
+    // w = write
+    // a = append
 
     // fopen_s(gszLogFileName, "w");    --windows recommendation
     // fprintf_s()                      --windows recommendation
 
-    if(gpFile == NULL)
+    if (gpFile == NULL)
     {
         MessageBox(NULL, TEXT("Log File Creation Failed"), TEXT("File IO Error"), MB_OK | MB_TOPMOST);
         exit(0);
@@ -133,10 +148,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
         fprintf(gpFile, "Program Started Successfully\n");
     }
 
-
     // window class initialization
     wndclass.cbSize = sizeof(WNDCLASSEX);
-    wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;    // CS_OWNDC => class style own device context
+    wndclass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC; // CS_OWNDC => class style own device context
     wndclass.cbClsExtra = 0;
     wndclass.cbWndExtra = 0;
     wndclass.lpfnWndProc = WndProc;
@@ -152,41 +166,30 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     wndclass.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
 
     // Registration of window class
-    if(!RegisterClassEx(&wndclass))
+    if (!RegisterClassEx(&wndclass))
     {
         MessageBox(NULL, TEXT("Failed to Register Class"), TEXT("RegisterClassEx"), MB_OK | MB_TOPMOST);
         ExitProcess(EXIT_FAILURE);
     }
 
-    // Screen dimensions
-    screenWidth = GetSystemMetrics(SM_CXSCREEN);
-	screenHeight = GetSystemMetrics(SM_CYSCREEN);
-
-    windowWidth = WIN_WIDTH;
-    windowHeight = WIN_HEIGHT;
-
-    xPosWindow = (screenWidth - windowWidth) / 2;
-    yPosWindow = (screenHeight - windowHeight) / 2;
-
     // Create Window in Memory
-    hwnd = CreateWindowEx(
-            WS_EX_APPWINDOW,
-            szAppName,              // class name
-            TEXT("RTR 6 - Akash Musale: D3D11 Perspective Projection Triangle"),  // window name Caption Bar Name
-            WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,    // window style
-            // WS_OVERLAPPEDWINDOW,     // window style
-            xPosWindow,                 // x co-ordinate
-            yPosWindow,                 // y co-ordinate
-            WIN_WIDTH,                  // window width
-            WIN_HEIGHT,                 // window height
-            NULL,                       // parent window handle    
-            NULL,                       // Menu Bar
-            hInstance,                  // Instance of current Handle window
-            NULL                        // window creation parameter
-        );
-    
+    hwnd = CreateWindowEx(WS_EX_APPWINDOW,
+                          szAppName,                                                            // class name
+                          TEXT("RTR 6 - Akash Musale: D3D11 Perspective Projection Triangle"),  // window name Caption Bar Name
+                          WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE, // window style
+                          // WS_OVERLAPPEDWINDOW,     // window style
+                          windowPlacement.x,      // x co-ordinate
+                          windowPlacement.y,      // y co-ordinate
+                          windowPlacement.width,  // window width
+                          windowPlacement.height, // window height
+                          NULL,                   // parent window handle
+                          NULL,                   // Menu Bar
+                          hInstance,              // Instance of current Handle window
+                          NULL                    // window creation parameter
+    );
+
     ghwnd = hwnd;
-    
+
     // Show window
     ShowWindow(hwnd, iCmdShow);
 
@@ -195,7 +198,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
 
     // initialize
     hr = initialize();
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         gpFile = fopen(szLogFileName, "a+");
         fprintf(gpFile, "initialize() failed\n");
@@ -215,7 +218,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     SetFocus(hwnd);
 
     // message loop
-    /* 
+    /*
     while(GetMessage(&msg, NULL, 0, 0))
     {
         TranslateMessage(&msg);
@@ -224,11 +227,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     */
 
     // Game loop
-    while(bDone == FALSE)
+    while (bDone == FALSE)
     {
-        if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
-            if(msg.message == WM_QUIT)
+            if (msg.message == WM_QUIT)
             {
                 bDone = TRUE;
             }
@@ -240,9 +243,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
         }
         else
         {
-            if(gbActiveWindow == TRUE)
+            if (gbActiveWindow == TRUE)
             {
-                if(gbEscapeKeyIsPressed == TRUE)
+                if (gbEscapeKeyIsPressed == TRUE)
                 {
                     bDone = TRUE;
                 }
@@ -259,7 +262,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLi
     // uninitialize
     uninitialize();
 
-    return((int)msg.wParam);
+    return ((int)msg.wParam);
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
@@ -273,99 +276,98 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
     HRESULT hr = S_OK;
 
     // code
-    switch(iMsg)
+    switch (iMsg)
     {
-        case WM_CREATE:
-            ZeroMemory((void*)&wpPrev, sizeof(WINDOWPLACEMENT)); 
-            wpPrev.length = sizeof(WINDOWPLACEMENT);
-            break;
+    case WM_CREATE:
+        ZeroMemory((void *)&wpPrev, sizeof(WINDOWPLACEMENT));
+        wpPrev.length = sizeof(WINDOWPLACEMENT);
+        break;
 
-        case WM_SETFOCUS:
-            gbActiveWindow = TRUE;
-            break;
+    case WM_SETFOCUS:
+        gbActiveWindow = TRUE;
+        break;
 
-        case WM_KILLFOCUS:
-            gbActiveWindow = FALSE;
-            break;
-        
-        case WM_SIZE:
-            if(gpID3D11DeviceContext)
+    case WM_KILLFOCUS:
+        gbActiveWindow = FALSE;
+        break;
+
+    case WM_SIZE:
+        if (gpID3D11DeviceContext)
+        {
+            hr = resize(LOWORD(lParam), HIWORD(lParam));
+            if (FAILED(hr))
             {
-                hr = resize(LOWORD(lParam), HIWORD(lParam));
-                if(FAILED(hr))
-                {
-                    gpFile = fopen(szLogFileName, "a+");
-                    fprintf(gpFile, "resize() failed\n");
-                    fclose(gpFile);
-                    return(hr);
-                }
+                gpFile = fopen(szLogFileName, "a+");
+                fprintf(gpFile, "resize() failed\n");
+                fclose(gpFile);
+                return (hr);
             }
+        }
+        break;
+
+    case WM_KEYDOWN:
+        switch (wParam)
+        {
+        case VK_ESCAPE: // virtual key code @, $, Esc
+            gbEscapeKeyIsPressed = TRUE;
             break;
-        
-        case WM_KEYDOWN:
-            switch(wParam)
+
+        case VK_UP:
+            uiNumberOfLineSegment++;
+            if (uiNumberOfLineSegment > 50)
             {
-                case VK_ESCAPE:                     // virtual key code @, $, Esc 
-                    gbEscapeKeyIsPressed = TRUE;
-                    break;
-
-                case VK_UP:
-                    uiNumberOfLineSegment++;
-                    if(uiNumberOfLineSegment > 50)
-                    {
-                        uiNumberOfLineSegment = 50;
-                    }
-                    break;
-
-                case VK_DOWN:
-                    uiNumberOfLineSegment--;
-                    if(uiNumberOfLineSegment <= 0)
-                    {
-                        uiNumberOfLineSegment = 1;
-                    }
-                    break;
-                
-                default:
-                    break;
+                uiNumberOfLineSegment = 50;
             }
             break;
 
-        case WM_CHAR:
-            switch(wParam)
+        case VK_DOWN:
+            uiNumberOfLineSegment--;
+            if (uiNumberOfLineSegment <= 0)
             {
-                case 'F':                
-                case 'f':
-                    if(gbFullScreen == FALSE)
-                    {
-                        toggleFullScreen();
-                        gbFullScreen = TRUE;
-                    }
-                    else
-                    {
-                        toggleFullScreen();
-                        gbFullScreen = FALSE;
-                    }
-                    break;
-
-                default:
-                    break;            
+                uiNumberOfLineSegment = 1;
             }
-            break;
-
-        case WM_CLOSE:
-            uninitialize();
-            break;
-
-
-        case WM_DESTROY:
-            PostQuitMessage(0);
             break;
 
         default:
             break;
+        }
+        break;
+
+    case WM_CHAR:
+        switch (wParam)
+        {
+        case 'F':
+        case 'f':
+            if (gbFullScreen == FALSE)
+            {
+                toggleFullScreen();
+                gbFullScreen = TRUE;
+            }
+            else
+            {
+                toggleFullScreen();
+                gbFullScreen = FALSE;
+            }
+            break;
+
+        default:
+            break;
+        }
+        break;
+
+    case WM_CLOSE:
+        uninitialize();
+        break;
+
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+
+    default:
+        break;
     }
 
-    return(DefWindowProc(hwnd, iMsg, wParam, lParam));
+    return (DefWindowProc(hwnd, iMsg, wParam, lParam));
 }
 
 void toggleFullScreen(void)
@@ -374,27 +376,19 @@ void toggleFullScreen(void)
     MONITORINFO mi;
 
     // code
-    if(gbFullScreen == FALSE)
+    if (gbFullScreen == FALSE)
     {
         dwStyle = GetWindowLong(ghwnd, GWL_STYLE);
-        if(dwStyle & WS_OVERLAPPEDWINDOW)   // & => contains
+        if (dwStyle & WS_OVERLAPPEDWINDOW) // & => contains
         {
-            ZeroMemory((void*)&mi, sizeof(MONITORINFO));
+            ZeroMemory((void *)&mi, sizeof(MONITORINFO));
             mi.cbSize = sizeof(MONITORINFO);
 
-            if(GetWindowPlacement(ghwnd, &wpPrev) && GetMonitorInfo(MonitorFromWindow(ghwnd, MONITORINFOF_PRIMARY), &mi))
+            if (GetWindowPlacement(ghwnd, &wpPrev) && GetMonitorInfo(MonitorFromWindow(ghwnd, MONITORINFOF_PRIMARY), &mi))
             {
                 SetWindowLong(ghwnd, GWL_STYLE, dwStyle & ~WS_OVERLAPPEDWINDOW);
-                SetWindowPos(ghwnd, 
-                            HWND_TOP, 
-                            mi.rcMonitor.left, 
-                            mi.rcMonitor.top, 
-                            mi.rcMonitor.right - mi.rcMonitor.left, 
-                            mi.rcMonitor.bottom - mi.rcMonitor.top,
-                            SWP_NOZORDER | SWP_FRAMECHANGED
-                    );
-
-                
+                SetWindowPos(ghwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left,
+                             mi.rcMonitor.bottom - mi.rcMonitor.top, SWP_NOZORDER | SWP_FRAMECHANGED);
             }
         }
         ShowCursor(FALSE);
@@ -403,9 +397,7 @@ void toggleFullScreen(void)
     {
         SetWindowPlacement(ghwnd, &wpPrev);
         SetWindowLong(ghwnd, GWL_STYLE, dwStyle | WS_OVERLAPPEDWINDOW);
-        SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, 
-                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED
-                );
+        SetWindowPos(ghwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_FRAMECHANGED);
         ShowCursor(TRUE);
     }
 }
@@ -419,13 +411,12 @@ HRESULT initialize(void)
     // variable declarations
     HRESULT hr = S_OK;
 
-
     // code
     printDXInfo();
 
     // swap chain descriptor initialization
     DXGI_SWAP_CHAIN_DESC dxgiSwapChainDesc;
-    ZeroMemory((void*)&dxgiSwapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
+    ZeroMemory((void *)&dxgiSwapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
 
     dxgiSwapChainDesc.BufferDesc.Width = WIN_WIDTH;
     dxgiSwapChainDesc.BufferDesc.Height = WIN_HEIGHT;
@@ -434,51 +425,40 @@ HRESULT initialize(void)
     dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
     dxgiSwapChainDesc.BufferCount = 1;
     dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    dxgiSwapChainDesc.SampleDesc.Count = 1;               // No MultiSampling
-    dxgiSwapChainDesc.SampleDesc.Quality = 0;             // No MultiSampling
+    dxgiSwapChainDesc.SampleDesc.Count = 1;   // No MultiSampling
+    dxgiSwapChainDesc.SampleDesc.Quality = 0; // No MultiSampling
     dxgiSwapChainDesc.OutputWindow = ghwnd;
-    dxgiSwapChainDesc.Windowed = TRUE;                    // start with windowed mode
+    dxgiSwapChainDesc.Windowed = TRUE; // start with windowed mode
 
     // get dxgi swap chain, d3d11 device and d3d11 device context supported driver and supported feature level 5 things at a once
     D3D_DRIVER_TYPE d3dDriverType;
-    D3D_DRIVER_TYPE d3dDriverTypes[] =
-    {
-        D3D_DRIVER_TYPE_HARDWARE,
-        D3D_DRIVER_TYPE_WARP,           // windows advanced rasterization platform
-        D3D_DRIVER_TYPE_SOFTWARE,
-        D3D_DRIVER_TYPE_REFERENCE
-    };
+    D3D_DRIVER_TYPE d3dDriverTypes[] = {D3D_DRIVER_TYPE_HARDWARE,
+                                        D3D_DRIVER_TYPE_WARP, // windows advanced rasterization platform
+                                        D3D_DRIVER_TYPE_SOFTWARE, D3D_DRIVER_TYPE_REFERENCE};
 
     D3D_FEATURE_LEVEL d3dFeatureLevel_required = D3D_FEATURE_LEVEL_11_0;
     D3D_FEATURE_LEVEL d3dFeatureLevel_aquired = D3D_FEATURE_LEVEL_10_0;
     UINT numDriverTypes = sizeof(d3dDriverTypes) / sizeof(d3dDriverTypes[0]);
 
-    for(UINT i = 0; i < numDriverTypes; i++)
+    for (UINT i = 0; i < numDriverTypes; i++)
     {
         d3dDriverType = d3dDriverTypes[i];
-        hr = D3D11CreateDeviceAndSwapChain(
-                NULL,                           // Adapter
-                d3dDriverType,
-                NULL,                           // Software
-                0,                              // Flags
-                &d3dFeatureLevel_required,      // Feature Levels
-                1,                              // count of feature levels
-                D3D11_SDK_VERSION,
-                &dxgiSwapChainDesc,
-                &gpIDXGISwapChain,
-                &gpID3D11Device,
-                &d3dFeatureLevel_aquired,
-                &gpID3D11DeviceContext
-            );
+        hr = D3D11CreateDeviceAndSwapChain(NULL, // Adapter
+                                           d3dDriverType,
+                                           NULL,                      // Software
+                                           0,                         // Flags
+                                           &d3dFeatureLevel_required, // Feature Levels
+                                           1,                         // count of feature levels
+                                           D3D11_SDK_VERSION, &dxgiSwapChainDesc, &gpIDXGISwapChain, &gpID3D11Device,
+                                           &d3dFeatureLevel_aquired, &gpID3D11DeviceContext);
 
-        if(SUCCEEDED(hr))
+        if (SUCCEEDED(hr))
         {
             break;
         }
-
     }
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         gpFile = fopen(szLogFileName, "a+");
         fprintf(gpFile, "D3D11CreateDeviceAndSwapChain() failed\n");
@@ -488,19 +468,19 @@ HRESULT initialize(void)
 
     // check which driver is usage
     gpFile = fopen(szLogFileName, "a+");
-    if(d3dDriverType == D3D_DRIVER_TYPE_HARDWARE)
+    if (d3dDriverType == D3D_DRIVER_TYPE_HARDWARE)
     {
         fprintf(gpFile, "chosen driver is D3D_DRIVER_TYPE_HARDWARE\n");
     }
-    else if(d3dDriverType == D3D_DRIVER_TYPE_WARP)
+    else if (d3dDriverType == D3D_DRIVER_TYPE_WARP)
     {
         fprintf(gpFile, "chosen driver is  D3D_DRIVER_TYPE_WARP\n");
     }
-    else if(d3dDriverType == D3D_DRIVER_TYPE_REFERENCE)
+    else if (d3dDriverType == D3D_DRIVER_TYPE_REFERENCE)
     {
         fprintf(gpFile, "chosen driver is D3D_DRIVER_TYPE_REFERENCE\n");
     }
-    else if(d3dDriverType == D3D_DRIVER_TYPE_SOFTWARE)
+    else if (d3dDriverType == D3D_DRIVER_TYPE_SOFTWARE)
     {
         fprintf(gpFile, "chosen driver is D3D_DRIVER_TYPE_SOFTWARE\n");
     }
@@ -510,15 +490,15 @@ HRESULT initialize(void)
     }
 
     // check which feature level is acquired
-    if(d3dFeatureLevel_aquired == D3D_FEATURE_LEVEL_11_0)
+    if (d3dFeatureLevel_aquired == D3D_FEATURE_LEVEL_11_0)
     {
         fprintf(gpFile, "acquired feature level is D3D_FEATURE_LEVEL_11_0\n");
     }
-    else if(d3dFeatureLevel_aquired == D3D_FEATURE_LEVEL_10_1)
+    else if (d3dFeatureLevel_aquired == D3D_FEATURE_LEVEL_10_1)
     {
         fprintf(gpFile, "acquired feature level is D3D_FEATURE_LEVEL_10_1\n");
     }
-    else if(d3dFeatureLevel_aquired == D3D_FEATURE_LEVEL_10_0)
+    else if (d3dFeatureLevel_aquired == D3D_FEATURE_LEVEL_10_0)
     {
         fprintf(gpFile, "acquired feature level is D3D_FEATURE_LEVEL_10_0\n");
     }
@@ -532,42 +512,39 @@ HRESULT initialize(void)
     printDXInfo();
 
     /////////////////////////////////////// Vertex Shader ///////////////////////////////////////
-    const char  *vertexShaderSourceCode = 
-    "struct vertex_Output" \
-    "{" \
-    "   float4 position : POSITION;" \
-    "};" \
-    "vertex_Output main(float2 pos : POSITION)" \
-    "{" \
-    "   vertex_Output vertex_output;"
-    "   vertex_output.position = float4(pos, 0.0f, 1.0f);" \
-    "   return (vertex_output);" \
-    "}";
+    const char *vertexShaderSourceCode = "struct vertex_Output"
+                                         "{"
+                                         "   float4 position : POSITION;"
+                                         "};"
+                                         "vertex_Output main(float2 pos : POSITION)"
+                                         "{"
+                                         "   vertex_Output vertex_output;"
+                                         "   vertex_output.position = float4(pos, 0.0f, 1.0f);"
+                                         "   return (vertex_output);"
+                                         "}";
 
     ID3DBlob *pID3DBlob_vertexShaderCode = NULL;
     ID3DBlob *pID3DBlob_error = NULL;
 
     // compile above shader
-    hr = D3DCompile(
-            vertexShaderSourceCode,
-            lstrlenA(vertexShaderSourceCode) + 1,
-            "VS",                                   // Source code string
-            NULL,                                   // D3D_SHADER_MACRO
-            D3D_COMPILE_STANDARD_FILE_INCLUDE, 
-            "main",                                 // Entry point function name  
-            "vs_5_0",                               // Shader model
-            0,                                      // Flags
-            0,                                      // Effect Constant
-            &pID3DBlob_vertexShaderCode,            // compiled code thevnya sathi
-            &pID3DBlob_error                        // Error for vertex shader
-        );
+    hr = D3DCompile(vertexShaderSourceCode, lstrlenA(vertexShaderSourceCode) + 1,
+                    "VS", // Source code string
+                    NULL, // D3D_SHADER_MACRO
+                    D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                    "main",                      // Entry point function name
+                    "vs_5_0",                    // Shader model
+                    0,                           // Flags
+                    0,                           // Effect Constant
+                    &pID3DBlob_vertexShaderCode, // compiled code thevnya sathi
+                    &pID3DBlob_error             // Error for vertex shader
+    );
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
-        if(pID3DBlob_error != NULL)                 
+        if (pID3DBlob_error != NULL)
         {
             gpFile = fopen(szLogFileName, "a+");
-            fprintf(gpFile, "D3DCompile() failed for vertex shader:%s\n", (char*)pID3DBlob_error->GetBufferPointer());
+            fprintf(gpFile, "D3DCompile() failed for vertex shader:%s\n", (char *)pID3DBlob_error->GetBufferPointer());
             fclose(gpFile);
             pID3DBlob_error->Release();
             pID3DBlob_error = NULL;
@@ -582,14 +559,11 @@ HRESULT initialize(void)
     }
 
     // create vertex shader source code
-    hr = gpID3D11Device->CreateVertexShader(
-                            pID3DBlob_vertexShaderCode->GetBufferPointer(),
-                            pID3DBlob_vertexShaderCode->GetBufferSize(),
-                            NULL,       // class linkage parameter across shader variable sathi
-                            &gpID3D11VertexShader
-                        );
+    hr = gpID3D11Device->CreateVertexShader(pID3DBlob_vertexShaderCode->GetBufferPointer(), pID3DBlob_vertexShaderCode->GetBufferSize(),
+                                            NULL, // class linkage parameter across shader variable sathi
+                                            &gpID3D11VertexShader);
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         gpFile = fopen(szLogFileName, "a+");
         fprintf(gpFile, "D3D11Device::CreateVertexShader() failed\n");
@@ -604,75 +578,68 @@ HRESULT initialize(void)
     }
 
     // set this vertex shader in pipeline
-    gpID3D11DeviceContext->VSSetShader(
-            gpID3D11VertexShader,
-            NULL,   
-            0
-        );
+    gpID3D11DeviceContext->VSSetShader(gpID3D11VertexShader, NULL, 0);
 
     /////////////////////////////////////// Hull Shader ///////////////////////////////////////
-    const char  *hullShaderSourceCode = 
-    "cbuffer constantBuffer" \
-    "{" \
-    "   float4 hull_constant_function_params;" \
-    "}" \
-    "struct vertex_Output" \
-    "{" \
-    "   float4 position : POSITION;" \
-    "};" \
-    "struct hull_constant_output" \
-    "{" \
-    "   float edges[2] : SV_TESSFACTOR;" \
-    "};" \
-    "hull_constant_output hull_constant_function(void)" \
-    "{" \
-    "   hull_constant_output output;" \
-    "   float numberOfStrips = hull_constant_function_params[0];" \
-    "   float numberOfSegments = hull_constant_function_params[1];" \
-    "   output.edges[0] = numberOfStrips;" \
-    "   output.edges[1] = numberOfSegments;" \
-    "   return (output);" \
-    "}" \
-    "struct hull_output" \
-    "{" \
-    "   float4 position : POSITION;" \
-    "};" \
-    "[domain(\"isoline\")]" \
-    "[partitioning(\"integer\")]" \
-    "[outputtopology(\"line\")]" \
-    "[outputcontrolpoints(4)]" \
-    "[patchconstantfunc(\"hull_constant_function\")]" \
-    "hull_output main(InputPatch<vertex_Output, 4> input_patch, uint i:SV_OUTPUTCONTROLPOINTID)" \
-    "{" \
-    "   hull_output output;" \
-    "   output.position = input_patch[i].position;" \
-    "   return(output);" \
-    "}";
+    const char *hullShaderSourceCode = "cbuffer constantBuffer"
+                                       "{"
+                                       "   float4 hull_constant_function_params;"
+                                       "}"
+                                       "struct vertex_Output"
+                                       "{"
+                                       "   float4 position : POSITION;"
+                                       "};"
+                                       "struct hull_constant_output"
+                                       "{"
+                                       "   float edges[2] : SV_TESSFACTOR;"
+                                       "};"
+                                       "hull_constant_output hull_constant_function(void)"
+                                       "{"
+                                       "   hull_constant_output output;"
+                                       "   float numberOfStrips = hull_constant_function_params[0];"
+                                       "   float numberOfSegments = hull_constant_function_params[1];"
+                                       "   output.edges[0] = numberOfStrips;"
+                                       "   output.edges[1] = numberOfSegments;"
+                                       "   return (output);"
+                                       "}"
+                                       "struct hull_output"
+                                       "{"
+                                       "   float4 position : POSITION;"
+                                       "};"
+                                       "[domain(\"isoline\")]"
+                                       "[partitioning(\"integer\")]"
+                                       "[outputtopology(\"line\")]"
+                                       "[outputcontrolpoints(4)]"
+                                       "[patchconstantfunc(\"hull_constant_function\")]"
+                                       "hull_output main(InputPatch<vertex_Output, 4> input_patch, uint i:SV_OUTPUTCONTROLPOINTID)"
+                                       "{"
+                                       "   hull_output output;"
+                                       "   output.position = input_patch[i].position;"
+                                       "   return(output);"
+                                       "}";
 
     ID3DBlob *pID3DBlob_hullShaderCode = NULL;
     pID3DBlob_error = NULL;
 
     // compile pixel shader
-    hr = D3DCompile(
-            hullShaderSourceCode,
-            lstrlenA(hullShaderSourceCode) + 1,
-            "HS",                                   // Source code string
-            NULL,                                   // D3D_SHADER_MACRO
-            D3D_COMPILE_STANDARD_FILE_INCLUDE, 
-            "main",                                 // Entry point function name  
-            "hs_5_0",                               // Shader model
-            0,                                      // Flags
-            0,                                      // Effect Constant
-            &pID3DBlob_hullShaderCode,             // compiled code thevnya sathi
-            &pID3DBlob_error                        // Error for vertex shader
-        );
+    hr = D3DCompile(hullShaderSourceCode, lstrlenA(hullShaderSourceCode) + 1,
+                    "HS", // Source code string
+                    NULL, // D3D_SHADER_MACRO
+                    D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                    "main",                    // Entry point function name
+                    "hs_5_0",                  // Shader model
+                    0,                         // Flags
+                    0,                         // Effect Constant
+                    &pID3DBlob_hullShaderCode, // compiled code thevnya sathi
+                    &pID3DBlob_error           // Error for vertex shader
+    );
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
-        if(pID3DBlob_error != NULL)                 
+        if (pID3DBlob_error != NULL)
         {
             gpFile = fopen(szLogFileName, "a+");
-            fprintf(gpFile, "D3DCompile() failed for hull shader:%s\n", (char*)pID3DBlob_error->GetBufferPointer());
+            fprintf(gpFile, "D3DCompile() failed for hull shader:%s\n", (char *)pID3DBlob_error->GetBufferPointer());
             fclose(gpFile);
             pID3DBlob_error->Release();
             pID3DBlob_error = NULL;
@@ -687,14 +654,11 @@ HRESULT initialize(void)
     }
 
     // create vertex shader source code
-    hr = gpID3D11Device->CreateHullShader(
-                            pID3DBlob_hullShaderCode->GetBufferPointer(),
-                            pID3DBlob_hullShaderCode->GetBufferSize(),
-                            NULL,       // class linkage parameter across shader variable sathi
-                            &gpID3D11HullShader
-                        );
+    hr = gpID3D11Device->CreateHullShader(pID3DBlob_hullShaderCode->GetBufferPointer(), pID3DBlob_hullShaderCode->GetBufferSize(),
+                                          NULL, // class linkage parameter across shader variable sathi
+                                          &gpID3D11HullShader);
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         gpFile = fopen(szLogFileName, "a+");
         fprintf(gpFile, "D3D11Device::CreateHullShader() failed\n");
@@ -709,76 +673,70 @@ HRESULT initialize(void)
     }
 
     // set this hull shader in pipeline
-    gpID3D11DeviceContext->HSSetShader(
-            gpID3D11HullShader,
-            NULL,   
-            0
-        );
+    gpID3D11DeviceContext->HSSetShader(gpID3D11HullShader, NULL, 0);
 
     pID3DBlob_hullShaderCode->Release();
     pID3DBlob_hullShaderCode = NULL;
 
-     
     /////////////////////////////////////// Domain Shader ///////////////////////////////////////
-    const char  *domainShaderSourceCode = 
-    "cbuffer constantBuffer" \
-    "{" \
-    "   float4x4 worldViewProjectionMatrix;" \
-    "}" \
+    const char *domainShaderSourceCode =
+        "cbuffer constantBuffer"
+        "{"
+        "   float4x4 worldViewProjectionMatrix;"
+        "}"
 
-    "struct hull_constant_output" \
-    "{" \
-    "   float edges[2] : SV_TESSFACTOR;" \
-    "};" \
-    
-    "struct hull_output" \
-    "{" \
-    "   float4 position : POSITION;" \
-    "};" \
+        "struct hull_constant_output"
+        "{"
+        "   float edges[2] : SV_TESSFACTOR;"
+        "};"
 
-    "struct domain_output" \
-    "{" \
-    "   float4 position : SV_POSITION;" \
-    "};" \
+        "struct hull_output"
+        "{"
+        "   float4 position : POSITION;"
+        "};"
 
-    "[domain(\"isoline\")]" \
+        "struct domain_output"
+        "{"
+        "   float4 position : SV_POSITION;"
+        "};"
 
-    "domain_output main(hull_constant_output input, OutputPatch<hull_output, 4> output_patch, float2 tessCoord : SV_DOMAINLOCATION)" \
-    "{" \
-    "   domain_output output;" \
-    "   float3 p0 = output_patch[0].position.xyz;" \
-    "   float3 p1 = output_patch[1].position.xyz;" \
-    "   float3 p2 = output_patch[2].position.xyz;" \
-    "   float3 p3 = output_patch[3].position.xyz;" \
-    "   float3 p  = (p0 * (1 - tessCoord.x) * (1 - tessCoord.x) * (1 - tessCoord.x)) + (p1 * 3 * tessCoord.x * (1 - tessCoord.x) * (1 - tessCoord.x)) + (p2 * 3 * tessCoord.x * tessCoord.x * (1 - tessCoord.x)) + (p3 * tessCoord.x * tessCoord.x * tessCoord.x) ;\n" \
-    "   output.position = mul(worldViewProjectionMatrix, float4(p, 1.0f));" \
-    "   return(output);" \
-    "}";
+        "[domain(\"isoline\")]"
+
+        "domain_output main(hull_constant_output input, OutputPatch<hull_output, 4> output_patch, float2 tessCoord : SV_DOMAINLOCATION)"
+        "{"
+        "   domain_output output;"
+        "   float3 p0 = output_patch[0].position.xyz;"
+        "   float3 p1 = output_patch[1].position.xyz;"
+        "   float3 p2 = output_patch[2].position.xyz;"
+        "   float3 p3 = output_patch[3].position.xyz;"
+        "   float3 p  = (p0 * (1 - tessCoord.x) * (1 - tessCoord.x) * (1 - tessCoord.x)) + (p1 * 3 * tessCoord.x * (1 - tessCoord.x) * (1 "
+        "- tessCoord.x)) + (p2 * 3 * tessCoord.x * tessCoord.x * (1 - tessCoord.x)) + (p3 * tessCoord.x * tessCoord.x * tessCoord.x) ;\n"
+        "   output.position = mul(worldViewProjectionMatrix, float4(p, 1.0f));"
+        "   return(output);"
+        "}";
 
     ID3DBlob *pID3DBlob_domainShaderCode = NULL;
     pID3DBlob_error = NULL;
 
     // compile pixel shader
-    hr = D3DCompile(
-            domainShaderSourceCode,
-            lstrlenA(domainShaderSourceCode) + 1,
-            "DS",                                   // Source code string
-            NULL,                                   // D3D_SHADER_MACRO
-            D3D_COMPILE_STANDARD_FILE_INCLUDE, 
-            "main",                                 // Entry point function name  
-            "ds_5_0",                               // Shader model
-            0,                                      // Flags
-            0,                                      // Effect Constant
-            &pID3DBlob_domainShaderCode,             // compiled code thevnya sathi
-            &pID3DBlob_error                        // Error for vertex shader
-        );
+    hr = D3DCompile(domainShaderSourceCode, lstrlenA(domainShaderSourceCode) + 1,
+                    "DS", // Source code string
+                    NULL, // D3D_SHADER_MACRO
+                    D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                    "main",                      // Entry point function name
+                    "ds_5_0",                    // Shader model
+                    0,                           // Flags
+                    0,                           // Effect Constant
+                    &pID3DBlob_domainShaderCode, // compiled code thevnya sathi
+                    &pID3DBlob_error             // Error for vertex shader
+    );
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
-        if(pID3DBlob_error != NULL)                 
+        if (pID3DBlob_error != NULL)
         {
             gpFile = fopen(szLogFileName, "a+");
-            fprintf(gpFile, "D3DCompile() failed for domain shader:%s\n", (char*)pID3DBlob_error->GetBufferPointer());
+            fprintf(gpFile, "D3DCompile() failed for domain shader:%s\n", (char *)pID3DBlob_error->GetBufferPointer());
             fclose(gpFile);
             pID3DBlob_error->Release();
             pID3DBlob_error = NULL;
@@ -793,14 +751,11 @@ HRESULT initialize(void)
     }
 
     // create vertex shader source code
-    hr = gpID3D11Device->CreateDomainShader(
-                            pID3DBlob_domainShaderCode->GetBufferPointer(),
-                            pID3DBlob_domainShaderCode->GetBufferSize(),
-                            NULL,       // class linkage parameter across shader variable sathi
-                            &gpID3D11DomainShader
-                        );
+    hr = gpID3D11Device->CreateDomainShader(pID3DBlob_domainShaderCode->GetBufferPointer(), pID3DBlob_domainShaderCode->GetBufferSize(),
+                                            NULL, // class linkage parameter across shader variable sathi
+                                            &gpID3D11DomainShader);
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         gpFile = fopen(szLogFileName, "a+");
         fprintf(gpFile, "D3D11Device::CreateDomainShader() failed\n");
@@ -815,52 +770,45 @@ HRESULT initialize(void)
     }
 
     // set this hull shader in pipeline
-    gpID3D11DeviceContext->DSSetShader(
-            gpID3D11DomainShader,
-            NULL,   
-            0
-        );
+    gpID3D11DeviceContext->DSSetShader(gpID3D11DomainShader, NULL, 0);
 
     pID3DBlob_domainShaderCode->Release();
     pID3DBlob_domainShaderCode = NULL;
 
     /////////////////////////////////////// Pixel Shader ///////////////////////////////////////
-    const char  *pixelShaderSourceCode = 
-    "cbuffer constantBuffer" \
-    "{" \
-    "   float4 lineColor;" \
-    "}" \
+    const char *pixelShaderSourceCode = "cbuffer constantBuffer"
+                                        "{"
+                                        "   float4 lineColor;"
+                                        "}"
 
-    "float4 main(void) : SV_TARGET" \
-    "{" \
-    "   float4 color = lineColor;" \
-    "   return (color);" \
-    "}";
+                                        "float4 main(void) : SV_TARGET"
+                                        "{"
+                                        "   float4 color = lineColor;"
+                                        "   return (color);"
+                                        "}";
 
     ID3DBlob *pID3DBlob_pixelShaderCode = NULL;
     pID3DBlob_error = NULL;
 
     // compile pixel shader
-    hr = D3DCompile(
-            pixelShaderSourceCode,
-            lstrlenA(pixelShaderSourceCode) + 1,
-            "PS",                                   // Source code string
-            NULL,                                   // D3D_SHADER_MACRO
-            D3D_COMPILE_STANDARD_FILE_INCLUDE, 
-            "main",                                 // Entry point function name  
-            "ps_5_0",                               // Shader model
-            0,                                      // Flags
-            0,                                      // Effect Constant
-            &pID3DBlob_pixelShaderCode,             // compiled code thevnya sathi
-            &pID3DBlob_error                        // Error for vertex shader
-        );
+    hr = D3DCompile(pixelShaderSourceCode, lstrlenA(pixelShaderSourceCode) + 1,
+                    "PS", // Source code string
+                    NULL, // D3D_SHADER_MACRO
+                    D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                    "main",                     // Entry point function name
+                    "ps_5_0",                   // Shader model
+                    0,                          // Flags
+                    0,                          // Effect Constant
+                    &pID3DBlob_pixelShaderCode, // compiled code thevnya sathi
+                    &pID3DBlob_error            // Error for vertex shader
+    );
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
-        if(pID3DBlob_error != NULL)                 
+        if (pID3DBlob_error != NULL)
         {
             gpFile = fopen(szLogFileName, "a+");
-            fprintf(gpFile, "D3DCompile() failed for pixel shader:%s\n", (char*)pID3DBlob_error->GetBufferPointer());
+            fprintf(gpFile, "D3DCompile() failed for pixel shader:%s\n", (char *)pID3DBlob_error->GetBufferPointer());
             fclose(gpFile);
             pID3DBlob_error->Release();
             pID3DBlob_error = NULL;
@@ -875,14 +823,11 @@ HRESULT initialize(void)
     }
 
     // create vertex shader source code
-    hr = gpID3D11Device->CreatePixelShader(
-                            pID3DBlob_pixelShaderCode->GetBufferPointer(),
-                            pID3DBlob_pixelShaderCode->GetBufferSize(),
-                            NULL,       // class linkage parameter across shader variable sathi
-                            &gpID3D11PixelShader
-                        );
+    hr = gpID3D11Device->CreatePixelShader(pID3DBlob_pixelShaderCode->GetBufferPointer(), pID3DBlob_pixelShaderCode->GetBufferSize(),
+                                           NULL, // class linkage parameter across shader variable sathi
+                                           &gpID3D11PixelShader);
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         gpFile = fopen(szLogFileName, "a+");
         fprintf(gpFile, "D3D11Device::CreatePixelShader() failed\n");
@@ -897,17 +842,13 @@ HRESULT initialize(void)
     }
 
     // set this vertex shader in pipeline
-    gpID3D11DeviceContext->PSSetShader(
-            gpID3D11PixelShader,
-            NULL,   
-            0
-        );
+    gpID3D11DeviceContext->PSSetShader(gpID3D11PixelShader, NULL, 0);
 
     // initialize input layout
     D3D11_INPUT_ELEMENT_DESC d3d11InputElementDesc;
-    ZeroMemory((void*)&d3d11InputElementDesc, sizeof(D3D11_INPUT_ELEMENT_DESC));
+    ZeroMemory((void *)&d3d11InputElementDesc, sizeof(D3D11_INPUT_ELEMENT_DESC));
 
-    d3d11InputElementDesc.SemanticName = "POSITION";    
+    d3d11InputElementDesc.SemanticName = "POSITION";
     d3d11InputElementDesc.SemanticIndex = 0;
     d3d11InputElementDesc.Format = DXGI_FORMAT_R32G32_FLOAT;
     d3d11InputElementDesc.InputSlot = 0;
@@ -916,27 +857,22 @@ HRESULT initialize(void)
     d3d11InputElementDesc.InstanceDataStepRate = 0;
 
     // create input layout based on above structrue
-    hr = gpID3D11Device->CreateInputLayout(
-            &d3d11InputElementDesc,
-            1,
-            pID3DBlob_vertexShaderCode->GetBufferPointer(),
-            pID3DBlob_vertexShaderCode->GetBufferSize(),
-            &gpID3D11InputLayout
-        );
+    hr = gpID3D11Device->CreateInputLayout(&d3d11InputElementDesc, 1, pID3DBlob_vertexShaderCode->GetBufferPointer(),
+                                           pID3DBlob_vertexShaderCode->GetBufferSize(), &gpID3D11InputLayout);
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         gpFile = fopen(szLogFileName, "a+");
         fprintf(gpFile, "D3D11Device::CreateInputLayout() failed\n");
         fclose(gpFile);
 
-        if(pID3DBlob_vertexShaderCode)
+        if (pID3DBlob_vertexShaderCode)
         {
             pID3DBlob_vertexShaderCode->Release();
             pID3DBlob_vertexShaderCode = NULL;
         }
 
-        if(pID3DBlob_pixelShaderCode)   
+        if (pID3DBlob_pixelShaderCode)
         {
             pID3DBlob_pixelShaderCode->Release();
             pID3DBlob_pixelShaderCode = NULL;
@@ -954,19 +890,19 @@ HRESULT initialize(void)
     // set this Input layout in pipeline
     gpID3D11DeviceContext->IASetInputLayout(gpID3D11InputLayout);
 
-    if(pID3DBlob_vertexShaderCode)
+    if (pID3DBlob_vertexShaderCode)
     {
         pID3DBlob_vertexShaderCode->Release();
         pID3DBlob_vertexShaderCode = NULL;
     }
 
-    if(pID3DBlob_pixelShaderCode)   
+    if (pID3DBlob_pixelShaderCode)
     {
         pID3DBlob_pixelShaderCode->Release();
         pID3DBlob_pixelShaderCode = NULL;
     }
 
-    if(pID3DBlob_error)
+    if (pID3DBlob_error)
     {
         pID3DBlob_error->Release();
         pID3DBlob_error = NULL;
@@ -975,34 +911,26 @@ HRESULT initialize(void)
     // provide vertex position, color, normal, texcords etc
     // create buffer for vertex data
     const float line_position[] = {
-                                        -1.0f, -1.0f,
-                                        -0.5f, 1.0f,
-                                        0.5f, -1.0f,
-                                        1.0f, 1.0f,
-                                    }; 
+        -1.0f, -1.0f, -0.5f, 1.0f, 0.5f, -1.0f, 1.0f, 1.0f,
+    };
 
-    
     D3D11_BUFFER_DESC d3d11BufferDesc;
-    ZeroMemory((void*)&d3d11BufferDesc, sizeof(D3D11_BUFFER_DESC));
+    ZeroMemory((void *)&d3d11BufferDesc, sizeof(D3D11_BUFFER_DESC));
 
-    d3d11BufferDesc.Usage = D3D11_USAGE_DEFAULT;            // gl_STATIC_DRAW 
+    d3d11BufferDesc.Usage = D3D11_USAGE_DEFAULT; // gl_STATIC_DRAW
     d3d11BufferDesc.ByteWidth = sizeof(float) * _ARRAYSIZE(line_position);
     d3d11BufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     // d3d11BufferDesc.CPUAccessFlags = 0;
 
-    // initialize sub resource of buffer 
+    // initialize sub resource of buffer
     D3D11_SUBRESOURCE_DATA d3d11SubResourceData;
-    ZeroMemory((void*)&d3d11SubResourceData, sizeof(D3D11_SUBRESOURCE_DATA));
+    ZeroMemory((void *)&d3d11SubResourceData, sizeof(D3D11_SUBRESOURCE_DATA));
     d3d11SubResourceData.pSysMem = line_position;
 
     // now create actual buffer
-    hr = gpID3D11Device->CreateBuffer(
-            &d3d11BufferDesc,
-            &d3d11SubResourceData,
-            &gpID3D11Buffer_PositionBuffer
-        );
+    hr = gpID3D11Device->CreateBuffer(&d3d11BufferDesc, &d3d11SubResourceData, &gpID3D11Buffer_PositionBuffer);
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         gpFile = fopen(szLogFileName, "a+");
         fprintf(gpFile, "D3D11Device::CreateBuffer() failed\n");
@@ -1017,20 +945,16 @@ HRESULT initialize(void)
     }
 
     // now create constant buffer for hull shader
-    ZeroMemory((void*)&d3d11BufferDesc, sizeof(D3D11_BUFFER_DESC));
+    ZeroMemory((void *)&d3d11BufferDesc, sizeof(D3D11_BUFFER_DESC));
     d3d11BufferDesc.Usage = D3D11_USAGE_DEFAULT;
     d3d11BufferDesc.ByteWidth = sizeof(CBUFFER_HULL_SHADER);
     d3d11BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     d3d11BufferDesc.CPUAccessFlags = 0;
 
-    // create constant buffer 
-    hr = gpID3D11Device->CreateBuffer(
-            &d3d11BufferDesc,
-            NULL,
-            &gpID3D11Buffer_ConstantBuffer_HullShader
-        );
+    // create constant buffer
+    hr = gpID3D11Device->CreateBuffer(&d3d11BufferDesc, NULL, &gpID3D11Buffer_ConstantBuffer_HullShader);
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         gpFile = fopen(szLogFileName, "a+");
         fprintf(gpFile, "D3D11Device::CreateBuffer() failed for hull shader\n");
@@ -1044,37 +968,21 @@ HRESULT initialize(void)
         fclose(gpFile);
     }
 
-    // set this empty constant buffer 
+    // set this empty constant buffer
     // data will given in display
-    gpID3D11DeviceContext->HSSetConstantBuffers(
-            0,
-            1,
-            &gpID3D11Buffer_ConstantBuffer_HullShader
-        );
-
-
-
-
-
-
-
-
+    gpID3D11DeviceContext->HSSetConstantBuffers(0, 1, &gpID3D11Buffer_ConstantBuffer_HullShader);
 
     // now create constant buffer for domain shader
-    ZeroMemory((void*)&d3d11BufferDesc, sizeof(D3D11_BUFFER_DESC));
+    ZeroMemory((void *)&d3d11BufferDesc, sizeof(D3D11_BUFFER_DESC));
     d3d11BufferDesc.Usage = D3D11_USAGE_DEFAULT;
     d3d11BufferDesc.ByteWidth = sizeof(CBUFFER_DOMIAN_SHADER);
     d3d11BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     d3d11BufferDesc.CPUAccessFlags = 0;
 
-    // create constant buffer 
-    hr = gpID3D11Device->CreateBuffer(
-            &d3d11BufferDesc,
-            NULL,
-            &gpID3D11Buffer_ConstantBuffer_DomainShader
-        );
+    // create constant buffer
+    hr = gpID3D11Device->CreateBuffer(&d3d11BufferDesc, NULL, &gpID3D11Buffer_ConstantBuffer_DomainShader);
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         gpFile = fopen(szLogFileName, "a+");
         fprintf(gpFile, "D3D11Device::CreateBuffer() failed for domain shader\n");
@@ -1088,31 +996,21 @@ HRESULT initialize(void)
         fclose(gpFile);
     }
 
-    // set this empty constant buffer 
+    // set this empty constant buffer
     // data will given in display
-    gpID3D11DeviceContext->DSSetConstantBuffers(
-            0,
-            1,
-            &gpID3D11Buffer_ConstantBuffer_DomainShader
-        );
-
-
+    gpID3D11DeviceContext->DSSetConstantBuffers(0, 1, &gpID3D11Buffer_ConstantBuffer_DomainShader);
 
     // now create constant buffer for pixel shader
-    ZeroMemory((void*)&d3d11BufferDesc, sizeof(D3D11_BUFFER_DESC));
+    ZeroMemory((void *)&d3d11BufferDesc, sizeof(D3D11_BUFFER_DESC));
     d3d11BufferDesc.Usage = D3D11_USAGE_DEFAULT;
     d3d11BufferDesc.ByteWidth = sizeof(CBUFFER_PIXEL_SHADER);
     d3d11BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     d3d11BufferDesc.CPUAccessFlags = 0;
 
-    // create constant buffer 
-    hr = gpID3D11Device->CreateBuffer(
-            &d3d11BufferDesc,
-            NULL,
-            &gpID3D11Buffer_ConstantBuffer_PixelShader
-        );
+    // create constant buffer
+    hr = gpID3D11Device->CreateBuffer(&d3d11BufferDesc, NULL, &gpID3D11Buffer_ConstantBuffer_PixelShader);
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         gpFile = fopen(szLogFileName, "a+");
         fprintf(gpFile, "D3D11Device::CreateBuffer() failed for pixel shader\n");
@@ -1126,22 +1024,14 @@ HRESULT initialize(void)
         fclose(gpFile);
     }
 
-    // set this empty constant buffer 
+    // set this empty constant buffer
     // data will given in display
-    gpID3D11DeviceContext->PSSetConstantBuffers(
-            0,
-            1,
-            &gpID3D11Buffer_ConstantBuffer_PixelShader
-        );
-
-
-
-
+    gpID3D11DeviceContext->PSSetConstantBuffers(0, 1, &gpID3D11Buffer_ConstantBuffer_PixelShader);
 
     // set clear color
     clearColor[0] = 0.0f;
     clearColor[1] = 0.0f;
-    clearColor[2] = 0.0f;  
+    clearColor[2] = 0.0f;
     clearColor[3] = 1.0f;
 
     // initialize perspective projection matrix
@@ -1150,7 +1040,7 @@ HRESULT initialize(void)
     // warm up resize
     hr = resize(WIN_WIDTH, WIN_HEIGHT);
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
         gpFile = fopen(szLogFileName, "a+");
         fprintf(gpFile, "resize() failed in initialize()\n");
@@ -1163,7 +1053,7 @@ HRESULT initialize(void)
         fprintf(gpFile, "resize() succeeded in initialize()\n");
         fclose(gpFile);
     }
-    
+
     return (hr);
 
     return (0);
@@ -1174,28 +1064,28 @@ void printDXInfo(void)
     // variable declarations
     IDXGIFactory *pIDXGIFactory = NULL;
     IDXGIAdapter *pIDXGIAdapter = NULL;
-    DXGI_ADAPTER_DESC  dxgiAdapterDesc;
+    DXGI_ADAPTER_DESC dxgiAdapterDesc;
     HRESULT hr = S_OK;
     char str[255];
 
     // get DXGI Factory
-    hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&pIDXGIFactory);
-    if(FAILED(hr))
+    hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void **)&pIDXGIFactory);
+    if (FAILED(hr))
     {
         fprintf(gpFile, "CreateDXGIFactory() failed for %u\n", hr);
         goto cleanup;
     }
 
     // From Factory get Adapater
-    if(pIDXGIFactory->EnumAdapters(0, &pIDXGIAdapter) != DXGI_ERROR_NOT_FOUND)
+    if (pIDXGIFactory->EnumAdapters(0, &pIDXGIAdapter) != DXGI_ERROR_NOT_FOUND)
     {
-        ZeroMemory((void*)&dxgiAdapterDesc, sizeof(DXGI_ADAPTER_DESC));
+        ZeroMemory((void *)&dxgiAdapterDesc, sizeof(DXGI_ADAPTER_DESC));
         pIDXGIAdapter->GetDesc(&dxgiAdapterDesc);
 
         // to convert WCHAR type of name of graphic card into char type
         WideCharToMultiByte(CP_ACP, 0, dxgiAdapterDesc.Description, 255, str, 255, NULL, NULL);
         WideCharToMultiByte(CP_ACP, 0, dxgiAdapterDesc.Description, -1, str, 255, NULL, NULL);
-        fprintf(gpFile,"Graphic Device Name = %s\n", str);
+        fprintf(gpFile, "Graphic Device Name = %s\n", str);
 
         fprintf(gpFile, "VRAM(in bytes) = %I64d\n", (__int64)dxgiAdapterDesc.DedicatedVideoMemory);
         fprintf(gpFile, "VRAM(in GB's) = %d\n", (int)ceil(dxgiAdapterDesc.DedicatedVideoMemory / 1024.0 / 1024.0 / 1024.0));
@@ -1206,14 +1096,14 @@ void printDXInfo(void)
         goto cleanup;
     }
 
-    cleanup:
-    if(pIDXGIAdapter)
+cleanup:
+    if (pIDXGIAdapter)
     {
         pIDXGIAdapter->Release();
         pIDXGIAdapter = NULL;
     }
 
-    if(pIDXGIFactory)
+    if (pIDXGIFactory)
     {
         pIDXGIFactory->Release();
         pIDXGIFactory = NULL;
@@ -1222,43 +1112,38 @@ void printDXInfo(void)
 
 HRESULT resize(int width, int height)
 {
-	// code
+    // code
     HRESULT hr = S_OK;
 
     // Step 1: release existing render target view
-    if(gpID3D11RenderTargetView)
+    if (gpID3D11RenderTargetView)
     {
         gpID3D11RenderTargetView->Release();
         gpID3D11RenderTargetView = NULL;
     }
 
     // Step 2: resize swap chain buffers according to the new width and height
-    gpIDXGISwapChain->ResizeBuffers(
-            1,                  // buffer count
-            width,
-            height,
-            DXGI_FORMAT_R8G8B8A8_UNORM,
-            0                   // flags
-        );
+    gpIDXGISwapChain->ResizeBuffers(1, // buffer count
+                                    width, height, DXGI_FORMAT_R8G8B8A8_UNORM,
+                                    0 // flags
+    );
 
     // Step 3-A: get the buffer from swap chain for render target view
     ID3D11Texture2D *pID3D11Texture2D_BackBuffer = NULL;
-    gpIDXGISwapChain->GetBuffer(
-            0,                                      // buffer index
-            __uuidof(ID3D11Texture2D),              // riid
-            (LPVOID*)&pID3D11Texture2D_BackBuffer   // ppBuffer
-        );
+    gpIDXGISwapChain->GetBuffer(0,                                     // buffer index
+                                __uuidof(ID3D11Texture2D),             // riid
+                                (LPVOID *)&pID3D11Texture2D_BackBuffer // ppBuffer
+    );
 
     // Step 3-B: create render target view using above textured swap chain buffer
-    hr = gpID3D11Device->CreateRenderTargetView(
-            pID3D11Texture2D_BackBuffer,     // pResource
-            NULL,                           // pDesc
-            &gpID3D11RenderTargetView       // ppRTView
-        );
+    hr = gpID3D11Device->CreateRenderTargetView(pID3D11Texture2D_BackBuffer, // pResource
+                                                NULL,                        // pDesc
+                                                &gpID3D11RenderTargetView    // ppRTView
+    );
 
-    if(FAILED(hr))
+    if (FAILED(hr))
     {
-        if(pID3D11Texture2D_BackBuffer)
+        if (pID3D11Texture2D_BackBuffer)
         {
             pID3D11Texture2D_BackBuffer->Release();
             pID3D11Texture2D_BackBuffer = NULL;
@@ -1270,22 +1155,22 @@ HRESULT resize(int width, int height)
         return (hr);
     }
 
-    if(pID3D11Texture2D_BackBuffer)
+    if (pID3D11Texture2D_BackBuffer)
     {
         pID3D11Texture2D_BackBuffer->Release();
         pID3D11Texture2D_BackBuffer = NULL;
     }
 
     // Step 4: set render target view as render target in pipeline
-    gpID3D11DeviceContext->OMSetRenderTargets(      // OM = Output Merger
-            1,                                      // NumViews
-            &gpID3D11RenderTargetView,              // ppRTViews
-            NULL                                    // pDepthStencilView
-        );
+    gpID3D11DeviceContext->OMSetRenderTargets( // OM = Output Merger
+        1,                                     // NumViews
+        &gpID3D11RenderTargetView,             // ppRTViews
+        NULL                                   // pDepthStencilView
+    );
 
     // Step 5: initialie viewport structure
     D3D11_VIEWPORT d3dViewPort;
-    ZeroMemory((void*)&d3dViewPort, sizeof(D3D11_VIEWPORT));
+    ZeroMemory((void *)&d3dViewPort, sizeof(D3D11_VIEWPORT));
 
     d3dViewPort.TopLeftX = 0.0f;
     d3dViewPort.TopLeftY = 0.0f;
@@ -1295,18 +1180,13 @@ HRESULT resize(int width, int height)
     d3dViewPort.MaxDepth = 1.0f;
 
     // Step 6: set viewport in pipeline
-    gpID3D11DeviceContext->RSSetViewports(      // RS = Rasterizer Stage
-            1,                                  // NumViewports
-            &d3dViewPort                        // pViewports
-        );
-    
+    gpID3D11DeviceContext->RSSetViewports( // RS = Rasterizer Stage
+        1,                                 // NumViewports
+        &d3dViewPort                       // pViewports
+    );
+
     // set perspective Projection matrix
-    perspectiveProjectionMatrix = XMMatrixPerspectiveFovLH(
-            XMConvertToRadians(45.0f),
-            (float)width / (float)height,
-            0.1f,
-            100.0f
-        );
+    perspectiveProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 
     return (hr);
 }
@@ -1315,21 +1195,12 @@ void display(void)
 {
     // code
     // Clear color
-    gpID3D11DeviceContext->ClearRenderTargetView(
-            gpID3D11RenderTargetView,
-            clearColor
-        );
+    gpID3D11DeviceContext->ClearRenderTargetView(gpID3D11RenderTargetView, clearColor);
 
-    // set vertex buffer 
+    // set vertex buffer
     UINT stride = sizeof(float) * 2;
     UINT offset = 0;
-    gpID3D11DeviceContext->IASetVertexBuffers(
-            0,
-            1,
-            &gpID3D11Buffer_PositionBuffer,
-            &stride,
-            &offset
-        );
+    gpID3D11DeviceContext->IASetVertexBuffers(0, 1, &gpID3D11Buffer_PositionBuffer, &stride, &offset);
 
     // set primitive Topology
     gpID3D11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST);
@@ -1344,58 +1215,31 @@ void display(void)
 
     // Now push this wvp matrix into domain shader
     CBUFFER_DOMIAN_SHADER constantBuffer_DomainShader;
-    ZeroMemory((void*)&constantBuffer_DomainShader, sizeof(CBUFFER_DOMIAN_SHADER));
+    ZeroMemory((void *)&constantBuffer_DomainShader, sizeof(CBUFFER_DOMIAN_SHADER));
     constantBuffer_DomainShader.worldViewProjectionMatrix = wvpMatrix;
 
-    gpID3D11DeviceContext->UpdateSubresource(
-            gpID3D11Buffer_ConstantBuffer_DomainShader,
-            0,
-            NULL,
-            &constantBuffer_DomainShader,
-            0,
-            0
-        );
+    gpID3D11DeviceContext->UpdateSubresource(gpID3D11Buffer_ConstantBuffer_DomainShader, 0, NULL, &constantBuffer_DomainShader, 0, 0);
 
-    // send line strips and line segment in hull shader 
+    // send line strips and line segment in hull shader
     CBUFFER_HULL_SHADER constantBuffer_HullShader;
-    ZeroMemory((void*)&constantBuffer_HullShader, sizeof(CBUFFER_HULL_SHADER));
+    ZeroMemory((void *)&constantBuffer_HullShader, sizeof(CBUFFER_HULL_SHADER));
     constantBuffer_HullShader.Hull_constant_Function_Params = XMVectorSet(1.0f, (FLOAT)uiNumberOfLineSegment, 0.0f, 0.0f);
 
-    gpID3D11DeviceContext->UpdateSubresource(
-            gpID3D11Buffer_ConstantBuffer_HullShader,
-            0,
-            NULL,
-            &constantBuffer_HullShader,
-            0,
-            0
-        );
+    gpID3D11DeviceContext->UpdateSubresource(gpID3D11Buffer_ConstantBuffer_HullShader, 0, NULL, &constantBuffer_HullShader, 0, 0);
 
     TCHAR str[255];
     wsprintf(str, TEXT("RTR 6 - Akash Musale: D3D11 Tessellation Shader : Number Of Line Segment = %d"), uiNumberOfLineSegment);
     SetWindowText(ghwnd, str);
 
-
     // Pixel Shader
     CBUFFER_PIXEL_SHADER constantBuffer_PixelShader;
-    ZeroMemory((void*)&constantBuffer_PixelShader, sizeof(CBUFFER_PIXEL_SHADER));
+    ZeroMemory((void *)&constantBuffer_PixelShader, sizeof(CBUFFER_PIXEL_SHADER));
 
     constantBuffer_PixelShader.LineColor = XMVectorSet(1.0f, 1.0f, 0.0f, 1.0f);
 
-    gpID3D11DeviceContext->UpdateSubresource(
-            gpID3D11Buffer_ConstantBuffer_PixelShader,
-            0,
-            NULL,
-            &constantBuffer_PixelShader,
-            0,
-            0
-        );
+    gpID3D11DeviceContext->UpdateSubresource(gpID3D11Buffer_ConstantBuffer_PixelShader, 0, NULL, &constantBuffer_PixelShader, 0, 0);
 
-    gpID3D11DeviceContext->Draw(
-            4,
-            0
-        );
-
-    
+    gpID3D11DeviceContext->Draw(4, 0);
 
     // present swap chain buffers switch between front and back buffers
     gpIDXGISwapChain->Present(0, 0);
@@ -1408,87 +1252,87 @@ void update(void)
 
 void uninitialize(void)
 {
-	// code
-    if(gpID3D11Buffer_ConstantBuffer_PixelShader)
+    // code
+    if (gpID3D11Buffer_ConstantBuffer_PixelShader)
     {
         gpID3D11Buffer_ConstantBuffer_PixelShader->Release();
         gpID3D11Buffer_ConstantBuffer_PixelShader = NULL;
     }
 
-    if(gpID3D11Buffer_ConstantBuffer_DomainShader)
+    if (gpID3D11Buffer_ConstantBuffer_DomainShader)
     {
         gpID3D11Buffer_ConstantBuffer_DomainShader->Release();
         gpID3D11Buffer_ConstantBuffer_DomainShader = NULL;
     }
 
-    if(gpID3D11Buffer_ConstantBuffer_HullShader)
+    if (gpID3D11Buffer_ConstantBuffer_HullShader)
     {
         gpID3D11Buffer_ConstantBuffer_HullShader->Release();
         gpID3D11Buffer_ConstantBuffer_HullShader = NULL;
     }
 
-    if(gpID3D11VertexShader)
+    if (gpID3D11VertexShader)
     {
         gpID3D11VertexShader->Release();
         gpID3D11VertexShader = NULL;
     }
 
-    if(gpID3D11DomainShader)
+    if (gpID3D11DomainShader)
     {
         gpID3D11DomainShader->Release();
         gpID3D11DomainShader = NULL;
     }
 
-    if(gpID3D11HullShader)
+    if (gpID3D11HullShader)
     {
         gpID3D11HullShader->Release();
         gpID3D11HullShader = NULL;
     }
 
-    if(gpID3D11PixelShader)
+    if (gpID3D11PixelShader)
     {
         gpID3D11PixelShader->Release();
         gpID3D11PixelShader = NULL;
     }
 
-    if(gpID3D11Buffer_PositionBuffer)
+    if (gpID3D11Buffer_PositionBuffer)
     {
         gpID3D11Buffer_PositionBuffer->Release();
         gpID3D11Buffer_PositionBuffer = NULL;
     }
-    
-    if(gpID3D11InputLayout)
+
+    if (gpID3D11InputLayout)
     {
         gpID3D11InputLayout->Release();
         gpID3D11InputLayout = NULL;
     }
 
-    if(gpID3D11RenderTargetView)
+    if (gpID3D11RenderTargetView)
     {
         gpID3D11RenderTargetView->Release();
         gpID3D11RenderTargetView = NULL;
     }
 
-    if(gpID3D11DeviceContext)
+    if (gpID3D11DeviceContext)
     {
         gpID3D11DeviceContext->Release();
         gpID3D11DeviceContext = NULL;
     }
 
-    if(gpIDXGISwapChain)
+    if (gpIDXGISwapChain)
     {
         gpIDXGISwapChain->Release();
         gpIDXGISwapChain = NULL;
     }
 
-    if(gpID3D11Device)
+    if (gpID3D11Device)
     {
-        gpID3D11Device->Release();  
+        gpID3D11Device->Release();
         gpID3D11Device = NULL;
     }
 
     // close the file
-    if(gpFile)
+    if (gpFile)
     {
         fprintf(gpFile, "Program terminated Successfully\n");
         fclose(gpFile);
