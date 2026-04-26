@@ -1,0 +1,545 @@
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+tex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for color buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for color buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for color buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for color buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for color buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for color buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for color buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() failed for pixel shader:E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\08-Texture\01-One3DShape\01-Pyramid\PS(1,229-242): error X3018: invalid subscript 'texcoord'
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\08-Texture\01-One3DShape\01-Pyramid\PS(1,194-243): error X3013: 'Sample': no matching 2 parameter intrinsic method
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\08-Texture\01-One3DShape\01-Pyramid\PS(1,194-243): error X3013: Possible intrinsic methods are:
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\08-Texture\01-One3DShape\01-Pyramid\PS(1,194-243): error X3013:     Texture2D<float4>.Sample(SamplerState, float2|half2|min10float2|min16float2)
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\08-Texture\01-One3DShape\01-Pyramid\PS(1,194-243): error X3013:     Texture2D<float4>.Sample(SamplerState, float2|half2|min10float2|min16float2, int2)
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\08-Texture\01-One3DShape\01-Pyramid\PS(1,194-243): error X3013:     Texture2D<float4>.Sample(SamplerState, float2|half2|min10float2|min16float2, int2, float1|half1|min10float1|min16float1)
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\08-Texture\01-One3DShape\01-Pyramid\PS(1,194-243): error X3013:     Texture2D<float4>.Sample(SamplerState, float2|half2|min10float2|min16float2, int2, float1|half1|min10float1|min16float1, out uint status)
+
+initialize() failed
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() failed for pixel shader:E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\08-Texture\01-One3DShape\01-Pyramid\PS(1,229-242): error X3018: invalid subscript 'texcoord'
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\08-Texture\01-One3DShape\01-Pyramid\PS(1,194-243): error X3088: Texture2D<float4> object does not have method 'sample'
+
+initialize() failed
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() failed for pixel shader:E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\08-Texture\01-One3DShape\01-Pyramid\PS(1,200-249): error X3088: Texture2D<float4> object does not have method 'sample'
+
+initialize() failed
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4126146560
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4126146560
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4126146560
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4126146560
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4126146560
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded for position buffer
+D3D11Device::CreateBuffer() Succeeded for texture buffer
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateRasterizerState() Succeeded
+DirectX::CreateWICTextureFromFile() Succeeded
+loadD3DTexture() Succeeded
+D3D11Device::CreateSamplerState() Succeeded
+resize() succeeded in initialize()
+initialize() Completed Successfully

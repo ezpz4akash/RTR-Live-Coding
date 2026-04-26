@@ -1,0 +1,235 @@
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for hull shader
+D3D11Device::CreateHullShader() Succeeded
+D3DCompile() failed for domain shader:E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(1,126-131): error X3000: syntax error: unexpected token 'struct'
+
+initialize() failed
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for hull shader
+D3D11Device::CreateHullShader() Succeeded
+D3DCompile() failed for domain shader:E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(2,68): error X3000: syntax error: unexpected token ';'
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(2,22-85): error X3013: 'mul': no matching 0 parameter intrinsic function
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(2,22-85): error X3013: Possible intrinsic functions are:
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(2,22-85): error X3013:     mul(float|half|double|min10float|min16float|int|uint|min12int|min16int|min16uint, float|half|double|min10float|min16float|int|uint|min12int|min16int|min16uint)
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(2,22-85): error X3013:     mul(float|half|double|min10float|min16float|int|uint|min12int|min16int|min16uint, floatK|halfK|doubleK|min10floatK|min16floatK|intK|uintK|min12intK|min16intK|min16uintK)
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(2,22-85): error X3013:     mul(float|half|double|min10float|min16float|int|uint|min12int|min16int|min16uint, floatLxK|halfLxK|doubleLxK|min10floatLxK|min16floatLxK|intLxK|uintLxK|min12intLxK|min16intLxK|min16uintLxK)
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(2,22-85): error X3013:     mul(floatM|halfM|doubleM|min10floatM|min16floatM|intM|uintM|min12intM|min16intM|min16uintM, float|half|double|min10float|min16float|int|uint|min12int|min16int|min16uint)
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(2,22-85): error X3013:     mul(floatM|halfM|doubleM|min10floatM|min16floatM|intM|uintM|min12intM|min16intM|min16uintM, floatM|halfM|doubleM|min10floatM|min16floatM|intM|uintM|min12intM|min16intM|min16uintM)
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(2,22-85): error X3013:     mul(floatM|halfM|doubleM|min10floatM|min16floatM|intM|uintM|min12intM|min16intM|min16uintM, floatMxK|halfMxK|doubleMxK|min10floatMxK|min16floatMxK|intMxK|uintMxK|min12intMxK|min16intMxK|min16uintMxK)
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(2,22-85): error X3013:     mul(floatNxM|halfNxM|doubleNxM|min10floatNxM|min16floatNxM|intNxM|uintNxM|min12intNxM|min16intNxM|min16uintNxM, float|half|double|min10float|min16float|int|uint|min12int|min16int|min16uint)
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(2,22-85): error X3013:     mul(floatNxM|halfNxM|doubleNxM|min10floatNxM|min16floatNxM|intNxM|uintNxM|min12intNxM|min16intNxM|min16uintNxM, floatM|halfM|doubleM|min10floatM|min16floatM|intM|uintM|min12intM|min16intM|min16uintM)
+E:\MyProjects\RTR-06\MyProjects\OpenGL\01-OpenGL\01-Windows\06-D3D11\12-TessellationShader\DS(2,22-85): error X3013:     mul(floatNxM|halfNxM|doubleNxM|min10floatNxM|min16floatNxM|intNxM|uintNxM|min12intNxM|min16intNxM|min16uintNxM, floatMxK|halfMxK|doubleMxK|min10floatMxK|min16floatMxK|intMxK|uintMxK|min12intMxK|min16intMxK|min16uintMxK)
+
+initialize() failed
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for hull shader
+D3D11Device::CreateHullShader() Succeeded
+D3DCompile() succeeded for domain shader
+D3D11Device::CreateDomainShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateBuffer() Succeeded for hull shader
+D3D11Device::CreateBuffer() Succeeded for domain shader
+D3D11Device::CreateBuffer() Succeeded for pixel shader
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for hull shader
+D3D11Device::CreateHullShader() Succeeded
+D3DCompile() succeeded for domain shader
+D3D11Device::CreateDomainShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateBuffer() Succeeded for hull shader
+D3D11Device::CreateBuffer() Succeeded for domain shader
+D3D11Device::CreateBuffer() Succeeded for pixel shader
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for hull shader
+D3D11Device::CreateHullShader() Succeeded
+D3DCompile() succeeded for domain shader
+D3D11Device::CreateDomainShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateBuffer() Succeeded for hull shader
+D3D11Device::CreateBuffer() Succeeded for domain shader
+D3D11Device::CreateBuffer() Succeeded for pixel shader
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4128243712
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for hull shader
+D3D11Device::CreateHullShader() Succeeded
+D3DCompile() succeeded for domain shader
+D3D11Device::CreateDomainShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateBuffer() Succeeded for hull shader
+D3D11Device::CreateBuffer() Succeeded for domain shader
+D3D11Device::CreateBuffer() Succeeded for pixel shader
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4126146560
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for hull shader
+D3D11Device::CreateHullShader() Succeeded
+D3DCompile() succeeded for domain shader
+D3D11Device::CreateDomainShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateBuffer() Succeeded for hull shader
+D3D11Device::CreateBuffer() Succeeded for domain shader
+D3D11Device::CreateBuffer() Succeeded for pixel shader
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4126146560
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for hull shader
+D3D11Device::CreateHullShader() Succeeded
+D3DCompile() succeeded for domain shader
+D3D11Device::CreateDomainShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateBuffer() Succeeded for hull shader
+D3D11Device::CreateBuffer() Succeeded for domain shader
+D3D11Device::CreateBuffer() Succeeded for pixel shader
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce GTX 1650
+VRAM(in bytes) = 4126146560
+VRAM(in GB's) = 4
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for hull shader
+D3D11Device::CreateHullShader() Succeeded
+D3DCompile() succeeded for domain shader
+D3D11Device::CreateDomainShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateBuffer() Succeeded for hull shader
+D3D11Device::CreateBuffer() Succeeded for domain shader
+D3D11Device::CreateBuffer() Succeeded for pixel shader
+resize() succeeded in initialize()
+initialize() Completed Successfully
+Program Started Successfully
+Graphic Device Name = NVIDIA GeForce RTX 5060 Ti
+VRAM(in bytes) = 16830693376
+VRAM(in GB's) = 16
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for hull shader
+D3D11Device::CreateHullShader() Succeeded
+D3DCompile() succeeded for domain shader
+D3D11Device::CreateDomainShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateBuffer() Succeeded for hull shader
+D3D11Device::CreateBuffer() Succeeded for domain shader
+D3D11Device::CreateBuffer() Succeeded for pixel shader
+resize() succeeded in initialize()
+initialize() Completed Successfully
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for hull shader
+D3D11Device::CreateHullShader() Succeeded
+D3DCompile() succeeded for domain shader
+D3D11Device::CreateDomainShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateBuffer() Succeeded for hull shader
+D3D11Device::CreateBuffer() Succeeded for domain shader
+D3D11Device::CreateBuffer() Succeeded for pixel shader
+resize() succeeded in initialize()
+initialize() Completed Successfully
+chosen driver is D3D_DRIVER_TYPE_HARDWARE
+acquired feature level is D3D_FEATURE_LEVEL_11_0
+D3DCompile() succeeded for vertex shader
+D3D11Device::CreateVertexShader() Succeeded
+D3DCompile() succeeded for hull shader
+D3D11Device::CreateHullShader() Succeeded
+D3DCompile() succeeded for domain shader
+D3D11Device::CreateDomainShader() Succeeded
+D3DCompile() succeeded for pixel shader
+D3D11Device::CreatePixelShader() Succeeded
+D3D11Device::CreateInputLayout() Succeeded
+D3D11Device::CreateBuffer() Succeeded
+D3D11Device::CreateBuffer() Succeeded for hull shader
+D3D11Device::CreateBuffer() Succeeded for domain shader
+D3D11Device::CreateBuffer() Succeeded for pixel shader
+resize() succeeded in initialize()
+initialize() Completed Successfully
