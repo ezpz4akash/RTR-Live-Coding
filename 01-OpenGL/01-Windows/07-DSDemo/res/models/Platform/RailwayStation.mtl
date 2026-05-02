@@ -1,0 +1,68 @@
+# Blender 4.3.2 MTL File: 'uploads_files_4805666_Railway+Station (1).blend'
+# www.blender.org
+
+newmtl Material.014
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd  floor_tiles_04_diff_4k.jpg
+map_Ns  floor_tiles_04_rough_4k.jpg
+map_Bump -bm 1.000000  floor_tiles_04_nor_gl_4k.exr
+
+newmtl Material.015
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.090838 0.090838 0.090838
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Kd  metaltop.png
+
+newmtl Material.016
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd  t_brick_floor_002_diffuse_4k.jpg
+map_Ns  t_brick_floor_002_rough_4k.jpg
+map_Bump -bm 1.000000  t_brick_floor_002_nor_gl_4k.exr
+
+newmtl hozl
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd  hozl_baseColor.png
+map_Bump -bm 1.000000  hozl_normal.png
+
+newmtl medl1
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd  medl1_baseColor.png
+map_Bump -bm 1.000000  medl1_normal.png
+
+newmtl medl2
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd  medl2_baseColor.png
+map_Bump -bm 1.000000  medl2_normal.png

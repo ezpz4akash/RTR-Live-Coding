@@ -1,0 +1,3 @@
+#include "resource.h"
+
+MIDORIA_ICON ICON "./../icon/midoria.ico"

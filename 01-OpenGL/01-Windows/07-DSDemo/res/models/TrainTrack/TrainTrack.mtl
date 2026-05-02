@@ -1,0 +1,35 @@
+# Blender 4.3.2 MTL File: 'TrainTrack.blend'
+# www.blender.org
+
+newmtl Sleeper
+Ns 159.999985
+Ka 1.000000 1.000000 1.000000
+Kd 0.076296 0.069184 0.060666
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd standardSurface1_baseColor.png
+
+newmtl Track_Rust
+Ns 79.530899
+Ka 0.884615 0.884615 0.884615
+Kd 0.067254 0.014296 0.014296
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 3
+map_Kd standardSurface1_baseColor.png
+
+newmtl Track_Silver
+Ns 1000.000000
+Ka 0.797256 0.797256 0.797256
+Kd 0.570476 0.570476 0.570476
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 3
+map_Kd standardSurface1_baseColor.png

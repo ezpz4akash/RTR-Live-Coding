@@ -1,0 +1,120 @@
+# Blender 4.3.2 MTL File: 'None'
+# www.blender.org
+
+newmtl AvatarBody
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd AvatarBodyFemale_Color_1K.jpeg
+map_Bump -bm 1.000000 AvatarBodyFemale_Normal1_1K.jpeg
+
+newmtl AvatarEyelashes
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+
+newmtl AvatarHead
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd AvatarHeadFemale_Color_1K.png
+map_Bump -bm 1.000000 AvatarHeadFemale_Normal1_1K.jpg
+
+newmtl AvatarLeftCornea
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd AvatarLeftCornea_Color_512.jpeg
+
+newmtl AvatarLeftEyeball
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd AvatarEyes_Color_512.jpeg
+map_Bump -bm 1.000000 AvatarEyes_Normal_512.jpg
+
+newmtl AvatarRightCornea
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd AvatarRightCornea_Color_512.jpeg
+
+newmtl AvatarRightEyeball
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd AvatarEyes_Color_512.jpeg
+map_Bump -bm 1.000000 AvatarEyes_Normal_512.jpg
+
+newmtl AvatarTeethLower
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd AvatarTeeth_Color_1K.jpeg
+map_Bump -bm 1.000000 AvatarTeeth_Normal1_1K.jpg
+
+newmtl AvatarTeethUpper
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd AvatarTeeth_Color_1K.jpeg
+map_Bump -bm 1.000000 AvatarTeeth_Normal1_1K.jpg
+
+newmtl haircut
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 1
+map_Kd HairCard0_Color_1K.png
+map_d HairCard0_Color_1K.png
+map_Bump -bm 1.000000 HairCard0_Normal_1K.jpg
+
+newmtl outfit
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd saree_Aramazd_Color_1Ka.png
+map_Bump -bm 1.000000 saree_Aramazd_Normal_Tiles.jpg
