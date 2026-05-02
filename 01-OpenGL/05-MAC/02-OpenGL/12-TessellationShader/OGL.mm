@@ -370,7 +370,7 @@ int main(int argc, char** argv)
 
     }
     
-    NSString *title = [NSString stringWithFormat:@"Vagish Adhav: Number of Line Segments : %d", uiNumOfLineSegments];
+    NSString *title = [NSString stringWithFormat:@"RTR 6 - Akash Musale: Number of Line Segments : %d", uiNumOfLineSegments];
     [[self window] setTitle:title];
 }
 

@@ -202,7 +202,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
     RegisterClassEx(&wndclass);
 
     // create window
-    hwnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("Vagish Vishvanath Adhav"), 
+    hwnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("RTR 6 - Akash Musale"), 
                         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
                         GetSystemMetrics(SM_CXSCREEN)/2 - WIN_WIDTH/2,
                         GetSystemMetrics(SM_CYSCREEN)/2 - WIN_HEIGHT/2, 
